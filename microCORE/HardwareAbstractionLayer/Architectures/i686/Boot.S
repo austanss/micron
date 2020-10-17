@@ -45,7 +45,7 @@ _start:
 
 protectedModeMain:
 
-//	sti
+	sti
 
 	/* here we call kernel_main */
 	call kernel_main
