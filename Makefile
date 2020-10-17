@@ -10,6 +10,8 @@ ifeq (, $(shell which grub-mkrescue 2>/dev/null))
 	endif
 endif
 
+
+ARCH := UNSPECIFIED
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 BUILD_DIR := $(ROOT_DIR)/bin
 SRC_DIR := $(ROOT_DIR)/microCORE
@@ -47,13 +49,14 @@ bin: clean
 	$(CXX) -MF$(OBJ_DIR_HAL)/Terminal.cpp.o.d -o $(OBJ_DIR_HAL)/Terminal.cpp.o -c $(HAL_SRC_DIR)/HALFunctions/Terminal.cpp
 	$(CXX) -MF$(OBJ_DIR_HAL)/DebugFunctions.cpp.o.d -o $(OBJ_DIR_HAL)/DebugFunctions.cpp.o -c $(HAL_SRC_DIR)/DebugFunctions.cpp
 	$(CXX) -MF$(OBJ_DIR_HAL)/KernelUtil.cpp.o.d -o $(OBJ_DIR_HAL)/KernelUtil.cpp.o -c $(HAL_SRC_DIR)/KernelUtil.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/Kernel.cpp.o.d -o $(OBJ_DIR)/Kernel.cpp.o -c $(KERNEL_SRC_DIR)/Kernel.cpp --define-macro=I686
+	$(CXX) -MF$(OBJ_DIR_HAL)/Kernel.cpp.o.d -o $(OBJ_DIR)/Kernel.cpp.o -c $(KERNEL_SRC_DIR)/Kernel.cpp -DARCH=\"$(ARCH)\"
 	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/Kernel.cpp.o $(OBJ_DIR_HAL)/GDT.o $(OBJ_DIR_HAL)/IDT.o $(OBJ_DIR_HAL)/ISR.o $(OBJ_DIR_HAL)/MemSet.o $(OBJ_DIR_HAL)/Paging.o $(OBJ_DIR_HAL)/Boot.S.o $(OBJ_DIR_HAL)/GDT.cpp.o $(OBJ_DIR_HAL)/IO.cpp.o $(OBJ_DIR_HAL)/Paging.cpp.o $(OBJ_DIR_HAL)/Terminal.cpp.o $(OBJ_DIR_HAL)/PIC.cpp.o $(OBJ_DIR_HAL)/DebugFunctions.cpp.o $(OBJ_DIR_HAL)/KernelUtil.cpp.o -T $(HAL_SRC_DIR)/Linker.ld
 
 image: bin
 	$(IMAGE_GEN) $(GRUB_CFG) $(BUILD_DIR)/microCORE.kernel $(MKRESCUE)
 
-qemu: image
+qemu:
+	$(MAKE) image ARCH=i686
 	qemu-system-i386 -cdrom microNET.iso -m 512M
 	
 clean:

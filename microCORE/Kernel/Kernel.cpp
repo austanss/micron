@@ -1,14 +1,18 @@
 #include "Terminal.h"
 #include "Memory.h"
 #include "microNETlogo.h"
-#include "microCOREconfig.h"
+#include "Macros.h"
+
+#ifndef ARCH
+    #define ARCH "$RED!UNKNOWN"
+#endif
+
 
 extern "C" {
 
 void kernel_main()
 {
 	Terminal& terminal = Terminal::instance();
-	terminal.clear();
 	terminal.setCursor(0, 0);
 	terminal << logo;
 	terminal << "\n";
@@ -18,8 +22,8 @@ void kernel_main()
 	terminal << Terminal::Good << "Set up paging!" << Terminal::EOL;
 
 
-	terminal << Terminal::Good << "Started up microNET (microCORE architecture " << microCORE::Config::Architecture << ")" << Terminal::EOL;
-	
+	terminal << Terminal::Good << "microNET: boot success (microCORE architecture " << ARCH << ")" << Terminal::EOL;
+
 //	terminal.clear();
 }
 

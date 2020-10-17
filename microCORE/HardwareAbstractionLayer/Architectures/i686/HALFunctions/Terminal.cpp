@@ -1,6 +1,7 @@
 #include "Terminal.h"
 #include "Strings.h"
 #include "IO.h"
+#include "Macros.h"
 
 enum vga_color
 {
@@ -73,18 +74,17 @@ void Terminal::put_char(char c, uint8_t color)
 	{
 		put_entry_at(c, color, column, row);
 	}
-	if (++column == VGA_WIDTH)
+	if (++column >= VGA_WIDTH)
 	{
 		column = 0;
-		if (++row == VGA_HEIGHT)
+		if (++row >= VGA_HEIGHT)
 		{
-			row = 0;
+			shift();
 		}
 	}
 	if (c == '\n')
 	{
-		row++;
-		if (row > VGA_HEIGHT)
+		if (++row >= VGA_HEIGHT)
 		{
 			shift();
 		}
@@ -177,16 +177,20 @@ void Terminal::println(const char *data)
 	write("\n");
 }
 
-void Terminal::shift()
+void Terminal::shift() // TODO: make shifting less epileptic
 {
-	for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++)
-	{
-		buffer[i] = buffer[i + VGA_WIDTH];
-	}
-	for (int i = (VGA_HEIGHT - 1) * VGA_WIDTH; i < VGA_WIDTH * VGA_HEIGHT; i++)
-	{
-		buffer[i] = vga_entry(' ', VGA_COLOR_LIGHT_GREY);
-	}
+    for (int i = 0; i < 80; i++)
+    {
+        buffer[i] = vga_entry(0, 0);
+    }
+
+    DO(VGA_WIDTH) // shift VGA_WIDTH (80) times
+    {
+        for (int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
+            buffer[i] = buffer[i + 1]; // shift vga buffer to the left
+        }
+    }
+
 	row--;
 }
 
