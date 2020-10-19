@@ -26,7 +26,8 @@ public:
     void println(const char* data = "");
     void shift();
 	void clear();
-	void setCursor(int x, int y);
+	void setCursor(size_t columnc, size_t rowc);
+	bool staticLogo = false;
 
 private:
         Terminal();

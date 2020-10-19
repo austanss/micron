@@ -17,14 +17,19 @@ void kernel_main()
 	terminal << logo;
 	terminal << "\n";
 
+	terminal.staticLogo = true;
+
 	terminal << Terminal::Status << "Setting up paging..." << Terminal::EOL;
 	MemoryManagement::beginPaging();
 	terminal << Terminal::Good << "Set up paging!" << Terminal::EOL;
 
-
 	terminal << Terminal::Good << "microNET: boot success (microCORE architecture " << ARCH << ")" << Terminal::EOL;
 
-//	terminal.clear();
+//	DO(8) {
+//	    terminal << "[TEST]\n";
+//	}
+
+	//	terminal.clear();
 }
 
 }

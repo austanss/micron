@@ -178,13 +178,43 @@ void ExceptionHandler(Registers& registers)
 {
 	Terminal& terminal = Terminal::instance();
 
-	terminal << "$RED!ERROR: $WHITE!" << registers.interruptNumber << " -/- " << registers.errorCode << Terminal::EOL;
-	terminal << "DS: " << registers.ds << Terminal::EOL;
-	terminal << "EDI: " << registers.edi << " | ESI: " << registers.esi << " | EBP: " << registers.ebp << " | ESP: " << registers.esp << Terminal::EOL;
-	terminal << "EBX: " << registers.ebx << " | EDX: " << registers.edx << " | ECX: " << registers.ecx << " | EAX:" << registers.eax << Terminal::EOL;
-	terminal << "EIP: " << registers.eip << " | CS: " << registers.cs << Terminal::EOL;
-	terminal << "EFLAGS: " << registers.eflags << " | USERESP: " << registers.useresp << Terminal::EOL;
-	terminal << "SS: " << registers.ss << Terminal::EOL;
+	terminal << "$RED!ERROR: $WHITE!" << registers.interruptNumber << " -/- ";
+	writeHex(registers.errorCode);
+	terminal << "\n";
+	terminal << "DS: ";
+	writeHex(registers.ds);
+	terminal << "\n";
+	terminal << "EDI: ";
+	writeHex(registers.edi);
+	terminal << " | ESI: ";
+	writeHex(registers.esi);
+	terminal << " | EBP: ";
+	writeHex(registers.ebp);
+	terminal << " | ESP: ";
+	writeHex(registers.esp);
+	terminal << "\n";
+	terminal << "EBX: ";
+	writeHex(registers.ebx);
+	terminal << " | EDX: ";
+	writeHex(registers.edx);
+	terminal << " | ECX: ";
+	writeHex(registers.ecx);
+	terminal << " | EAX:";
+	writeHex(registers.eax);
+	terminal << "\n";
+	terminal << "EIP: ";
+	writeHex(registers.eip);
+	terminal << " | CS: ";
+	writeHex(registers.cs);
+	terminal << "\n";
+	terminal << "EFLAGS: ";
+	writeHex(registers.eflags);
+	terminal << " | USERESP: ";
+	writeHex(registers.useresp);
+	terminal << "\n";
+	terminal << "SS: ";
+	writeHex(registers.ss);
+	terminal << "\n";
 }
 
 

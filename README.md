@@ -23,21 +23,25 @@ While it may sound enticing for embedded systems to squeeze more performance, in
 ## Building
 ### Binary only
 ```
-make bin
+make bin ARCH=[arch]
 ```
 ### Package as ISO
 ```
-make image
+make image ARCH=[arch]
 ```
-Object files will be located in `bin/obj`.<br>
-The binary will be located in `bin` (`microCORE.kernel`).<br>
+You must specify the architecture to build for.\
+Currently, we have support for these architectures:
+ - i686
+
+Object files will be located in `bin/obj`.\
+The binary will be located in `bin` (`microCORE.kernel`).\
 The ISO will generate in the repo root (`microNET.iso`).
 ## Testing
 ### In QEMU (recommended)
 ```
 make qemu
 ```
-
+**NOTE:** When testing with QEMU you do not need to specify an architecture, as the image is automatically generated for the QEMU target.
 ### Real hardware
 ```
 sudo dd if=microNET.iso of=[device] bs=4M
