@@ -2,4 +2,4 @@
 #include <stdint.h>
 
 char getChar(uint8_t keycode);
-void writeHex(int n);
+void writeHex(uint32_t num);

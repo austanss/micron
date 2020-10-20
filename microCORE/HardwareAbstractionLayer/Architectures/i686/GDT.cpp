@@ -3,6 +3,7 @@
 #include "Terminal.h"
 #include "IO.h"
 #include "KernelUtil.h"
+#include "Keyboard.h"
 
 uint8_t prevKeyCode = 156;
 
@@ -145,23 +146,23 @@ void loadIDT()
 	idt_set_gate(29, (uint32_t)isr29, 0x08, 0x8E);
 	idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
 	idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
-	idt_set_gate(32, (uint32_t)irq0,  0x08, 0x8E);     
-        idt_set_gate(33, (uint32_t)irq1,  0x08, 0x8E);     
-        idt_set_gate(34, (uint32_t)irq2,  0x08, 0x8E);     
-        idt_set_gate(35, (uint32_t)irq3,  0x08, 0x8E);     
-        idt_set_gate(36, (uint32_t)irq4,  0x08, 0x8E);     
-        idt_set_gate(37, (uint32_t)irq5,  0x08, 0x8E);     
-        idt_set_gate(38, (uint32_t)irq6,  0x08, 0x8E);     
-        idt_set_gate(39, (uint32_t)irq7,  0x08, 0x8E);     
-        idt_set_gate(40, (uint32_t)irq8,  0x08, 0x8E);     
-        idt_set_gate(41, (uint32_t)irq9,  0x08, 0x8E);     
-        idt_set_gate(42, (uint32_t)irq10, 0x08, 0x8E);     
-        idt_set_gate(43, (uint32_t)irq11, 0x08, 0x8E);     
-        idt_set_gate(44, (uint32_t)irq12, 0x08, 0x8E);     
-        idt_set_gate(45, (uint32_t)irq13, 0x08, 0x8E);     
-        idt_set_gate(46, (uint32_t)irq14, 0x08, 0x8E);     
-        idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E);     
-        
+	idt_set_gate(32, (uint32_t)irq0,  0x08, 0x8E);
+	idt_set_gate(33, (uint32_t)irq1,  0x08, 0x8E);
+	idt_set_gate(34, (uint32_t)irq2,  0x08, 0x8E);
+	idt_set_gate(35, (uint32_t)irq3,  0x08, 0x8E);
+	idt_set_gate(36, (uint32_t)irq4,  0x08, 0x8E);
+	idt_set_gate(37, (uint32_t)irq5,  0x08, 0x8E);
+	idt_set_gate(38, (uint32_t)irq6,  0x08, 0x8E);
+	idt_set_gate(39, (uint32_t)irq7,  0x08, 0x8E);
+	idt_set_gate(40, (uint32_t)irq8,  0x08, 0x8E);
+	idt_set_gate(41, (uint32_t)irq9,  0x08, 0x8E);
+	idt_set_gate(42, (uint32_t)irq10, 0x08, 0x8E);
+	idt_set_gate(43, (uint32_t)irq11, 0x08, 0x8E);
+	idt_set_gate(44, (uint32_t)irq12, 0x08, 0x8E);
+	idt_set_gate(45, (uint32_t)irq13, 0x08, 0x8E);
+	idt_set_gate(46, (uint32_t)irq14, 0x08, 0x8E);
+	idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E);
+
 	flushIDT((uint32_t)&idtPointer);
 }
 
@@ -178,13 +179,44 @@ void ExceptionHandler(Registers& registers)
 {
 	Terminal& terminal = Terminal::instance();
 
-	terminal << "$RED!ERROR: $WHITE!" << registers.interruptNumber << " -/- " << registers.errorCode << Terminal::EOL;
-	terminal << "DS: " << registers.ds << Terminal::EOL;
-	terminal << "EDI: " << registers.edi << " | ESI: " << registers.esi << " | EBP: " << registers.ebp << " | ESP: " << registers.esp << Terminal::EOL;
-	terminal << "EBX: " << registers.ebx << " | EDX: " << registers.edx << " | ECX: " << registers.ecx << " | EAX:" << registers.eax << Terminal::EOL;
-	terminal << "EIP: " << registers.eip << " | CS: " << registers.cs << Terminal::EOL;
-	terminal << "EFLAGS: " << registers.eflags << " | USERESP: " << registers.useresp << Terminal::EOL;
-	terminal << "SS: " << registers.ss << Terminal::EOL;
+	terminal << "$RED!ERROR: $WHITE!" << registers.interruptNumber << " -/- ";
+	writeHex(registers.errorCode);
+	terminal << "\n";
+	terminal << "DS: ";
+	writeHex(registers.ds);
+	terminal << "\n";
+	terminal << "EDI: ";
+	writeHex(registers.edi);
+	terminal << " | ESI: ";
+	writeHex(registers.esi);
+	terminal << " | EBP: ";
+	writeHex(registers.ebp);
+	terminal << " | ESP: ";
+	writeHex(registers.esp);
+	terminal << "\n";
+	terminal << "EBX: ";
+	writeHex(registers.ebx);
+	terminal << " | EDX: ";
+	writeHex(registers.edx);
+	terminal << " | ECX: ";
+	writeHex(registers.ecx);
+	terminal << " | EAX: ";
+	writeHex(registers.eax);
+	terminal << "\n";
+	terminal << "EIP: ";
+	writeHex(registers.eip);
+	terminal << " | CS: ";
+	writeHex(registers.cs);
+	terminal << "\n";
+	terminal << "EFLAGS: ";
+	writeHex(registers.eflags);
+	terminal << " | USERESP: ";
+	writeHex(registers.useresp);
+	terminal << "\n";
+	terminal << "SS: ";
+	writeHex(registers.ss);
+	terminal << "\n";
+	while (true) { }
 }
 
 
@@ -198,37 +230,34 @@ void InterruptHandler(Registers& registers)
 
 	Terminal& terminal = Terminal::instance();
 
-	if (registers.interruptNumber == 1 || registers.interruptNumber == 33)
+	if (registers.interruptNumber == 33)
 	{
 		uint8_t keycode = inb(0x60);
 
 		if (keycode < 0 || keycode == prevKeyCode || keycode == 32)
 			return;
 
-		writeHex(keycode);
-
-		terminal << ", " << keycode << ", " << getChar(keycode) << Terminal::EOL;
+		terminal.put_char(getChar(keycode), 15);
 
 		prevKeyCode = keycode;
 	}
 
-	terminal << "Interrupt: ";
-	terminal << registers.interruptNumber;
-	terminal << Terminal::EOL;
+//	terminal << "Interrupt: ";
+//	terminal << registers.interruptNumber;
+//	terminal << Terminal::EOL;
 }
 
 void ISRHandler(Registers& registers)
 {
-	outb(0xA0, 0x20);
-	InterruptHandler(registers);
-	outb(0x20, 0x20);
+    InterruptHandler(registers);
 }
 
 void IRQHandler(Registers& registers)
 {
-    	if (registers.interruptNumber >= 40) outb(0xA0, 0x20); /* slave */
-	InterruptHandler(registers);
-   	outb(0x20, 0x20); /* master */
+    InterruptHandler(registers);
+    if (registers.interruptNumber >= 40)
+        outb(0xA0, 0x20); /* slave */
+    outb(0x20, 0x20); /* master */
 }
 
 void loadTables()

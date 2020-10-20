@@ -2,6 +2,7 @@
 #include "Strings.h"
 #include "IO.h"
 #include "Macros.h"
+#include "microNETlogo.h"
 
 enum vga_color
 {
@@ -59,7 +60,6 @@ void Terminal::clear()
 			buffer[index] = 0;
 		}
 	}
-	setCursor(0, 0);
 }
 
 void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
@@ -70,6 +70,9 @@ void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 
 void Terminal::put_char(char c, uint8_t color)
 {
+	if (c == 0)
+		return;
+
 	if (c != '\n')
 	{
 		put_entry_at(c, color, column, row);
@@ -142,10 +145,10 @@ void Terminal::write(const char *data)
 {
 	write(data, strlen(data));
 }
-void Terminal::setCursor(int x, int y)
+void Terminal::setCursor(size_t columnc, size_t rowc)
 {
-	column = x;
-	row = y;
+	column = columnc;
+	row = rowc;
 }
 void Terminal::write(int data)
 {
@@ -177,18 +180,29 @@ void Terminal::println(const char *data)
 	write("\n");
 }
 
-void Terminal::shift() // TODO: make shifting less epileptic
+void Terminal::shift()
 {
     for (int i = 0; i < 80; i++)
     {
         buffer[i] = vga_entry(0, 0);
     }
 
-    DO(VGA_WIDTH) // shift VGA_WIDTH (80) times
+    for (int i = 0; i < (int)(VGA_HEIGHT * VGA_WIDTH); i++) {
+        buffer[i] = i>((VGA_HEIGHT-1) * VGA_WIDTH) ? 0 : buffer[i+VGA_WIDTH];
+    }
+
+    if (staticLogo)
     {
-        for (int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
-            buffer[i] = buffer[i + 1]; // shift vga buffer to the left
+        for (int i = 0; i < (VGA_WIDTH * 15); i++)
+        {
+            buffer[i] = vga_entry(0, 0);
         }
+
+        size_t rowtemp = row;
+        size_t coltemp = column;
+        setCursor(0, 0);
+        Terminal::instance() << logo;
+        setCursor(coltemp, rowtemp);
     }
 
 	row--;

@@ -45,7 +45,7 @@ _start:
 
 protectedModeMain:
 
-//	sti
+	sti
 
 	/* here we call kernel_main */
 	call kernel_main
@@ -57,7 +57,7 @@ protectedModeMain:
 	into an infinite loop */
 
 1:	hlt
-	jmp 1
+	jmp 1b
 ;
 ;/* set thie size of the _start symbol to the current location */
 ;.size _start, . - _start
