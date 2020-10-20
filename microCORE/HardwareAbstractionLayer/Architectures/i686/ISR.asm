@@ -4,32 +4,29 @@
 
 ; Common ISR code
 isr_common_stub:
-  ; 1. Save CPU state
-   pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
-   mov ax, ds ; Lower 16-bits of eax = ds.
-   push eax ; save the data segment descriptor
-   mov ax, 0x10  ; kernel data segment descriptor
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
+    ; 1. Save CPU state
+	pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+	mov ax, ds ; Lower 16-bits of eax = ds.
+	push eax ; save the data segment descriptor
+	mov ax, 0x10  ; kernel data segment descriptor
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 
-  ; 2. Call C handler
-   cld
-   push esp
-   call ISRHandler
-   pop eax
+    ; 2. Call C handler
+	call ISRHandler
 
-  ; 3. Restore state
-   pop eax
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
-   popa
-   add esp, 8 ; Cleans up the pushed error code and pushed ISR number
-   sti
-   iret ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+    ; 3. Restore state
+	pop eax
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	popa
+	add esp, 8 ; Cleans up the pushed error code and pushed ISR number
+	sti
+	iret ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'
@@ -42,15 +39,12 @@ irq_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    cld
-    push esp
     call IRQHandler ; Different than the ISR code
-    pop eax
-    pop eax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    pop ebx  ; Different than the ISR code
+    mov ds, bx
+    mov es, bx
+    mov fs, bx
+    mov gs, bx
     popa
     add esp, 8
     sti
@@ -96,8 +90,7 @@ global isr28
 global isr29
 global isr30
 global isr31
-; then IRQs
-
+; IRQs
 global irq0
 global irq1
 global irq2
@@ -334,15 +327,11 @@ isr31:
     jmp isr_common_stub
 
 ; IRQ handlers
-
-; This IRQ is the Programmable Interval Timer. Since it spams us with
-; interrupts, we will ignore it until we have a use for chronology
 irq0:
-;	cli
-;	push byte 0
-;	push byte 32
-;	jmp irq_common_stub
-    nop
+	cli
+	push byte 0
+	push byte 32
+	jmp irq_common_stub
 
 irq1:
 	cli
