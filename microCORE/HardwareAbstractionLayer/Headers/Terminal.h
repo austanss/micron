@@ -8,11 +8,11 @@ class Terminal
         static const size_t VGA_WIDTH = 80;
         static const size_t VGA_HEIGHT = 25;
 
-        size_t row;
-        size_t column;
         uint16_t* buffer;
 
 public:
+	size_t row;
+	size_t column;
     static constexpr const char* Status = "$WHITE![$LIGHT_BLUE!-$WHITE!] $LIGHT_GREY!\0";
     static constexpr const char* Good = "$WHITE![$LIGHT_GREEN!+$WHITE!] $LIGHT_GREY!\0";
     static constexpr const char* Fail = "$WHITE![$RED!X$WHITE!] $LIGHT_GREY\0";

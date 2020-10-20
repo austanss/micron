@@ -70,6 +70,9 @@ void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 
 void Terminal::put_char(char c, uint8_t color)
 {
+	if (c == 0)
+		return;
+
 	if (c != '\n')
 	{
 		put_entry_at(c, color, column, row);

@@ -2,23 +2,6 @@
 #include "Terminal.h"
 #include <stdint.h>
 
-char getChar(uint8_t keycode)
-{
-        switch (keycode)
-        {
-                case 0x49101:
-                        return 'a';
-                case 159:
-                        return 's';
-                case 160:
-                        return 'd';
-                case 161:
-                        return 'f';
-		default:
-			return ' ';
-        }
-}
-
 void writeHex(uint32_t num)
 {
     char buffer[11];

@@ -2,6 +2,7 @@
 #include "Memory.h"
 #include "microNETlogo.h"
 #include "Macros.h"
+#include "Keyboard.h"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
@@ -18,6 +19,10 @@ void kernel_main()
 	terminal << "\n";
 
 	terminal.staticLogo = true;
+
+	terminal << Terminal::Status << "Initializing keyboard..." << Terminal::EOL;
+	Keyboard::Initialize();
+	terminal << Terminal::Good << "Keyboard operational!" << Terminal::EOL;
 
 	terminal << Terminal::Status << "Setting up paging..." << Terminal::EOL;
 	MemoryManagement::beginPaging();
