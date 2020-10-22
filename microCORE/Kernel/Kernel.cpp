@@ -1,8 +1,10 @@
+#include "KernelUtil.h"
 #include "Terminal.h"
 #include "Memory.h"
 #include "microNETlogo.h"
 #include "Macros.h"
 #include "Keyboard.h"
+#include "Fonts.h"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
@@ -25,8 +27,12 @@ void kernel_main()
 	terminal << Terminal::Good << "Keyboard operational!" << Terminal::EOL;
 
 	terminal << Terminal::Status << "Setting up paging..." << Terminal::EOL;
-	MemoryManagement::beginPaging();
-	terminal << Terminal::Good << "Set up paging!" << Terminal::EOL;
+//	MemoryManagement::beginPaging();
+	terminal << Terminal::Fail << "Paging has been manually disabled by the developer." << Terminal::EOL;
+
+	terminal << Terminal::Good << "Console font is located at: ";
+	writeHex(_mainfont);
+	terminal << Terminal::EOL;
 
 	terminal << Terminal::Good << "microNET: boot success (microCORE architecture " << ARCH << ")" << Terminal::EOL;
 
