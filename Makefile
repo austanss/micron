@@ -2,13 +2,13 @@
 
 MKRESCUE = grub-mkrescue
 
-ifeq (, $(shell which grub-mkrescue 2>/dev/null))
-	ifeq (, $(shell which grub2-mkrescue 2>/dev/null))
-		$(error "No grub-mkrescue or grub2-mkrescue in $(PATH)")
-	else
-		MKRESCUE = grub2-mkrescue
-	endif
-endif
+# ifeq (, $(shell which grub-mkrescue 2>/dev/null))
+# 	ifeq (, $(shell which grub2-mkrescue 2>/dev/null))
+# 		$(error "No grub-mkrescue or grub2-mkrescue in $(PATH)")
+# 	else
+#		MKRESCUE = grub2-mkrescue
+# 	endif
+# endif
 
 
 ARCH := UNSPECIFIED
@@ -64,7 +64,7 @@ image: bin
 
 qemu:
 	$(MAKE) image ARCH=i686
-	qemu-system-i386 -cdrom microNET.iso -m 512M
+	qemu-system-x86_64 -cdrom microNET.iso -m 512M
 	
 clean:
 	rm -rfv $(BUILD_DIR) iso
