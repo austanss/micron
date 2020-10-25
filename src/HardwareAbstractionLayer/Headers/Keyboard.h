@@ -10,6 +10,8 @@ char getChar(uint8_t keycode);
 
 class Keyboard {
 
+public:
+	static void Initialize();
 	static bool shifted;
 	static bool ctrl_down;
 	static bool alt_down;
@@ -17,9 +19,6 @@ class Keyboard {
 	static bool caps_lock;
 	static bool scroll_lock;
 	static bool num_lock;
-
-public:
-	static void Initialize();
 };
 
 #endif // MICROCORE_KEYBOARD_H

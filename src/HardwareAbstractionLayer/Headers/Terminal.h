@@ -4,8 +4,8 @@
 #include "stdint.h"
 
     #define status_pend "$WHITE![$LIGHT_BLUE!-$WHITE!] $LIGHT_GREY!\0"
-    #define status_good "$WHITE![$LIGHT_GREEN!+$WHITE!] $LIGHT_GREY\0"
-    #define status_fail "$WHITE![$RED!X$WHITE!] $LIGHT_GREY\0"
+    #define status_good "$WHITE![$LIGHT_GREEN!+$WHITE!] $LIGHT_GREY!\0"
+    #define status_fail "$WHITE![$RED!X$WHITE!] $LIGHT_GREY!\0"
     #define status_eol "\n"
 
 class Terminal
