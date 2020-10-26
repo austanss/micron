@@ -77,12 +77,6 @@ void Terminal::put_char(char c, uint8_t color)
 	{
 		put_entry_at(c, color, column, row);
 	}
-	if (c == '\b')
-    {
-        column--;
-        put_entry_at(' ', color, column, row);c
-        return;
-    }
 	if (++column >= VGA_WIDTH)
 	{
 		column = 0;
