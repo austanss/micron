@@ -31,7 +31,9 @@ make image ARCH=[arch]
 ```
 You must specify the architecture to build for.\
 Currently, we have support for these architectures:
- - i686
+ - i386
+ - x86
+ - x86_64
 
 Object files will be located in `bin/obj`.\
 The binary will be located in `bin` (`microCORE.kernel`).\
