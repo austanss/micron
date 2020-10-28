@@ -2,17 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-	VGA_POINTER = 0xb8000;
-	. = 0xb8000;
-	. += 80 * 25 * 2;
-
 	. = 1M;
-
-	.multiboot :
-	{
-		KEEP(*(.multiboot))
-		. = ALIGN(4K);
-	}
 
 	.text :
 	{
