@@ -1,6 +1,6 @@
 #include "Terminal.hxx"
 #include "Strings.hxx"
-#include "IO.hxx"
+#include "io.hxx"
 #include "microNETlogo.hxx"
 
 enum vga_color

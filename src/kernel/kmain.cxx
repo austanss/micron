@@ -1,11 +1,11 @@
-#include "KernelUtil.hxx"
-#include "Terminal.hxx"
+#include "kutil.hxx"
+#include "terminal.hxx"
 #include "Memory.hxx"
 #include "microNETlogo.hxx"
 #include "Macros.hxx"
 #include "Keyboard.hxx"
 #include "Fonts.hxx"
-#include "IO.hxx"
+#include "io.hxx"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
