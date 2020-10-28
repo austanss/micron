@@ -1,7 +1,7 @@
 //
 // Created by rizet on 10/25/20.
 //
-#include "Graphics.hxx"
+#include "gfx.hxx"
 
 GraphicsDriver::GraphicsDriver(uint32_t * _buffer) {
 	width = 640;
