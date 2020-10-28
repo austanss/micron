@@ -1,10 +1,10 @@
 #include "kutil.hxx"
 #include "terminal.hxx"
-#include "Memory.hxx"
-#include "microNETlogo.hxx"
-#include "Macros.hxx"
-#include "Keyboard.hxx"
-#include "Fonts.hxx"
+#include "mem.hxx"
+#include "logo.hxx"
+#include "macros.hxx"
+#include "kbd.hxx"
+#include "font.hxx"
 #include "io.hxx"
 
 #ifndef ARCH

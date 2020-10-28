@@ -2,7 +2,7 @@
 
 #include "stddef.h"
 #include "stdint.h"
-#include "Graphics.hxx"
+#include "gfx.hxx"
 
     #define status_pend "$WHITE![$LIGHT_BLUE!-$WHITE!] $LIGHT_GREY!\0"
     #define status_good "$WHITE![$LIGHT_GREEN!+$WHITE!] $LIGHT_GREY!\0"

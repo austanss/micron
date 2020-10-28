@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include "AssemblyFunctions.hxx"
-#include "Memory.hxx"
+#include "asmfuncs.hxx"
+#include "mem.hxx"
 
 using PageDirectoryEntry = uint32_t;
 using PageTableEntry = uint32_t;

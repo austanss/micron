@@ -2,8 +2,8 @@
 // Created by rizet on 10/25/20.
 //
 
-#ifndef MICROCORE_GRAPHICS_HXX
-#define MICROCORE_GRAPHICS_HXX
+#ifndef MICROCORE_GFX_HXX
+#define MICROCORE_GFX_HXX
 #include <stdint.h>
 
 class GraphicsDriver
@@ -285,4 +285,4 @@ public:
 	void buff();
 };
 
-#endif //MICROCORE_GRAPHICS_HXX
+#endif //MICROCORE_GFX_HXX
