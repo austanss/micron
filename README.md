@@ -14,7 +14,7 @@ While it may sound enticing for embedded systems to squeeze more performance, in
 µCORE requires the following software for building:
 
 - GNU Make (build-essential on some systems)
-- Clang with cross compilation targets supported
+- GCC/G++
 - grub-mkrescue or grub2-mkrescue
 - Xorriso
 - NASM
