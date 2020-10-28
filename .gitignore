@@ -1,5 +1,5 @@
 # Folders that are huge
-# and will cause a mess
+# AND will cause a mess
 build/
 i686-elf-cross/
 _build

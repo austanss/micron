@@ -1,17 +1,32 @@
-#include "KernelUtil.h"
-#include "Terminal.h"
-#include "Memory.h"
-#include "microNETlogo.h"
-#include "Macros.h"
-#include "Keyboard.h"
-#include "Fonts.h"
+#include "KernelUtil.hxx"
+#include "Terminal.hxx"
+#include "Memory.hxx"
+#include "microNETlogo.hxx"
+#include "Macros.hxx"
+#include "Keyboard.hxx"
+#include "Fonts.hxx"
+#include "IO.hxx"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
 #endif
 
+#define OS_CONTINOUS_RAM_START 0x100000
+
+uint32_t framebuffer[640 * 480];
 
 extern "C" {
+
+// global constructors
+void ctor_global
+// required params
+(/* none atm */)
+// constructors called
+{
+	Terminal::init(framebuffer);
+	serial_msg("GLOBAL CONSTRUCTORS CALLED");
+	serial_msg(0xBA);
+}
 
 void kernel_main()
 {

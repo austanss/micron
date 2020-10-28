@@ -11,3 +11,6 @@ void IRQ_set_mask(unsigned char IRQLine);
 void IRQ_clear_mask(unsigned char IRQLine);
 
 void io_wait(void);
+
+void serial_msg(const char * val);
+void serial_msg(uint8_t val);

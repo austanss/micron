@@ -2,8 +2,8 @@
 // Created by rizet on 10/19/20.
 //
 
-#include "Keyboard.h"
-#include "Terminal.h"
+#include "Keyboard.hxx"
+#include "Terminal.hxx"
 
 void FnHandlerF1  ()  { }
 void FnHandlerF2  ()  { }

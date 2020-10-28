@@ -1,4 +1,4 @@
-#include "Terminal.h"
+#include "../include/Terminal.hxx"
 
 extern "C"
 {

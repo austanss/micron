@@ -1,8 +1,7 @@
-#include "Terminal.h"
-#include "Strings.h"
-#include "IO.h"
-#include "Macros.h"
-#include "microNETlogo.h"
+#include "Terminal.hxx"
+#include "Strings.hxx"
+#include "IO.hxx"
+#include "microNETlogo.hxx"
 
 enum vga_color
 {
@@ -180,6 +179,11 @@ void Terminal::println(const char *data)
 	write("\n");
 }
 
+void Terminal::init(uint32_t* buffer)
+{
+	vga = GraphicsDriver(buffer);
+}
+
 void Terminal::shift()
 {
     for (int i = 0; i < 80; i++)
@@ -213,3 +217,5 @@ Terminal& Terminal::instance()
 	static Terminal instance;
 	return instance;
 }
+
+GraphicsDriver Terminal::vga;
