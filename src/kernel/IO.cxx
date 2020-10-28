@@ -1,5 +1,6 @@
-#include "IO.h"
-#include "PIC.h"
+#include "IO.hxx"
+#include "PIC.hxx"
+#include "Strings.hxx"
 
 void outb(uint16_t port, uint8_t val)
 {
@@ -50,4 +51,17 @@ void io_wait(void)
     /* Port 0x80 is used for 'checkpoints' during POST. */
     /* The Linux kernel seems to think it is free for use :-/ */
     asm volatile ( "outb %%al, $0x80" : : "a"(0) );
+}
+
+void serial_msg(uint8_t val)
+{
+	outb(0x3F8, val);
+}
+
+void serial_msg(const char * val)
+{
+	for (size_t i = 0; i < strlen(val); i++)
+	{
+		serial_msg(val[i]);
+	}
 }

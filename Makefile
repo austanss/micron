@@ -12,25 +12,21 @@ MKRESCUE = grub-mkrescue
 
 
 ARCH := UNSPECIFIED
-ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-BUILD_DIR := $(ROOT_DIR)/bin
-SRC_DIR := $(ROOT_DIR)/src
-RES_DIR := $(ROOT_DIR)/res
+BUILD_DIR := bin
+SRC_DIR := src
+RES_DIR := res
 FONTS_DIR := res/fonts
-HAL_DIR := $(SRC_DIR)/HardwareAbstractionLayer
-HAL_SRC_DIR := $(HAL_DIR)/Architectures/i686
-KERNEL_SRC_DIR := $(SRC_DIR)/Kernel
+KERNEL_SRC_DIR := $(SRC_DIR)/kernel
+HEADERS_DIR := $(SRC_DIR)/include
 OBJ_DIR := $(BUILD_DIR)/obj
 OBJ_DIR_RES := $(OBJ_DIR)/res
-OBJ_DIR_HAL := $(OBJ_DIR)/HAL
-CC := clang -I$(HAL_SRC_DIR) -I$(HAL_SRC_DIR) -I$(HAL_DIR)/Headers -I$(SRC_DIR)/Utilities -Xclang -fcolor-diagnostics -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fPIC --target=i686-pc-none-elf -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
-CXX := clang++ -I$(HAL_SRC_DIR) -I$(HAL_SRC_DIR) -I$(KERNEL_SRC_DIR) -I$(HAL_DIR)/Headers -I$(SRC_DIR)/Utilities -Xclang -fcolor-diagnostics -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fPIC --target=i686-pc-none-elf -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
+CC := gcc -I$(HEADERS_DIR) -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fPIC -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
+CXX := g++ -I$(HEADERS_DIR) -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fPIC -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
 ASM := nasm -f elf
 STATIC_LINK := llvm-ar
 OBJCOPY := objcopy -O elf32-i386 -B i386 -I binary
-CXX_LINK := clang++ -o -Wl,--as-needed -Wl,--no-undefined --target=i686-pc-none-elf -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive
-IMAGE_GEN := $(KERNEL_SRC_DIR)/gen_image.sh
-GRUB_CFG := $(KERNEL_SRC_DIR)/grub.i686.cfg
+CXX_LINK := g++ -m32 -Wl,--as-needed -Wl,--no-undefined -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive
+IMAGE_GEN := ./GenerateImage
 
 export MKRESCUE
 export GCC
@@ -39,25 +35,27 @@ export BUILD_DIR
 bin: clean
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(OBJ_DIR)
-	mkdir -p $(OBJ_DIR_HAL)
+	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR_RES)
-	$(ASM) $(HAL_SRC_DIR)/IDT.asm -o $(OBJ_DIR_HAL)/IDT.o
-	$(ASM) $(HAL_SRC_DIR)/GDT.asm -o $(OBJ_DIR_HAL)/GDT.o
-	$(ASM) $(HAL_SRC_DIR)/ISR.asm -o $(OBJ_DIR_HAL)/ISR.o
-	$(ASM) $(HAL_SRC_DIR)/MemSet.asm -o $(OBJ_DIR_HAL)/MemSet.o
-	$(ASM) $(HAL_SRC_DIR)/Paging.asm -o $(OBJ_DIR_HAL)/Paging.o
-	$(CC)  -MF$(OBJ_DIR_HAL)/Boot.S.o.d -o $(OBJ_DIR_HAL)/Boot.S.o -c $(HAL_SRC_DIR)/Boot.S
-	$(CXX) -MF$(OBJ_DIR_HAL)/GDT.cpp.o.d -o $(OBJ_DIR_HAL)/GDT.cpp.o -c $(HAL_SRC_DIR)/GDT.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/PIC.cpp.o.d -o $(OBJ_DIR_HAL)/PIC.cpp.o -c $(HAL_SRC_DIR)/PIC.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/Paging.cpp.o.d -o $(OBJ_DIR_HAL)/Paging.cpp.o -c $(HAL_SRC_DIR)/Paging.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/IO.cpp.o.d -o $(OBJ_DIR_HAL)/IO.cpp.o -c $(HAL_SRC_DIR)/IO.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/Terminal.cpp.o.d -o $(OBJ_DIR_HAL)/Terminal.cpp.o -c $(HAL_SRC_DIR)/HALFunctions/Terminal.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/DebugFunctions.cpp.o.d -o $(OBJ_DIR_HAL)/DebugFunctions.cpp.o -c $(HAL_SRC_DIR)/DebugFunctions.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/KernelUtil.cpp.o.d -o $(OBJ_DIR_HAL)/KernelUtil.cpp.o -c $(HAL_SRC_DIR)/KernelUtil.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/Keyboard.cpp.o.d -o $(OBJ_DIR_HAL)/Keyboard.cpp.o -c $(HAL_SRC_DIR)/Keyboard.cpp
-	$(CXX) -MF$(OBJ_DIR_HAL)/Kernel.cpp.o.d -o $(OBJ_DIR)/Kernel.cpp.o -c $(KERNEL_SRC_DIR)/Kernel.cpp -DARCH=\"$(ARCH)\"
+	$(ASM) $(KERNEL_SRC_DIR)/IDT.asm -o $(OBJ_DIR)/IDT.o
+	$(ASM) $(KERNEL_SRC_DIR)/GDT.asm -o $(OBJ_DIR)/GDT.o
+	$(ASM) $(KERNEL_SRC_DIR)/ISR.asm -o $(OBJ_DIR)/ISR.o
+	$(ASM) $(KERNEL_SRC_DIR)/MemSet.asm -o $(OBJ_DIR)/MemSet.o
+	$(ASM) $(KERNEL_SRC_DIR)/Paging.asm -o $(OBJ_DIR)/Paging.o
+	$(CC)  -MF$(OBJ_DIR)/Boot.S.o.d -o $(OBJ_DIR)/Boot.S.o -c $(KERNEL_SRC_DIR)/Boot.S
+	$(CXX) -MF$(OBJ_DIR)/GDT.cxx.o.d -o $(OBJ_DIR)/GDT.cxx.o -c $(KERNEL_SRC_DIR)/GDT.cxx
+	$(CXX) -MF$(OBJ_DIR)/PIC.cxx.o.d -o $(OBJ_DIR)/PIC.cxx.o -c $(KERNEL_SRC_DIR)/PIC.cxx
+	$(CXX) -MF$(OBJ_DIR)/Paging.cxx.o.d -o $(OBJ_DIR)/Paging.cxx.o -c $(KERNEL_SRC_DIR)/Paging.cxx
+	$(CXX) -MF$(OBJ_DIR)/IO.cxx.o.d -o $(OBJ_DIR)/IO.cxx.o -c $(KERNEL_SRC_DIR)/IO.cxx
+	$(CXX) -MF$(OBJ_DIR)/Terminal.cxx.o.d -o $(OBJ_DIR)/Terminal.cxx.o -c $(KERNEL_SRC_DIR)/Terminal.cxx
+	$(CXX) -MF$(OBJ_DIR)/DebugFunctions.cxx.o.d -o $(OBJ_DIR)/DebugFunctions.cxx.o -c $(KERNEL_SRC_DIR)/DebugFunctions.cxx
+	$(CXX) -MF$(OBJ_DIR)/KernelUtil.cxx.o.d -o $(OBJ_DIR)/KernelUtil.cxx.o -c $(KERNEL_SRC_DIR)/KernelUtil.cxx
+	$(CXX) -MF$(OBJ_DIR)/Keyboard.cxx.o.d -o $(OBJ_DIR)/Keyboard.cxx.o -c $(KERNEL_SRC_DIR)/Keyboard.cxx
+	$(CXX) -MF$(OBJ_DIR)/Graphics.cxx.o.d -o $(OBJ_DIR)/Graphics.cxx.o -c $(KERNEL_SRC_DIR)/Graphics.cxx
+	$(CXX) -MF$(OBJ_DIR)/Strings.cxx.o.d -o $(OBJ_DIR)/Strings.cxx.o -c $(KERNEL_SRC_DIR)/Strings.cxx
+	$(CXX) -MF$(OBJ_DIR)/Kernel.cxx.o.d -o $(OBJ_DIR)/Kernel.cxx.o -c $(KERNEL_SRC_DIR)/Kernel.cxx -DARCH=\"$(ARCH)\"
 	$(OBJCOPY) $(FONTS_DIR)/font.psf $(OBJ_DIR_RES)/font.o
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/Kernel.cpp.o $(OBJ_DIR_HAL)/GDT.o $(OBJ_DIR_HAL)/IDT.o $(OBJ_DIR_HAL)/ISR.o $(OBJ_DIR_HAL)/MemSet.o $(OBJ_DIR_HAL)/Paging.o $(OBJ_DIR_HAL)/Boot.S.o $(OBJ_DIR_HAL)/GDT.cpp.o $(OBJ_DIR_HAL)/IO.cpp.o $(OBJ_DIR_HAL)/Paging.cpp.o $(OBJ_DIR_HAL)/Terminal.cpp.o $(OBJ_DIR_HAL)/PIC.cpp.o $(OBJ_DIR_HAL)/DebugFunctions.cpp.o $(OBJ_DIR_HAL)/KernelUtil.cpp.o $(OBJ_DIR_HAL)/Keyboard.cpp.o $(OBJ_DIR_RES)/font.o -T $(HAL_SRC_DIR)/Linker.ld
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/Kernel.cxx.o $(OBJ_DIR)/GDT.o $(OBJ_DIR)/IDT.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/Paging.o $(OBJ_DIR)/Boot.S.o $(OBJ_DIR)/GDT.cxx.o $(OBJ_DIR)/IO.cxx.o $(OBJ_DIR)/Paging.cxx.o $(OBJ_DIR)/Terminal.cxx.o $(OBJ_DIR)/PIC.cxx.o $(OBJ_DIR)/DebugFunctions.cxx.o $(OBJ_DIR)/KernelUtil.cxx.o $(OBJ_DIR)/Keyboard.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/Graphics.cxx.o $(OBJ_DIR)/Strings.cxx.o -T Linker
 
 image: bin
 	$(IMAGE_GEN) $(GRUB_CFG) $(BUILD_DIR)/microCORE.kernel $(MKRESCUE)

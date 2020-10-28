@@ -1,5 +1,5 @@
-#include "PIC.h"
-#include "IO.h"
+#include "PIC.hxx"
+#include "IO.hxx"
 
 void PIC_sendEOI(unsigned char irq)
 {

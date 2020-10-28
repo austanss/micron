@@ -2,8 +2,8 @@
 // Created by rizet on 10/19/20.
 //
 
-#ifndef MICROCORE_KEYBOARD_H
-#define MICROCORE_KEYBOARD_H
+#ifndef MICROCORE_KEYBOARD_HXX
+#define MICROCORE_KEYBOARD_HXX
 #include <stdint.h>
 
 char getChar(uint8_t keycode);
@@ -21,4 +21,4 @@ public:
 	static bool num_lock;
 };
 
-#endif // MICROCORE_KEYBOARD_H
+#endif // MICROCORE_KEYBOARD_HXX

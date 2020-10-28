@@ -1,9 +1,9 @@
-#include "AssemblyFunctions.h"
-#include "GDT.h"
-#include "Terminal.h"
-#include "IO.h"
-#include "KernelUtil.h"
-#include "Keyboard.h"
+#include "AssemblyFunctions.hxx"
+#include "GDT.hxx"
+#include "Terminal.hxx"
+#include "IO.hxx"
+#include "KernelUtil.hxx"
+#include "Keyboard.hxx"
 
 uint8_t prevKeyCode = 156;
 
