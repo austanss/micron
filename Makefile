@@ -26,7 +26,7 @@ ASM := nasm -f elf
 STATIC_LINK := llvm-ar
 OBJCOPY := objcopy -O elf32-i386 -B i386 -I binary
 CXX_LINK := g++ -m32 -Wl,--as-needed -Wl,--no-undefined -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive
-IMAGE_GEN := ./GenerateImage
+IMAGE_GEN := $(RES_DIR)/GenerateImage
 
 export MKRESCUE
 export GCC
@@ -55,7 +55,7 @@ bin: clean
 	$(CXX) -MF$(OBJ_DIR)/Strings.cxx.o.d -o $(OBJ_DIR)/Strings.cxx.o -c $(KERNEL_SRC_DIR)/Strings.cxx
 	$(CXX) -MF$(OBJ_DIR)/Kernel.cxx.o.d -o $(OBJ_DIR)/Kernel.cxx.o -c $(KERNEL_SRC_DIR)/Kernel.cxx -DARCH=\"$(ARCH)\"
 	$(OBJCOPY) $(FONTS_DIR)/font.psf $(OBJ_DIR_RES)/font.o
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/Kernel.cxx.o $(OBJ_DIR)/GDT.o $(OBJ_DIR)/IDT.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/Paging.o $(OBJ_DIR)/Boot.S.o $(OBJ_DIR)/GDT.cxx.o $(OBJ_DIR)/IO.cxx.o $(OBJ_DIR)/Paging.cxx.o $(OBJ_DIR)/Terminal.cxx.o $(OBJ_DIR)/PIC.cxx.o $(OBJ_DIR)/DebugFunctions.cxx.o $(OBJ_DIR)/KernelUtil.cxx.o $(OBJ_DIR)/Keyboard.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/Graphics.cxx.o $(OBJ_DIR)/Strings.cxx.o -T Linker
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/Kernel.cxx.o $(OBJ_DIR)/GDT.o $(OBJ_DIR)/IDT.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/Paging.o $(OBJ_DIR)/Boot.S.o $(OBJ_DIR)/GDT.cxx.o $(OBJ_DIR)/IO.cxx.o $(OBJ_DIR)/Paging.cxx.o $(OBJ_DIR)/Terminal.cxx.o $(OBJ_DIR)/PIC.cxx.o $(OBJ_DIR)/DebugFunctions.cxx.o $(OBJ_DIR)/KernelUtil.cxx.o $(OBJ_DIR)/Keyboard.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/Graphics.cxx.o $(OBJ_DIR)/Strings.cxx.o -T $(RES_DIR)/Linkerscript
 
 image: bin
 	$(IMAGE_GEN) $(GRUB_CFG) $(BUILD_DIR)/microCORE.kernel $(MKRESCUE)
