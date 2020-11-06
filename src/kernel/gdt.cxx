@@ -1,9 +1,9 @@
-#include "asmfuncs.hxx"
-#include "gdt.hxx"
-#include "terminal.hxx"
-#include "io.hxx"
-#include "kutil.hxx"
-#include "kbd.hxx"
+#include "kernel/asmfuncs.hxx"
+#include "kernel/gdt.hxx"
+#include "kernel/terminal.hxx"
+#include "kernel/io.hxx"
+#include "kernel/kutil.hxx"
+#include "kernel/kbd.hxx"
 
 uint8_t prevKeyCode = 156;
 

@@ -2,6 +2,10 @@
 
 µCORE (microCORE) is the microkernel for µNET (microNET).
 
+# Credits
+Credit to AJXS. I borrowed a whole bootloader from them, I am so thankful for their code. I also borrowed bits of the kernel from them, so you will see their license header remaining intact in all files borrowed.<br>
+<br>Repo: https://github.com/ajxs/uefi-elf-bootloader
+
 # About
 ## Use Case
 µNET is designed to be used in embedded or low power operations, where the maximum performance is obtained via having minimal overhead. However, in comparison to other common embedded operating systems (eg. Linux or Windows Embedded), µNET is designed with a microkernel. This provides **even less** overhead.

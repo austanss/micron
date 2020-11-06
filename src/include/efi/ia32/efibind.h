@@ -167,7 +167,7 @@ typedef uint32_t   UINTN;
 
 //
 // EFIAPI - prototype calling convention for EFI function pointers
-// BOOTSERVICE - prototype for implementation of a boot service interface
+// BOOTSERVICE - prototype for implementation of a bootloader service interface
 // RUNTIMESERVICE - prototype for implementation of a runtime service interface
 // RUNTIMEFUNCTION - prototype for implementation of a runtime function that is not a service
 // RUNTIME_CODE - pragma macro for declaring runtime code    

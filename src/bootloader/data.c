@@ -16,7 +16,7 @@ Revision History
 
 --*/
 
-#include "lib.h"
+#include "bootloader/lib.h"
 
 //
 // LibInitialized - TRUE once InitializeLib() is called for the first time
@@ -36,7 +36,7 @@ EFI_HANDLE LibImageHandle;
 EFI_SYSTEM_TABLE        *ST;
 
 //
-// BS - pointer to the boot services table
+// BS - pointer to the bootloader services table
 //
 
 EFI_BOOT_SERVICES       *BS;

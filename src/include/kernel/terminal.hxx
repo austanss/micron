@@ -19,7 +19,6 @@ class Terminal
 public:
 	size_t row;
 	size_t column;
-	static void init(uint32_t* buffer);
     static Terminal &instance();
     void put_entry_at(char c, uint8_t color, size_t x, size_t y);
     void put_char(char c, uint8_t color);
@@ -36,7 +35,6 @@ private:
 	Terminal();
 	Terminal(Terminal const&);
 	void operator=(Terminal const&);
-	static GraphicsDriver vga;
 };
 
 template<typename T>
