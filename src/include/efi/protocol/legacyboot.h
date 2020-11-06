@@ -8,7 +8,7 @@ Module Name:
 
 Abstract:
 
-    EFI support for legacy boot
+    EFI support for legacy bootloader
 
 
 
@@ -27,7 +27,7 @@ Revision History
 //
 // BBS 1.01 (See Appendix A) IPL and BCV Table Entry Data structure.
 //  Seg:Off pointers have been converted to EFI pointers in this data structure
-//  This is the structure that also maps to the EFI device path for the boot selection
+//  This is the structure that also maps to the EFI device path for the bootloader selection
 //
 typedef struct {
     UINT16  DeviceType;

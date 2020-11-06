@@ -1,19 +1,19 @@
-#include "kutil.hxx"
-#include "terminal.hxx"
-#include "mem.hxx"
-#include "logo.hxx"
-#include "macros.hxx"
-#include "kbd.hxx"
-#include "font.hxx"
-#include "io.hxx"
+#include "kernel/kutil.hxx"
+#include "kernel/terminal.hxx"
+#include "kernel/mem.hxx"
+#include "kernel/logo.hxx"
+#include "kernel/macros.hxx"
+#include "kernel/kbd.hxx"
+#include "kernel/font.hxx"
+#include "kernel/io.hxx"
+#include "kernel/bootinfo.hxx"
+#include "kernel/uart.hxx"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
 #endif
 
 #define OS_CONTINOUS_RAM_START 0x100000
-
-uint32_t framebuffer[640 * 480];
 
 extern "C" {
 
@@ -23,12 +23,12 @@ void ctor_global
 (/* none atm */)
 // constructors called
 {
-	Terminal::init(framebuffer);
+	uart_initialize();
 	serial_msg("GLOBAL CONSTRUCTORS CALLED");
 	serial_msg(0xBA);
 }
 
-void kernel_main()
+void kernel_main(Boot_Info bootloader_info)
 {
 	Terminal& terminal = Terminal::instance();
 	terminal.setCursor(0, 0);

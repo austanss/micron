@@ -1,7 +1,7 @@
 //
 // Created by rizet on 10/27/20.
 //
-#include "string.hxx"
+#include "kernel/string.hxx"
 
 bool strcomp(const char* lhs, const char *rhs)
 {

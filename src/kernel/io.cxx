@@ -1,6 +1,6 @@
-#include "io.hxx"
-#include "pic.hxx"
-#include "string.hxx"
+#include "kernel/io.hxx"
+#include "kernel/pic.hxx"
+#include "kernel/string.hxx"
 
 void outb(uint16_t port, uint8_t val)
 {

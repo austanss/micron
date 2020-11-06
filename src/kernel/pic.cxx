@@ -1,5 +1,5 @@
-#include "pic.hxx"
-#include "io.hxx"
+#include "kernel/pic.hxx"
+#include "kernel/io.hxx"
 
 void PIC_sendEOI(unsigned char irq)
 {

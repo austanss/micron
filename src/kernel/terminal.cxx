@@ -1,7 +1,8 @@
-#include "terminal.hxx"
-#include "string.hxx"
-#include "io.hxx"
-#include "logo.hxx"
+#include "kernel/terminal.hxx"
+#include "kernel/string.hxx"
+#include "kernel/io.hxx"
+#include "kernel/logo.hxx"
+#include "kernel/uart.hxx"
 
 enum vga_color
 {
@@ -39,7 +40,7 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 
 Terminal::Terminal() : row(0), column(0)
 {
-	buffer = (uint16_t *)0xB8000;
+	buffer = (uint16_t *)0xC03FF000;
 	for (auto y = 0; y < VGA_HEIGHT; y++)
 	{
 		for (auto x = 0; x < VGA_WIDTH; x++)
@@ -63,8 +64,7 @@ void Terminal::clear()
 
 void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 {
-	auto index = (y * VGA_WIDTH) + x;
-	buffer[index] = vga_entry(c, color);
+	uart_putchar(c);
 }
 
 void Terminal::put_char(char c, uint8_t color)
@@ -179,11 +179,6 @@ void Terminal::println(const char *data)
 	write("\n");
 }
 
-void Terminal::init(uint32_t* buffer)
-{
-	vga = GraphicsDriver(buffer);
-}
-
 void Terminal::shift()
 {
     for (int i = 0; i < 80; i++)
@@ -217,5 +212,3 @@ Terminal& Terminal::instance()
 	static Terminal instance;
 	return instance;
 }
-
-GraphicsDriver Terminal::vga;

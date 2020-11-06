@@ -19,10 +19,14 @@ BOOTLOADER_SRC_DIR := $(SRC_DIR)/bootloader
 HEADERS_DIR := $(SRC_DIR)/include
 OBJ_DIR := $(BUILD_DIR)/obj
 OBJ_DIR_RES := $(OBJ_DIR)/res
+LIB := /usr/lib64
+EFILIB := /usr/lib64/gnuefi
+EFI_CRT_OBJS := $(EFILIB)/crt0-efi-$(ARCH).o
+EFI_LDS := $(EFILIB)/elf_$(ARCH)_efi.lds
 CC := gcc -I$(HEADERS_DIR) -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fpic -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
 CXX := g++ -I$(HEADERS_DIR) -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -g -fpic -m32 -march=i686 -nostdlib -ffreestanding -O2 -Wall -Wextra -fno-pic -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
 MINGW := x86_64-w64-mingw32-gcc -ffreestanding -I$(HEADERS_DIR) -I$(HEADERS_DIR)/efi/x86_64 -I$(HEADERS_DIR)/efi/protocol
-MINGW_LINK := x86_64-w64-mingw32-gcc -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -lgcc
+MINGW_LINK := x86_64-w64-mingw32-gcc
 ASM := nasm -f elf
 STATIC_LINK := llvm-ar
 OBJCOPY := objcopy -O elf32-i386 -B i386 -I binary
@@ -33,7 +37,7 @@ export MKRESCUE
 export GCC
 export BUILD_DIR
 
-kernel: clean
+kernel:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR)
@@ -43,7 +47,6 @@ kernel: clean
 	$(ASM) $(KERNEL_SRC_DIR)/interrupts.asm -o $(OBJ_DIR)/ISR.o
 	$(ASM) $(KERNEL_SRC_DIR)/memset.asm -o $(OBJ_DIR)/MemSet.o
 	$(ASM) $(KERNEL_SRC_DIR)/paging.asm -o $(OBJ_DIR)/paging.o
-	$(CC)  -MF$(OBJ_DIR)/kstart.S.o.d -o $(OBJ_DIR)/kstart.S.o -c $(KERNEL_SRC_DIR)/kstart.S
 	$(CXX) -MF$(OBJ_DIR)/gdt.cxx.o.d -o $(OBJ_DIR)/gdt.cxx.o -c $(KERNEL_SRC_DIR)/gdt.cxx
 	$(CXX) -MF$(OBJ_DIR)/pic.cxx.o.d -o $(OBJ_DIR)/pic.cxx.o -c $(KERNEL_SRC_DIR)/pic.cxx
 	$(CXX) -MF$(OBJ_DIR)/paging.cxx.o.d -o $(OBJ_DIR)/paging.cxx.o -c $(KERNEL_SRC_DIR)/paging.cxx
@@ -53,17 +56,26 @@ kernel: clean
 	$(CXX) -MF$(OBJ_DIR)/kutil.cxx.o.d -o $(OBJ_DIR)/kutil.cxx.o -c $(KERNEL_SRC_DIR)/kutil.cxx
 	$(CXX) -MF$(OBJ_DIR)/kbd.cxx.o.d -o $(OBJ_DIR)/kbd.cxx.o -c $(KERNEL_SRC_DIR)/kbd.cxx
 	$(CXX) -MF$(OBJ_DIR)/gfx.cxx.o.d -o $(OBJ_DIR)/gfx.cxx.o -c $(KERNEL_SRC_DIR)/gfx.cxx
+	$(CXX) -MF$(OBJ_DIR)/uart.cxx.o.d -o $(OBJ_DIR)/uart.cxx.o -c $(KERNEL_SRC_DIR)/uart.cxx
 	$(CXX) -MF$(OBJ_DIR)/string.cxx.o.d -o $(OBJ_DIR)/string.cxx.o -c $(KERNEL_SRC_DIR)/string.cxx
 	$(CXX) -MF$(OBJ_DIR)/kmain.cxx.o.d -o $(OBJ_DIR)/kmain.cxx.o -c $(KERNEL_SRC_DIR)/kmain.cxx -DARCH=\"$(ARCH)\"
 	$(OBJCOPY) $(FONTS_DIR)/font.psf $(OBJ_DIR_RES)/font.o
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/paging.o $(OBJ_DIR)/kstart.S.o $(OBJ_DIR)/gdt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/paging.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/debugging.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/string.cxx.o -T $(RES_DIR)/Linkerscript
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/paging.o $(OBJ_DIR)/gdt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/paging.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/debugging.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/string.cxx.o $(OBJ_DIR)/uart.cxx.o -T $(RES_DIR)/Linkerscript
 
 bootloader:
 	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/loader.c -o $(OBJ_DIR)/loader.o
 	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/data.c -o $(OBJ_DIR)/data.o
-	$(MINGW_LINK) -e efi_main -o $(BUILD_DIR)/bootloader.efi $(OBJ_DIR)/loader.o $(OBJ_DIR)/data.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/elf.c -o $(OBJ_DIR)/elf.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/error.c -o $(OBJ_DIR)/error.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/fs.c -o $(OBJ_DIR)/fs.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/graphics.c -o $(OBJ_DIR)/graphics.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/main.c -o $(OBJ_DIR)/main.o
+	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/serial.c -o $(OBJ_DIR)/serial.o
+	# ld  -nostdlib -znocombreloc -T /usr/lib/elf_x86_64_efi.lds -shared -Bsymbolic -L /usr/lib -l:libgnuefi.a -l:libefi.a -o main.so
+	# objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc --target=efi-app-x86_64 main.so main.efi
+	x86_64-w64-mingw32-gcc -nostdlib -shared -Wl,--subsystem,10 -e efi_main -o bootloader.efi $(OBJ_DIR)/main.o $(OBJ_DIR)/loader.o $(OBJ_DIR)/data.o $(OBJ_DIR)/elf.o $(OBJ_DIR)/error.o $(OBJ_DIR)/fs.o $(OBJ_DIR)/graphics.o /usr/lib/crt0-efi-x86_64.o $(OBJ_DIR)/serial.o -lgcc
 
-image: kernel bootloader
+image: clean kernel bootloader
 	$(IMAGE_GEN) $(BUILD_DIR)/microCORE.kernel $(BUILD_DIR)/bootloader.efi
 
 qemu:

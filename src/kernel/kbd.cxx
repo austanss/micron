@@ -2,8 +2,8 @@
 // Created by rizet on 10/19/20.
 //
 
-#include "kbd.hxx"
-#include "terminal.hxx"
+#include "kernel/kbd.hxx"
+#include "kernel/terminal.hxx"
 
 void FnHandlerF1  ()  { }
 void FnHandlerF2  ()  { }

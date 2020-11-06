@@ -1,5 +1,5 @@
-#include "kutil.hxx"
-#include "terminal.hxx"
+#include "kernel/kutil.hxx"
+#include "kernel/terminal.hxx"
 #include <stdint.h>
 
 char* hex_str(uint32_t num)

@@ -11,7 +11,7 @@ Module Name:
 
 Abstract:
 
-    Global EFI runtime & boot service interfaces
+    Global EFI runtime & bootloader service interfaces
 
 
 
