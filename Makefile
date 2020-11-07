@@ -71,8 +71,8 @@ bootloader:
 	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/graphics.c -o $(OBJ_DIR)/graphics.o
 	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/main.c -o $(OBJ_DIR)/main.o
 	$(MINGW) -c $(BOOTLOADER_SRC_DIR)/serial.c -o $(OBJ_DIR)/serial.o
-	ld  -nostdlib -znocombreloc -T /usr/lib/elf_x86_64_efi.lds -shared -Bsymbolic -L /usr/lib -l:libgnuefi.a -l:libefi.a -o $(BUILD_DIR)/boot.so -lefi -lgnuefi
-	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc --target=efi-app-x86_64 $(BUILD_DIR)/boot.so $(BUILD_DIR)/bootloader.efi
+	ld $(OBJ_DIR)/main.o $(OBJ_DIR)/loader.o $(OBJ_DIR)/data.o $(OBJ_DIR)/elf.o $(OBJ_DIR)/error.o $(OBJ_DIR)/fs.o $(OBJ_DIR)/graphics.o /usr/lib/crt0-efi-x86_64.o $(OBJ_DIR)/serial.o -nostdlib -znocombreloc -T /usr/lib/elf_x86_64_efi.lds -shared -Bsymbolic -L /usr/lib -o $(BUILD_DIR)/boot.so -lefi -lgnuefi
+	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym  -j .rel -j .rela -j .reloc --target=efi-app-x86_64 $(BUILD_DIR)/boot.so $(BUILD_DIR)/bootloader.efi
 	# x86_64-w64-mingw32-gcc -nostdlib -shared -Wl,--subsystem,10 -e efi_main -o bootloader.efi $(OBJ_DIR)/main.o $(OBJ_DIR)/loader.o $(OBJ_DIR)/data.o $(OBJ_DIR)/elf.o $(OBJ_DIR)/error.o $(OBJ_DIR)/fs.o $(OBJ_DIR)/graphics.o /usr/lib/crt0-efi-x86_64.o $(OBJ_DIR)/serial.o -lgcc
 
 image: clean kernel bootloader

@@ -257,6 +257,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		#endif
 	}
 
+	Print(L"Initializing filesystem... ");
 	// Initialise the simple file system service.
 	// This will be used to load the kernel binary.
 	status = init_file_system_service();
@@ -267,6 +268,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		return status;
 	}
 
+	Print(L"Opening root volume... ");
 	status = uefi_call_wrapper(file_system_service.protocol->OpenVolume, 2,
 		file_system_service.protocol, &root_file_system);
 	if(EFI_ERROR(status)) {
@@ -280,6 +282,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		debug_print_line(L"Debug: Loading Kernel image\n");
 	#endif
 
+	Print(L"Loading kernel... ");
 	status = load_kernel_image(root_file_system, KERNEL_EXECUTABLE_PATH,
 		kernel_entry_point);
 	if(EFI_ERROR(status)) {
@@ -306,6 +309,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		debug_print_line(L"Debug: Getting memory map and exiting boot services\n");
 	#endif
 
+	Print(L"Getting memory map... ");
 	// Get the memory map prior to exiting the boot service.
 	status = get_memory_map(&memory_map, &memory_map_size,
 		&memory_map_key, &descriptor_size, &descriptor_version);
@@ -314,6 +318,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		return status;
 	}
 
+	Print(L"Exiting boot services... ");
 	status = uefi_call_wrapper(gBS->ExitBootServices, 2,
 		ImageHandle, memory_map_key);
 	if(EFI_ERROR(status)) {
@@ -327,6 +332,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	boot_info.memory_map = memory_map;
 	boot_info.memory_map_size = memory_map_size;
 	boot_info.memory_map_descriptor_size = descriptor_size;
+
+	Print(L"Launching kernel... ");
 
 	// Cast pointer to kernel entry.
 	kernel_entry = (void (*)(Kernel_Boot_Info))*kernel_entry_point;
