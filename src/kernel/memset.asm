@@ -1,11 +1,11 @@
 global memset
 
 memset:
-	push ebp
-	mov ebp,esp
-	mov edi,[ebp+8]                     ; dest
-	movzx eax,byte [ebp+12]             ; ch
-	mov ecx,[ebp+16]                    ; count
+	push rbp
+	mov rbp,rsp
+	mov rdi,[rbp+8]                     ; dest
+	movzx rax,byte [rbp+12]             ; ch
+	mov rcx,[rbp+16]                    ; count
 	rep stosb
-	pop ebp
+	pop rbp
 	ret

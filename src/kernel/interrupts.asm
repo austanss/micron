@@ -1,13 +1,15 @@
 ; Defined in GDT.cpp
 [extern ISRHandler]
 [extern IRQHandler]
+[extern popa]
+[extern pusha]
 
 ; Common ISR code
 isr_common_stub:
   ; 1. Save CPU state
-   pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+   call pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
    mov ax, ds ; Lower 16-bits of eax = ds.
-   push eax ; save the data segment descriptor
+   push rax ; save the data segment descriptor
    mov ax, 0x10  ; kernel data segment descriptor
    mov ds, ax
    mov es, ax
@@ -16,43 +18,43 @@ isr_common_stub:
 
   ; 2. Call C handler
    cld
-   push esp
+   push rsp
    call ISRHandler
-   pop eax
+   pop rax
 
   ; 3. Restore state
-   pop eax
+   pop rax
    mov ds, ax
    mov es, ax
    mov fs, ax
    mov gs, ax
-   popa
-   add esp, 8 ; Cleans up the pushed error code and pushed ISR number
+   call popa
+   add rsp, 8 ; Cleans up the pushed error code and pushed ISR number
    sti
    iret ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'
 irq_common_stub:
-    pusha
+    call pusha
     mov ax, ds
-    push eax
+    push rax
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
     cld
-    push esp
+    push rsp
     call IRQHandler ; Different than the ISR code
-    pop eax
-    pop eax
+    pop rax
+    pop rax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    popa
-    add esp, 8
+    call popa
+    add rsp, 8
     sti
     iret
 

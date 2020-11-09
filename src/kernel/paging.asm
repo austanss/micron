@@ -1,19 +1,19 @@
 global setupPaging
 setupPaging:
 	; Fetch the pointer to the paging directory
-	mov eax, [esp + 4]
-	mov cr3, eax
+	mov rax, [rsp + 4]
+	mov cr3, rax
 
 	; Enable the page size extension
-	mov eax, cr4
-	or  eax, 0x10
-	mov cr4, eax
+	mov rax, cr4
+	or  rax, 0x10
+	mov cr4, rax
 
 	; Enable paging
-	mov eax, cr0
-	mov eax, $1
-	or  eax, [1 << 0]
-	or  eax, [1 << 31]
-	mov cr0, eax
+	mov rax, cr0
+	mov rax, $1
+	or  rax, [1 << 0]
+	or  rax, [1 << 31]
+	mov cr0, rax
 
 	ret
