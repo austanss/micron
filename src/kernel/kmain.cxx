@@ -8,6 +8,7 @@
 #include "kernel/io.hxx"
 #include "kernel/bootinfo.hxx"
 #include "kernel/uart.hxx"
+#include "kernel/gdt.hxx"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
@@ -36,6 +37,10 @@ void kernel_main(Boot_Info bootloader_info)
 	terminal << status_eol;
 
 	terminal.staticLogo = true;
+
+	terminal << status_pend << "Replacing current GDT/IDT..." << status_eol;
+	loadTables();
+	terminal << status_good << "Success!" << status_eol;
 
 	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
