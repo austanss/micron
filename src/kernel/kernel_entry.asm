@@ -32,7 +32,7 @@ kernel_entry:
 	pop rax
 
 	; gdt
-;	call loadGDT64
+	call loadGDT64
 
 	; idt
 	; call loadIDT64
