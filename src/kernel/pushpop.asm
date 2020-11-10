@@ -14,9 +14,10 @@ pusha:
 	push 0xBEEFBEEF
 
 popa:
-	pop r9
-	cmp r9, 0xBEEFBEEF
-	jne popafail
+	.beefbeef:
+		pop r9
+		cmp r9, 0xBEEFBEEF
+		jne .beefbeef
 	pop r11
 	pop r10
 	pop r9
@@ -26,8 +27,4 @@ popa:
 	pop rdx
 	pop rcx
 	pop rax
-	ret
-
-popafail:
-	mov r10, 0xBAD
 	ret

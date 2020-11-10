@@ -5,19 +5,9 @@
 #ifndef MICROCORE_GFX_HXX
 #define MICROCORE_GFX_HXX
 #include <stdint.h>
+#include <kernel/bootinfo.hxx>
 
-class GraphicsDriver
-{
-public:
-	uint32_t width;
-	uint32_t height;
-
-protected:
-	uint32_t * buffer;
-	uint32_t * screen;
-
-public:
-	uint64_t FONT[256] = {
+	inline uint64_t FONT[256] = {
 			0x0000000000000000,
 			0x0000000000000000,
 			0x000000FF00000000,
@@ -276,13 +266,15 @@ public:
 			0xFFFFFFFFFFFFFFFF,//ÿ
 	};
 
-	GraphicsDriver();
-	GraphicsDriver(uint32_t * buffer);
+	inline Framebuffer gop;
 
-	void plot_pixel(int x, int y, uint32_t color);
+	inline void plot_pixel(int x, int y, uint32_t pixel)
+	{
+		*((uint32_t*)(gop.framebuffer_base_addr + 4 * gop.pixels_per_scan_line * y + 4 * x)) = pixel;
+	}
+
 	void put_char(char ch, int x, int y, uint32_t color);
 	void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color);
 	void buff();
-};
 
 #endif //MICROCORE_GFX_HXX

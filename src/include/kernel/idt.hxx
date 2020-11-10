@@ -35,6 +35,4 @@ struct __attribute__((packed)) GDTPointer
 	volatile uint32_t base;
 };
 
-void loadTables();
-
 }
