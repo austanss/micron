@@ -39,6 +39,7 @@ typedef struct s_framebuffer {
 } Kernel_Framebuffer;
 
 typedef struct s_boot_info {
+	UINTN verification;
 	EFI_MEMORY_DESCRIPTOR* memory_map;
 	Kernel_Framebuffer framebuffer;
 	UINTN memory_map_size;

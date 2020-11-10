@@ -1,0 +1,10 @@
+//
+// Created by rizet on 11/10/20.
+//
+
+#ifndef MICROCORE_BOOTINFO_ADDR_H
+#define MICROCORE_BOOTINFO_ADDR_H
+
+#define BOOTINFO_ADDRESS 0xBEEF
+
+#endif //MICROCORE_BOOTINFO_ADDR_H
