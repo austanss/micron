@@ -10,6 +10,7 @@
 #include "kernel/uart.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
+#include <common/bootinfo_addr.h>
 
 #define __stop__ while (true);
 
@@ -28,13 +29,17 @@ void ctor_global
 // constructors called
 {
 	uart_initialize();
-	serial_msg("GLOBAL CONSTRUCTORS CALLED");
-	serial_msg(0xBA);
+	serial_msg("GLOBAL CONSTRUCTORS CALLED\n");
 }
 
-void kernel_main(Boot_Info* bootloader_info)
+void kernel_main()
 {
+//	bootloader_info = (Boot_Info *)0xBEEF;
 	Terminal& terminal = Terminal::instance();
+
+	Boot_Info *bootloader_info = (Boot_Info *)BOOTINFO_ADDRESS;
+
+	register uint64_t *foo asm("rax");
 
 	terminal.setCursor(0, 0);
 	terminal << logo;
@@ -42,13 +47,22 @@ void kernel_main(Boot_Info* bootloader_info)
 
 	terminal.staticLogo = true;
 
-	uint64_bytearr ubaraddr;
-	ubaraddr.i = bootloader_info->vbe_framebuffer.framebuffer_base_addr;
+	serial_msg("\nBOOTINFO ADDRESS: ");
 
-	for (uint8_t i : ubaraddr.b)
-		serial_msg(i);
+	hex_str_serial((uintptr_t)bootloader_info);
 
-	rect(120, 120, 30, 40, 0xAA0000AA);
+	serial_msg("\nBOOTINFO CHECKSUM: ");
+
+	hex_str_serial(bootloader_info->verification);
+
+	serial_msg("\nFRAMEBUFFER ADDRESS: ");
+
+	hex_str_serial(bootloader_info->vbe_framebuffer.framebuffer_base_addr);
+
+	plot_pixel(200, 300, 0xFFFF00);
+	plot_pixel(201, 300, 0xFFFF00);
+	plot_pixel(200, 301, 0xFFFF00);
+	plot_pixel(201, 301, 0xFFFF00);
 
 	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();

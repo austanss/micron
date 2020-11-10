@@ -7,10 +7,7 @@ extern loadGDT64
 
 kernel_entry:
 
-	pop rax 						;	preserve the passed arguments
-
 	mov esp, stack_end				;	reconfigure the stack
-
 
 	; ensure we are in long mode
 	; and replace the UEFI-owned
@@ -18,6 +15,8 @@ kernel_entry:
 
 	; interrupts
 	cli								;	clear the interrupt flag
+
+	push rax
 
 	; long mode control label
 	mov ecx, 0xC0000080          	; 	Set the C-register to 0xC0000080, which is the EFER MSR.
@@ -30,8 +29,10 @@ kernel_entry:
     or rax, 1 << 31              	; 	Set the PG-bit, which is the 32nd bit (bit 31).
     mov cr0, rax                 	;	Set control register 0 to the A-register.
 
+	pop rax
+
 	; gdt
-	call loadGDT64
+;	call loadGDT64
 
 	; idt
 	; call loadIDT64
@@ -39,10 +40,11 @@ kernel_entry:
 	; interrupts
 	; sti							;	set the interrupt flag
 
+	push rax
+
 	call ctor_global				;	call global constructors
 
-	push rax						;	push the arguments back
-
+	pop rax							;	push the arguments back
 
 	call kernel_main				;	call kernel main
 

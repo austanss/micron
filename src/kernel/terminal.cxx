@@ -64,7 +64,7 @@ void Terminal::clear()
 
 void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 {
-	uart_putchar(c);
+	// uart_putchar(c);
 }
 
 void Terminal::put_char(char c, uint8_t color)

@@ -18,6 +18,7 @@
 #include <bootloader/fs.h>
 #include <bootloader/graphics.h>
 #include <bootloader/serial.h>
+#include <common/bootinfo_addr.h>
 
 #define TARGET_SCREEN_WIDTH     1024
 #define TARGET_SCREEN_HEIGHT    768
@@ -329,7 +330,7 @@ _Noreturn EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 
 
 	/** Boot info struct, passed to the kernel. */
-	Kernel_Boot_Info *boot_info = (Kernel_Boot_Info *)0xBEEF;
+	Kernel_Boot_Info *boot_info = (Kernel_Boot_Info *)BOOTINFO_ADDRESS;
 
 	// Set kernel boot info.
 	boot_info->memory_map = memory_map;
@@ -342,6 +343,8 @@ _Noreturn EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	boot_info->framebuffer.pixels_per_scan_line = graphics_output_protocol->Mode->Info->PixelsPerScanLine;
 	boot_info->framebuffer.x_resolution = graphics_output_protocol->Mode->Info->HorizontalResolution;
 	boot_info->framebuffer.y_resolution = graphics_output_protocol->Mode->Info->VerticalResolution;
+
+	boot_info->verification = 0xDEADBEEFCAFECAFE;
 
 	// Cast pointer to kernel entry.
 	kernel_entry = (void (*)(Kernel_Boot_Info*))*kernel_entry_point;
