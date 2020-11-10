@@ -221,9 +221,9 @@ _Noreturn EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	// Initialise the serial service.
 	status = init_serial_service();
 	if(EFI_ERROR(status)) {
-		Print(u"Fatal Error: Error initialising Serial IO service\n\n");
+		Print(u"Warning: No serial IO port available\n\n");
 
-		return status;
+		status = 0;
 	}
 
 	// Initialise the graphics output service.
@@ -345,6 +345,16 @@ _Noreturn EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	boot_info->framebuffer.y_resolution = graphics_output_protocol->Mode->Info->VerticalResolution;
 
 	boot_info->verification = 0xDEADBEEFCAFECAFE;
+
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 300 + 4 * 200)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 301 + 4 * 200)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 302 + 4 * 200)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 300 + 4 * 201)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 301 + 4 * 201)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 302 + 4 * 201)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 300 + 4 * 202)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 301 + 4 * 202)) = 0xFFFF00;
+	*((uint32_t*)(graphics_output_protocol->Mode->FrameBufferBase + 4 * graphics_output_protocol->Mode->Info->PixelsPerScanLine * 302 + 4 * 202)) = 0xFFFF00;
 
 	// Cast pointer to kernel entry.
 	kernel_entry = (void (*)(Kernel_Boot_Info*))*kernel_entry_point;

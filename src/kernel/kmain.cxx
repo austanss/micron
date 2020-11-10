@@ -59,15 +59,21 @@ void kernel_main()
 
 	hex_str_serial(bootloader_info->vbe_framebuffer.framebuffer_base_addr);
 
-	plot_pixel(200, 300, 0xFFFF00);
-	plot_pixel(201, 300, 0xFFFF00);
-	plot_pixel(200, 301, 0xFFFF00);
-	plot_pixel(201, 301, 0xFFFF00);
+	gop = bootloader_info->vbe_framebuffer;
 
 	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
 	terminal << status_good << "Keyboard operational!" << status_eol;
 
+	plot_pixel(300, 200, 0xFFFF00);
+	plot_pixel(300, 201, 0xFFFF00);
+	plot_pixel(300, 202, 0xFFFF00);
+	plot_pixel(301, 200, 0xFFFF00);
+	plot_pixel(301, 201, 0xFFFF00);
+	plot_pixel(301, 202, 0xFFFF00);
+	plot_pixel(302, 200, 0xFFFF00);
+	plot_pixel(302, 201, 0xFFFF00);
+	plot_pixel(302, 202, 0xFFFF00);
 
 	terminal << status_pend << "Setting up paging..." << status_eol;
 //	beginPaging();
@@ -79,7 +85,7 @@ void kernel_main()
 
 	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
 
-	while (true);
+	rect(200, 300, 20, 20, 0xFFFF00);
 //	DO(8) {
 //	    terminal << "[TEST]\n";
 //	}
