@@ -48,6 +48,7 @@
  * @warn    After this function has been run, no other boot services may be used
  *          otherwise the memory map will be considered invalid.
  */
+
 EFI_STATUS get_memory_map(OUT VOID** memory_map,
 	OUT UINTN* memory_map_size,
 	OUT UINTN* memory_map_key,
@@ -76,19 +77,9 @@ EFI_STATUS debug_print_line(IN CHAR16* fmt,
 
 	// If the serial service has been initialised, use this as the output medium.
 	// Otherwise use the default GNU-EFI output.
-	if(serial_service.protocol) {
-		VSPrint(output_message, MAX_SERIAL_OUT_STRING_LENGTH, fmt, args);
+	VSPrint(output_message, MAX_SERIAL_OUT_STRING_LENGTH, fmt, args);
 
-		status = print_to_serial_out(serial_service.protocol, output_message);
-		if(EFI_ERROR(status)) {
-			Print(u"Error: Error printing to serial output: %s\n",
-				get_efi_error_message(status));
-
-			return status;
-		}
-	} else {
-		VPrint(fmt, args);
-	}
+	print_to_serial_out(serial_service.protocol, output_message);
 
 	va_end(args);
 
@@ -126,7 +117,7 @@ EFI_STATUS get_mem_map(OUT EFI_MEMORY_DESCRIPTOR** memory_map,
 	#endif
 
 	status = uefi_call_wrapper(gBS->AllocatePool, 3,
-		EfiLoaderData, ((*memory_map_size) * 3), memory_map);
+		EfiLoaderData, ((*memory_map_size) + (*descriptor_size) * 5) , memory_map);
 
 	if(EFI_ERROR(status)) {
 		Print(u"Fatal Error: Error allocating memory map buffer: %s\n",
