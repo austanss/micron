@@ -18,11 +18,15 @@ isr_common_stub:
 
   ; 2. Call C handler
    cld
+   pop rax
+   pop r12
+   push rax
    push rsp
    call ISRHandler
    pop rax
 
   ; 3. Restore state
+   push r12
    pop rax
    mov ds, ax
    mov es, ax

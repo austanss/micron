@@ -8,7 +8,10 @@
 #include "kernel/io.hxx"
 #include "kernel/bootinfo.hxx"
 #include "kernel/uart.hxx"
-#include "kernel/gdt.hxx"
+#include "kernel/idt.hxx"
+#include "kernel/gfx.hxx"
+
+#define __stop__ while (true);
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
@@ -29,26 +32,32 @@ void ctor_global
 	serial_msg(0xBA);
 }
 
-void kernel_main(Boot_Info bootloader_info)
+void kernel_main(Boot_Info* bootloader_info)
 {
 	Terminal& terminal = Terminal::instance();
+
 	terminal.setCursor(0, 0);
 	terminal << logo;
 	terminal << status_eol;
 
 	terminal.staticLogo = true;
 
-	terminal << status_pend << "Replacing current GDT/IDT..." << status_eol;
-	loadTables();
-	terminal << status_good << "Success!" << status_eol;
+	uint64_bytearr ubaraddr;
+	ubaraddr.i = bootloader_info->vbe_framebuffer.framebuffer_base_addr;
+
+	for (uint8_t i : ubaraddr.b)
+		serial_msg(i);
+
+	rect(120, 120, 30, 40, 0xAA0000AA);
 
 	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
 	terminal << status_good << "Keyboard operational!" << status_eol;
 
+
 	terminal << status_pend << "Setting up paging..." << status_eol;
-//	MemoryManagement::beginPaging();
-	terminal << status_fail << "Paging has been manually disabled by the developer." << status_eol;
+//	beginPaging();
+	terminal << status_fail << "Paging has been manually disabled." << status_eol;
 
 	terminal << status_good << "Console font is located at: ";
 	writeHex(_mainfont);
@@ -56,6 +65,7 @@ void kernel_main(Boot_Info bootloader_info)
 
 	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
 
+	while (true);
 //	DO(8) {
 //	    terminal << "[TEST]\n";
 //	}

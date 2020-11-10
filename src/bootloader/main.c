@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @author ajxs
+ * @author ajxs, rizet
  * @date Aug 2019
  * @brief Bootloader entry point and main application.
  * The entry point for the application. Contains the main bootloader code that
@@ -55,7 +55,7 @@ EFI_STATUS get_memory_map(OUT VOID** memory_map,
 
 
 /**
- * debug_print_line
+ * Print
  */
 EFI_STATUS debug_print_line(IN CHAR16* fmt,
 	...)
@@ -80,7 +80,7 @@ EFI_STATUS debug_print_line(IN CHAR16* fmt,
 
 		status = print_to_serial_out(serial_service.protocol, output_message);
 		if(EFI_ERROR(status)) {
-			Print(L"Error: Error printing to serial output: %s\n",
+			Print(u"Error: Error printing to serial output: %s\n",
 				get_efi_error_message(status));
 
 			return status;
@@ -98,7 +98,7 @@ EFI_STATUS debug_print_line(IN CHAR16* fmt,
 /**
  * get_memory_map
  */
-EFI_STATUS get_memory_map(OUT VOID** memory_map,
+EFI_STATUS get_mem_map(OUT EFI_MEMORY_DESCRIPTOR** memory_map,
 	OUT UINTN* memory_map_size,
 	OUT UINTN* memory_map_key,
 	OUT UINTN* descriptor_size,
@@ -107,6 +107,7 @@ EFI_STATUS get_memory_map(OUT VOID** memory_map,
 	/** Program status. */
 	EFI_STATUS status;
 
+
 	status = uefi_call_wrapper(gBS->GetMemoryMap, 5,
 		memory_map_size, *memory_map, memory_map_key,
 		descriptor_size, descriptor_version);
@@ -114,19 +115,20 @@ EFI_STATUS get_memory_map(OUT VOID** memory_map,
 		// This will always fail on the first attempt, this call will return the
 		// required buffer size.
 		if(status != EFI_BUFFER_TOO_SMALL) {
-			debug_print_line(L"Fatal Error: Error getting memory map size: %s\n",
+			Print(u"Fatal Error: Error getting memory map size: %s\n",
 				get_efi_error_message(status));
 		}
 	}
 
 	#ifdef DEBUG
-		debug_print_line(L"Debug: Allocating memory map'\n");
+		Print(u"Debug: Allocating memory map'\n\n");
 	#endif
 
 	status = uefi_call_wrapper(gBS->AllocatePool, 3,
-		EfiLoaderData, *memory_map_size, (VOID**)memory_map);
+		EfiLoaderData, ((*memory_map_size) * 3), memory_map);
+
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error allocating memory map buffer: %s\n",
+		Print(u"Fatal Error: Error allocating memory map buffer: %s\n",
 			get_efi_error_message(status));
 
 		return status;
@@ -135,15 +137,19 @@ EFI_STATUS get_memory_map(OUT VOID** memory_map,
 	status = uefi_call_wrapper(gBS->GetMemoryMap, 5,
 		memory_map_size, *memory_map, memory_map_key,
 		descriptor_size, descriptor_version);
+
+
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error getting memory map: %s\n",
+		Print(u"Fatal Error: Error getting memory map: %s\n",
 			get_efi_error_message(status));
+
+		while (1);
 
 		return status;
 	}
 
-	debug_print_line(L"Debug: Allocated memory map buffer at: 0x%llx "
-		L"with size: %llu\n", *memory_map, *memory_map_size);
+//	Print(u"Debug: Allocated memory map buffer at: 0x%llx "
+//		u"with size: %llu\n", *memory_map, *memory_map_size);
 
 	return EFI_SUCCESS;
 }
@@ -152,7 +158,7 @@ EFI_STATUS get_memory_map(OUT VOID** memory_map,
 /**
  * efi_main
  */
-EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
+_Noreturn EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	EFI_SYSTEM_TABLE* SystemTable)
 {
 	/** Main bootloader application status. */
@@ -180,9 +186,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	/** The memory map descriptor. */
 	UINT32 descriptor_version;
 	/** Function pointer to the kernel entry point. */
-	void (*kernel_entry)(Kernel_Boot_Info boot_info);
-	/** Boot info struct, passed to the kernel. */
-	Kernel_Boot_Info boot_info;
+	void (*kernel_entry)(Kernel_Boot_Info* boot_info);
 
 	// Initialise service protocols to NULL, so that we can detect if they are
 	// properly initialised in service functions.
@@ -192,10 +196,13 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	// Initialise the UEFI lib.
 	InitializeLib(ImageHandle, SystemTable);
 
+	Print(u"Booting... \n");
+
+
 	// Disable the watchdog timer.
 	status = uefi_call_wrapper(gBS->SetWatchdogTimer, 4, 0, 0, 0, NULL);
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error setting watchdog timer: %s\n",
+		Print(u"Fatal Error: Error setting watchdog timer: %s\n",
 			get_efi_error_message(status));
 
 		return status;
@@ -204,7 +211,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	// Reset console input.
 	status = uefi_call_wrapper(ST->ConIn->Reset, 2, SystemTable->ConIn, FALSE);
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error resetting console input: %s\n",
+		Print(u"Fatal Error: Error resetting console input: %s\n",
 			get_efi_error_message(status));
 
 		return status;
@@ -213,7 +220,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	// Initialise the serial service.
 	status = init_serial_service();
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error initialising Serial IO service\n");
+		Print(u"Fatal Error: Error initialising Serial IO service\n\n");
 
 		return status;
 	}
@@ -221,11 +228,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 	// Initialise the graphics output service.
 	status = init_graphics_output_service();
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error initialising Graphics service\n");
+		Print(u"Fatal Error: Error initialising Graphics service\n\n");
 
 		return status;
 	}
-
 
 	// Open the graphics output protocol from the handle for the active console
 	// output device and use it to draw the boot screen.
@@ -236,8 +242,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		&graphics_output_protocol, ImageHandle,
 		NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Error: Failed to open the graphics output protocol on "
-			L"the active console output device: %s\n", get_efi_error_message(status));
+		Print(u"Error: Failed to open the graphics output protocol on "
+			u"the active console output device: %s\n", get_efi_error_message(status));
 	}
 
 	// If we were able to obtain a protocol on the current output device handle
@@ -246,97 +252,99 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 		status = set_graphics_mode(graphics_output_protocol, TARGET_SCREEN_WIDTH,
 			TARGET_SCREEN_HEIGHT, TARGET_PIXEL_FORMAT);
 		if(EFI_ERROR(status)) {
-			debug_print_line(L"Fatal Error: Error setting graphics mode: %s\n",
+			Print(u"Fatal Error: Error setting graphics mode: %s\n",
 				get_efi_error_message(status));
 
 			return status;
 		}
 
-		#if DRAW_TEST_SCREEN != 0
-			draw_test_screen(graphics_output_protocol);
-		#endif
+		draw_test_screen(graphics_output_protocol);
 	}
 
-	Print(L"Initializing filesystem... ");
+	Print(u"\nGraphics framebuffer is located at: 0x%x\n\n", graphics_output_protocol->Mode->FrameBufferBase);
+
+	Print(u"Initializing filesystem... \n");
 	// Initialise the simple file system service.
 	// This will be used to load the kernel binary.
 	status = init_file_system_service();
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error initialising File System service: %s\n",
+		Print(u"Fatal Error: Error initialising File System service: %s\n",
 			get_efi_error_message(status));
 
 		return status;
 	}
 
-	Print(L"Opening root volume... ");
+	Print(u"Opening root volume... \n");
 	status = uefi_call_wrapper(file_system_service.protocol->OpenVolume, 2,
 		file_system_service.protocol, &root_file_system);
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error opening root volume: %s\n",
+		Print(u"Fatal Error: Error opening root volume: %s\n",
 			get_efi_error_message(status));
 
 		return status;
 	}
 
 	#ifdef DEBUG
-		debug_print_line(L"Debug: Loading Kernel image\n");
+		Print(u"Debug: Loading Kernel image\n\n");
 	#endif
 
-	Print(L"Loading kernel... ");
+	Print(u"Loading kernel... \n");
 	status = load_kernel_image(root_file_system, KERNEL_EXECUTABLE_PATH,
 		kernel_entry_point);
+
+//	Print(u"%d", status);
+
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error loading Kernel image\n");
+		Print(u"Fatal Error: Error loading Kernel image\n\n");
 		return status;
 	}
 
 	#ifdef DEBUG
-		debug_print_line(L"Debug: Set Kernel Entry Point to: '0x%llx'\n",
+		Print(u"Debug: Set Kernel Entry Point to: '0x%llx'\n",
 			*kernel_entry_point);
 	#endif
 
 	#ifdef DEBUG
-		debug_print_line(L"Debug: Closing Graphics Output Service handles\n");
+		Print(u"Debug: Getting memory map and exiting boot services\n\n");
 	#endif
 
-	status = close_graphic_output_service();
-	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error freeing Graphics Output service\n");
-		return status;
-	}
-
-	#ifdef DEBUG
-		debug_print_line(L"Debug: Getting memory map and exiting boot services\n");
-	#endif
-
-	Print(L"Getting memory map... ");
+	Print(u"Getting memory map... \n");
 	// Get the memory map prior to exiting the boot service.
-	status = get_memory_map(&memory_map, &memory_map_size,
+	status = get_mem_map(&memory_map, &memory_map_size,
 		&memory_map_key, &descriptor_size, &descriptor_version);
+
 	if(EFI_ERROR(status)) {
 		// Error will have already been printed;
 		return status;
 	}
 
-	Print(L"Exiting boot services... ");
 	status = uefi_call_wrapper(gBS->ExitBootServices, 2,
 		ImageHandle, memory_map_key);
 	if(EFI_ERROR(status)) {
-		debug_print_line(L"Fatal Error: Error exiting boot services: %s\n",
+		Print(u"Fatal Error: Error exiting boot services: %s\n",
 			get_efi_error_message(status));
 
 		return status;
 	}
 
-	// Set kernel boot info.
-	boot_info.memory_map = memory_map;
-	boot_info.memory_map_size = memory_map_size;
-	boot_info.memory_map_descriptor_size = descriptor_size;
 
-	Print(L"Launching kernel... ");
+	/** Boot info struct, passed to the kernel. */
+	Kernel_Boot_Info *boot_info = (Kernel_Boot_Info *)0xBEEF;
+
+	// Set kernel boot info.
+	boot_info->memory_map = memory_map;
+	boot_info->memory_map_size = memory_map_size;
+	boot_info->memory_map_descriptor_size = descriptor_size;
+
+	boot_info->framebuffer.framebuffer_base_addr = graphics_output_protocol->Mode->FrameBufferBase;
+	boot_info->framebuffer.framebuffer_size = graphics_output_protocol->Mode->FrameBufferSize;
+	boot_info->framebuffer.framebuffer_mode = graphics_output_protocol->Mode->Mode;
+	boot_info->framebuffer.pixels_per_scan_line = graphics_output_protocol->Mode->Info->PixelsPerScanLine;
+	boot_info->framebuffer.x_resolution = graphics_output_protocol->Mode->Info->HorizontalResolution;
+	boot_info->framebuffer.y_resolution = graphics_output_protocol->Mode->Info->VerticalResolution;
 
 	// Cast pointer to kernel entry.
-	kernel_entry = (void (*)(Kernel_Boot_Info))*kernel_entry_point;
+	kernel_entry = (void (*)(Kernel_Boot_Info*))*kernel_entry_point;
 	// Jump to kernel entry.
 	kernel_entry(boot_info);
 

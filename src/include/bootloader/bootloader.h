@@ -17,7 +17,7 @@
 #include <bootloader/serial.h>
 
 /** The path to the kernel executable binary on the bootable media. */
-#define KERNEL_EXECUTABLE_PATH L"\\sys\\core\\microCORE.kernel"
+#define KERNEL_EXECUTABLE_PATH u"\\sys\\core\\microCORE.kernel"
 
 /**
  * @brief Kernel boot info struct.
@@ -28,8 +28,19 @@
  * automatically use the correct types for the target architecture. The corresponding
  * definition within the kernel should have more architecture-specific types.
  */
+
+typedef struct s_framebuffer {
+	UINT64 framebuffer_base_addr;
+	UINT64 framebuffer_size;
+	UINT32 framebuffer_mode;
+	UINT32 x_resolution;
+	UINT32 y_resolution;
+	UINT32 pixels_per_scan_line;
+} Kernel_Framebuffer;
+
 typedef struct s_boot_info {
 	EFI_MEMORY_DESCRIPTOR* memory_map;
+	Kernel_Framebuffer framebuffer;
 	UINTN memory_map_size;
 	UINTN memory_map_descriptor_size;
 } Kernel_Boot_Info;
