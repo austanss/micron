@@ -10,7 +10,7 @@
 #include "kernel/uart.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
-#include <common/bootinfo_addr.h>
+#include <common/bootinfo_addr.hxx>
 
 #define __stop__ while (true);
 
