@@ -2,10 +2,6 @@
 
 µCORE (microCORE) is the microkernel for µNET (microNET).
 
-# Credits
-Credit to AJXS. I borrowed a whole bootloader from them, I am so thankful for their code. I also borrowed bits of the kernel from them, so you will see their license header remaining intact in all files borrowed.<br>
-<br>Repo: https://github.com/ajxs/uefi-elf-bootloader
-
 # About
 ## Use Case
 µNET is designed to be used in embedded or low power operations, where the maximum performance is obtained via having minimal overhead. However, in comparison to other common embedded operating systems (eg. Linux or Windows Embedded), µNET is designed with a microkernel. This provides **even less** overhead.
@@ -19,38 +15,16 @@ While it may sound enticing for embedded systems to squeeze more performance, in
 
 - GNU Make (build-essential on some systems)
 - GCC/G++
-- grub-mkrescue or grub2-mkrescue
-- Xorriso
 - NASM
 - GNU Binutils
 
 ## Building
-### Binary only
 ```
 make bin ARCH=[arch]
 ```
-### Package as ISO
-```
-make image ARCH=[arch]
-```
 You must specify the architecture to build for.\
 Currently, we have support for these architectures:
- - i386
- - x86
  - x86_64
 
 Object files will be located in `bin/obj`.\
 The binary will be located in `bin` (`microCORE.kernel`).\
-The ISO will generate in the repo root (`microNET.iso`).
-## Testing
-### In QEMU (recommended)
-```
-make qemu
-```
-**NOTE:** When testing with QEMU you do not need to specify an architecture, as the image is automatically generated for the QEMU target.
-### Real hardware
-```
-sudo dd if=microNET.iso of=[device] bs=4M
-```
-
-**DISCLAIMER:** As of 10/15/2020, µNET has been tested to be unstable on real hardware. Proceed at your own risk.
