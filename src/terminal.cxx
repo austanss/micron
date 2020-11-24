@@ -3,6 +3,8 @@
 #include "kernel/io.hxx"
 #include "kernel/logo.hxx"
 #include "kernel/uart.hxx"
+#include "kernel/kutil.hxx"
+#include "kernel/gfx.hxx"
 
 enum vga_color
 {
@@ -24,29 +26,17 @@ enum vga_color
 	VGA_COLOR_WHITE = 15
 };
 
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
-{
-	return bg | fg << 4;
-}
-
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
-{
-	return (uint16_t)uc | (uint16_t)color << 8;
-}
-
 #define CHECK_COLOR(farbe)          \
 	if (strcomp(#farbe, colorCode)) \
 		color = VGA_COLOR_##farbe;
 
 Terminal::Terminal() : row(0), column(0)
 {
-	buffer = (uint16_t *)0xC03FF000;
-	for (auto y = 0; y < VGA_HEIGHT; y++)
+	uint32_t *buffer = (uint32_t *) gop.framebuffer_base_addr;
+
+	for (int i = 0; i < 1024 * 768; i++)
 	{
-		for (auto x = 0; x < VGA_WIDTH; x++)
-		{
-			put_entry_at(' ', VGA_COLOR_LIGHT_GREY, x, y);
-		}
+		buffer[i] = 0x00000000;
 	}
 }
 
@@ -64,7 +54,39 @@ void Terminal::clear()
 
 void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 {
-	// uart_putchar(c);
+	uint64_t font_selector = FONT[c]; // hardcoded (temp), 'A'
+
+	uint8_t bits[64];
+
+	for (uint8_t i = 1; i <= 64; i++)
+	{
+		bits[i] = get_bit(font_selector, i);
+	}
+
+	uint8_t new_bits[64];
+
+	int revIndex = 0;
+	int arrIndex = 64 - 1;
+	while (arrIndex >= 0)
+	{
+		/* Copy value from original array to reverse array */
+		new_bits[revIndex] = bits[arrIndex];
+
+		revIndex++;
+		arrIndex--;
+	}
+
+//	for (int i = 63; i >= 0; i--)
+//	{
+//		if ((i + 1) % 8 == 0)
+//			serial_msg('\n');
+//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
+//	}
+
+\
+
+
+	for (int x = 0, y = 0; (x * y) <= 64; x++, y++);
 }
 
 void Terminal::put_char(char c, uint8_t color)
@@ -181,10 +203,10 @@ void Terminal::println(const char *data)
 
 void Terminal::shift()
 {
-    for (int i = 0; i < 80; i++)
-    {
-        buffer[i] = vga_entry(0, 0);
-    }
+    //for (int i = 0; i < 80; i++)
+   // {
+ //       buffer[i] = vga_entry(0, 0);
+//    }
 
     for (int i = 0; i < (int)(VGA_HEIGHT * VGA_WIDTH); i++) {
         buffer[i] = i>((VGA_HEIGHT-1) * VGA_WIDTH) ? 0 : buffer[i+VGA_WIDTH];
@@ -192,10 +214,10 @@ void Terminal::shift()
 
     if (staticLogo)
     {
-        for (int i = 0; i < (VGA_WIDTH * 15); i++)
-        {
-            buffer[i] = vga_entry(0, 0);
-        }
+      //  for (int i = 0; i < (VGA_WIDTH * 15); i++)
+    //    {
+  //          buffer[i] = vga_entry(0, 0);
+//        }
 
         size_t rowtemp = row;
         size_t coltemp = column;
