@@ -35,17 +35,11 @@ void ctor_global
 void kernel_main()
 {
 //	bootloader_info = (Boot_Info *)0xBEEF;
-	Terminal& terminal = Terminal::instance();
 
 	Boot_Info *bootloader_info = (Boot_Info *)BOOTINFO_ADDRESS;
 
 	register uint64_t *foo asm("rax");
 
-	terminal.setCursor(0, 0);
-	terminal << logo;
-	terminal << status_eol;
-
-	terminal.staticLogo = true;
 
 	serial_msg("\nBOOTINFO ADDRESS: ");
 
@@ -61,9 +55,19 @@ void kernel_main()
 
 	gop = bootloader_info->vbe_framebuffer;
 
-	terminal << status_pend << "Initializing keyboard..." << status_eol;
+	Terminal& terminal = Terminal::instance();
+
+//	terminal.setCursor(0, 0);
+//	terminal << logo;
+//	terminal << status_eol;
+
+//	terminal.staticLogo = true;
+
+	terminal.put_entry_at('C', 0, 0, 0);
+
+//	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
-	terminal << status_good << "Keyboard operational!" << status_eol;
+//	terminal << status_good << "Keyboard operational!" << status_eol;
 
 	plot_pixel(300, 200, 0xFFFF00);
 	plot_pixel(300, 201, 0xFFFF00);
@@ -75,15 +79,15 @@ void kernel_main()
 	plot_pixel(302, 201, 0xFFFF00);
 	plot_pixel(302, 202, 0xFFFF00);
 
-	terminal << status_pend << "Setting up paging..." << status_eol;
+//	terminal << status_pend << "Setting up paging..." << status_eol;
 //	beginPaging();
-	terminal << status_fail << "Paging has been manually disabled." << status_eol;
+//	terminal << status_fail << "Paging has been manually disabled." << status_eol;
 
-	terminal << status_good << "Console font is located at: ";
-	writeHex(_mainfont);
-	terminal << status_eol;
+//	terminal << status_good << "Console font is located at: ";
+//	writeHex(_mainfont);
+//	terminal << status_eol;
 
-	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
+//	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
 
 	rect(200, 300, 20, 20, 0xFFFF00);
 //	DO(8) {

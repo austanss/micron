@@ -266,12 +266,9 @@
 			0xFFFFFFFFFFFFFFFF,//ÿ
 	};
 
-	inline Framebuffer gop;
+	extern Framebuffer gop;
 
-	inline void plot_pixel(int x, int y, uint32_t pixel)
-	{
-		*((uint32_t*)(gop.framebuffer_base_addr + 4 * gop.pixels_per_scan_line * y + 4 * x)) = pixel;
-	}
+	void plot_pixel(int x, int y, uint32_t pixel);
 
 	void put_char(char ch, int x, int y, uint32_t color);
 	void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color);

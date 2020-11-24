@@ -8,6 +8,8 @@ uint32_t width = gop.x_resolution;
 
 uint32_t height = gop.y_resolution;
 
+Framebuffer gop;
+
 void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color) {
 
 	uint32_t i = width* (y - 1);
@@ -48,4 +50,9 @@ void buff() {
 	for(int i = width * height; i >= 0; i--) {
 		buffer[i] = 0;
 	}
+}
+
+void plot_pixel(int x, int y, uint32_t pixel)
+{
+	*((uint32_t*)(gop.framebuffer_base_addr + 4 * gop.pixels_per_scan_line * y + 4 * x)) = pixel;
 }

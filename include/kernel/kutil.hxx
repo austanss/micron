@@ -10,3 +10,8 @@ typedef union uint64_bytearr
 	unsigned char b[8];
 	uint64_t i;
 } u64_byte_arr;
+
+static inline uint8_t get_bit(uint64_t source, uint8_t bit)
+{
+	return (source >> bit) & 1;
+}
