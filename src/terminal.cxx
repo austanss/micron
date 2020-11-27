@@ -6,6 +6,8 @@
 #include "kernel/kutil.hxx"
 #include "kernel/gfx.hxx"
 
+// This terminal emulates a 128x96 text mode
+
 enum vga_color
 {
     VGA_COLOR_BLACK = 0,
@@ -42,9 +44,9 @@ Terminal::Terminal() : row(0), column(0)
 
 void Terminal::clear()
 {
-	for (int y = 0; y < VGA_HEIGHT; y++)
+	for (unsigned int y = 0; y < VGA_HEIGHT; y++)
 	{
-		for (int x = 0; x < VGA_WIDTH; x++)
+		for (unsigned int x = 0; x < VGA_WIDTH; x++)
 		{
 			auto index = (y * VGA_WIDTH) + x;
 			buffer[index] = 0;
@@ -54,7 +56,7 @@ void Terminal::clear()
 
 void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 {
-	uint64_t font_selector = FONT[c]; // hardcoded (temp), 'A'
+	uint64_t font_selector = FONT[c];
 
 	uint8_t bits[64];
 
@@ -83,10 +85,14 @@ void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 //		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 //	}
 
-\
-
-
-	for (int x = 0, y = 0; (x * y) <= 64; x++, y++);
+	for (int y = 0; y < 8; y++)
+	{
+		for (int x = 0; x < 8; x++)
+		{
+			if (new_bits[x * y])
+				plot_pixel(x, y, 0xFFFFFFFF);
+		}
+	}
 }
 
 void Terminal::put_char(char c, uint8_t color)
@@ -208,7 +214,7 @@ void Terminal::shift()
  //       buffer[i] = vga_entry(0, 0);
 //    }
 
-    for (int i = 0; i < (int)(VGA_HEIGHT * VGA_WIDTH); i++) {
+    for (unsigned int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
         buffer[i] = i>((VGA_HEIGHT-1) * VGA_WIDTH) ? 0 : buffer[i+VGA_WIDTH];
     }
 
