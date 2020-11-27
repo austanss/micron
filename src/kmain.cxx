@@ -40,6 +40,7 @@ void kernel_main()
 
 	register uint64_t *foo asm("rax");
 
+	UEFI = bootloader_info->runtime_services;
 
 	serial_msg("\nBOOTINFO ADDRESS: ");
 
@@ -63,7 +64,7 @@ void kernel_main()
 
 //	terminal.staticLogo = true;
 
-	terminal.put_entry_at('C', 0, 0, 0);
+	terminal.put_entry_at('A', 0, 0, 0);
 
 //	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
@@ -95,6 +96,16 @@ void kernel_main()
 //	}
 
 	//	terminal.clear();
+
+	Efi_Time *time = (Efi_Time *)0xD1337;
+
+	UEFI->GetTime(time, nullptr);
+
+	serial_msg('\n');
+
+	serial_msg("Current minute: ");
+
+	hex_str_serial(time->Minute);
 }
 
 }

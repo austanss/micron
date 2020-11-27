@@ -269,6 +269,7 @@
 	extern Framebuffer gop;
 
 	void plot_pixel(int x, int y, uint32_t pixel);
+	void plot_pixel_buffer(int x, int y, uint32_t pixel);
 
 	void put_char(char ch, int x, int y, uint32_t color);
 	void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color);

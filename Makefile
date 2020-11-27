@@ -53,8 +53,9 @@ kernel:
 	$(CXX) -MF$(OBJ_DIR)/uart.cxx.o.d -o $(OBJ_DIR)/uart.cxx.o -c $(KERNEL_SRC_DIR)/uart.cxx
 	$(CXX) -MF$(OBJ_DIR)/string.cxx.o.d -o $(OBJ_DIR)/string.cxx.o -c $(KERNEL_SRC_DIR)/string.cxx
 	$(CXX) -MF$(OBJ_DIR)/kmain.cxx.o.d -o $(OBJ_DIR)/kmain.cxx.o -c $(KERNEL_SRC_DIR)/kmain.cxx -DARCH=\"$(ARCH)\"
+	$(CXX) -MF$(OBJ_DIR)/bootinfo.cxx.o.d -o $(OBJ_DIR)/bootinfo.cxx.o -c $(KERNEL_SRC_DIR)/bootinfo.cxx
 	$(OBJCOPY) $(FONTS_DIR)/font.psf $(OBJ_DIR_RES)/font.o
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/pushpop.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/paging.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/paging.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/debugging.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/string.cxx.o $(OBJ_DIR)/uart.cxx.o -T $(RES_DIR)/Linkerscript
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/bootinfo.cxx.o $(OBJ_DIR)/pushpop.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/ISR.o $(OBJ_DIR)/MemSet.o $(OBJ_DIR)/paging.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/paging.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/debugging.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR_RES)/font.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/string.cxx.o $(OBJ_DIR)/uart.cxx.o -T $(RES_DIR)/Linkerscript
 
 	
 clean:
