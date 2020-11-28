@@ -6,6 +6,7 @@ extern loadIDT64
 extern loadGDT64
 extern restart_cold
 extern hex_str_serial
+extern puts
 
 kernel_entry:
 
@@ -59,3 +60,4 @@ section .bss
 stack_begin:
 	resb 16384 						; 	16 KiB
 stack_end:
+

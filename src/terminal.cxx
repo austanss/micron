@@ -6,7 +6,7 @@
 #include "kernel/kutil.hxx"
 #include "kernel/gfx.hxx"
 
-// This terminal emulates a 64x48 text mode
+// This terminal emulates a dynamically-sized text mode
 
 enum vga_color
 {
@@ -36,7 +36,14 @@ Terminal::Terminal() : row(0), column(0)
 {
 	uint32_t *buffer = (uint32_t *) gop.framebuffer_base_addr;
 
-	for (int i = 0; i < 1024 * 768; i++)
+	dimensions size;
+
+	size = get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
+
+	VGA_WIDTH = size.w;
+	VGA_HEIGHT = size.h;
+
+	for (int i = 0; i < gop.x_resolution * gop.y_resolution; i++)
 	{
 		buffer[i] = 0x00000000;
 	}
@@ -44,18 +51,25 @@ Terminal::Terminal() : row(0), column(0)
 
 void Terminal::clear()
 {
+	uint32_t *buffer = (uint32_t *) gop.framebuffer_base_addr;
 	for (unsigned int y = 0; y < VGA_HEIGHT; y++)
 	{
 		for (unsigned int x = 0; x < VGA_WIDTH; x++)
 		{
-			auto index = (y * VGA_WIDTH) + x;
-			buffer[index] = 0;
+			uint32_t index = (y * VGA_WIDTH) + x;
+			buffer[index] = 0x000000;
 		}
 	}
 }
 
 void Terminal::put_entry_at(char c, uint32_t color, size_t xpos, size_t ypos)
 {
+	if (xpos > VGA_WIDTH)
+		return;
+
+	if (ypos > VGA_HEIGHT)
+		return;
+
 	uint64_t font_selector = FONT[c];
 
 	uint8_t bits[64];
@@ -72,20 +86,24 @@ void Terminal::put_entry_at(char c, uint32_t color, size_t xpos, size_t ypos)
 //		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 //	}
 
-	for (uint32_t y = 0, yy = (ypos * 16); y < 8; y++, yy += 2)
+	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3)
 	{
 		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2)
 		{
-			if (bits[(8 * y) + x])
-				plot_pixel(pos(xx, 		yy), 		color);
-				plot_pixel(pos(xx + 1, 	yy), 		color);
-				plot_pixel(pos(xx, 		yy + 1), 	color);
-				plot_pixel(pos(xx + 1, 	yy + 1), 	color);
+			if (bits[(8 * y) + x]) {
+				plot_pixel(pos(xx, yy), color);
+				plot_pixel(pos(xx + 1, yy), color);
+				plot_pixel(pos(xx, yy + 1), color);
+				plot_pixel(pos(xx + 1, yy + 1), color);
+				plot_pixel(pos(xx, yy + 2), color);
+				plot_pixel(pos(xx + 1, yy + 2), color);
+			}
 		}
 	}
+
 }
 
-void Terminal::put_char(char c, uint8_t color)
+void Terminal::put_char(char c, uint32_t color)
 {
 	if (c == 0)
 		return;
@@ -114,7 +132,7 @@ void Terminal::put_char(char c, uint8_t color)
 
 void Terminal::write(const char *data, size_t size)
 {
-	uint8_t color = VGA_COLOR_LIGHT_GREY;
+	uint32_t color = VGA_COLOR_LIGHT_GREY;
 	char colorCode[15];
 
 	for (; *data != '\0'; data++)
@@ -154,6 +172,73 @@ void Terminal::write(const char *data, size_t size)
 			CHECK_COLOR(LIGHT_MAGENTA)
 			CHECK_COLOR(LIGHT_BROWN)
 			CHECK_COLOR(WHITE)
+		}
+		switch (color)
+		{
+			case VGA_COLOR_BLACK:
+				color = 0x000000;
+				break;
+
+			case VGA_COLOR_WHITE:
+				color = 0xFFFFFF;
+				break;
+
+			case VGA_COLOR_RED:
+				color = 0xFF0000;
+				break;
+
+			case VGA_COLOR_BLUE:
+				color = 0x2222FF;
+				break;
+
+			case VGA_COLOR_GREEN:
+				color = 0x22FF22;
+				break;
+
+			case VGA_COLOR_CYAN:
+				color = 0x11FFFF;
+				break;
+
+
+			case VGA_COLOR_MAGENTA:
+				color = 0xFF01AA;
+				break;
+
+			case VGA_COLOR_BROWN:
+				color = 0xFFEBCD;
+				break;
+
+			case VGA_COLOR_LIGHT_GREY:
+				color = 0xDDDDDD;
+				break;
+
+			case VGA_COLOR_DARK_GREY:
+				color = 0x555555;
+				break;
+
+			case VGA_COLOR_LIGHT_BLUE:
+				color = 0x01AAFF;
+				break;
+
+			case VGA_COLOR_LIGHT_GREEN:
+				color = 0x01FF01;
+				break;
+
+			case VGA_COLOR_LIGHT_CYAN:
+				color = 0x01DDFF;
+				break;
+
+			case VGA_COLOR_LIGHT_RED:
+				color = 0xFF2222;
+				break;
+
+			case VGA_COLOR_LIGHT_MAGENTA:
+				color = 0xFF0077;
+				break;
+
+			case VGA_COLOR_LIGHT_BROWN:
+				color = 0x8B4513;
+				break;
 		}
 		put_char(*data, color);
 	}
@@ -199,22 +284,14 @@ void Terminal::println(const char *data)
 
 void Terminal::shift()
 {
-    //for (int i = 0; i < 80; i++)
-   // {
- //       buffer[i] = vga_entry(0, 0);
-//    }
+    for (uint32_t i = 0; i < ((16 * 24) * VGA_WIDTH); i++)
+	{
+		*((uint32_t *)(gop.framebuffer_base_addr + i)) = 0x000000;
+	}
 
-    for (unsigned int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
-        buffer[i] = i>((VGA_HEIGHT-1) * VGA_WIDTH) ? 0 : buffer[i+VGA_WIDTH];
-    }
 
     if (staticLogo)
     {
-      //  for (int i = 0; i < (VGA_WIDTH * 15); i++)
-    //    {
-  //          buffer[i] = vga_entry(0, 0);
-//        }
-
         size_t rowtemp = row;
         size_t coltemp = column;
         setCursor(0, 0);
@@ -229,4 +306,18 @@ Terminal& Terminal::instance()
 {
 	static Terminal instance;
 	return instance;
+}
+
+dimensions Terminal::get_optimal_size(dimensions screen_res) {
+	dimensions term_size;
+
+	term_size.w = (screen_res.w / 16);
+	term_size.h = (screen_res.h / 25);
+
+	return term_size;
+}
+
+extern "C" void puts(char* data)
+{
+	Terminal::instance().write(data);
 }
