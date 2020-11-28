@@ -23,7 +23,7 @@ void writeHex(uint32_t num)
     Terminal::instance().write(hex_str(num));     /* print it */
 }
 
-void hex_str_serial(uint64_t num)
+extern "C" void hex_str_serial(uint64_t num)
 {
 	char buffer[19];
 	buffer[0] = '0';

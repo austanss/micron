@@ -10,7 +10,6 @@
 #include "kernel/uart.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
-#include <common/bootinfo_addr.hxx>
 
 #define __stop__ while (true);
 
@@ -32,14 +31,8 @@ void ctor_global
 	serial_msg("GLOBAL CONSTRUCTORS CALLED\n");
 }
 
-void kernel_main()
+void kernel_main(Boot_Info *bootloader_info)
 {
-//	bootloader_info = (Boot_Info *)0xBEEF;
-
-	Boot_Info *bootloader_info = (Boot_Info *)BOOTINFO_ADDRESS;
-
-	register uint64_t *foo asm("rax");
-
 	UEFI = bootloader_info->runtime_services;
 
 	serial_msg("\nBOOTINFO ADDRESS: ");
@@ -56,7 +49,7 @@ void kernel_main()
 
 	gop = bootloader_info->vbe_framebuffer;
 
-	Terminal& terminal = Terminal::instance();
+//	Terminal& terminal = Terminal::instance();
 
 //	terminal.setCursor(0, 0);
 //	terminal << logo;
@@ -64,7 +57,7 @@ void kernel_main()
 
 //	terminal.staticLogo = true;
 
-	terminal.put_entry_at('A', 0, 0, 0);
+//	terminal.put_entry_at('A', 0, 0, 0);
 
 //	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();

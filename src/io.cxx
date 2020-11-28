@@ -53,15 +53,12 @@ void io_wait(void)
     asm volatile ( "outb %%al, $0x80" : : "a"(0) );
 }
 
-void serial_msg(uint8_t val)
-{
+void serial_msg(uint8_t val) {
 	outb(0x3F8, val);
 }
 
-void serial_msg(const char * val)
-{
-	for (size_t i = 0; i < strlen(val); i++)
-	{
+void serial_msg(const char *val) {
+	for (size_t i = 0; i < strlen(val); i++) {
 		serial_msg(val[i]);
 	}
 }

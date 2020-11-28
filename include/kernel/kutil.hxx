@@ -3,7 +3,7 @@
 
 char getChar(uint8_t keycode);
 void writeHex(uint32_t num);
-void hex_str_serial(uint64_t num);
+extern "C" void hex_str_serial(uint64_t num);
 
 typedef union uint64_bytearr
 {
