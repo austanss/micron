@@ -10,8 +10,9 @@
 #include "kernel/uart.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
+#include "kernel/power.hxx"
 
-#define __stop__ while (true);
+#define __hang__ while (true);
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
@@ -49,7 +50,7 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	gop = bootloader_info->vbe_framebuffer;
 
-//	Terminal& terminal = Terminal::instance();
+	Terminal& terminal = Terminal::instance();
 
 //	terminal.setCursor(0, 0);
 //	terminal << logo;
@@ -57,21 +58,11 @@ void kernel_main(Boot_Info *bootloader_info)
 
 //	terminal.staticLogo = true;
 
-//	terminal.put_entry_at('A', 0, 0, 0);
+	terminal.put_entry_at('C', 0x00FFFF, 0, 0);
 
 //	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
 //	terminal << status_good << "Keyboard operational!" << status_eol;
-
-	plot_pixel(300, 200, 0xFFFF00);
-	plot_pixel(300, 201, 0xFFFF00);
-	plot_pixel(300, 202, 0xFFFF00);
-	plot_pixel(301, 200, 0xFFFF00);
-	plot_pixel(301, 201, 0xFFFF00);
-	plot_pixel(301, 202, 0xFFFF00);
-	plot_pixel(302, 200, 0xFFFF00);
-	plot_pixel(302, 201, 0xFFFF00);
-	plot_pixel(302, 202, 0xFFFF00);
 
 //	terminal << status_pend << "Setting up paging..." << status_eol;
 //	beginPaging();
@@ -83,7 +74,7 @@ void kernel_main(Boot_Info *bootloader_info)
 
 //	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
 
-	rect(200, 300, 20, 20, 0xFFFF00);
+	rect(pos(200, 300), dims(20, 20), 0xFFFF00);
 //	DO(8) {
 //	    terminal << "[TEST]\n";
 //	}

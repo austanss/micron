@@ -7,6 +7,16 @@
 #include <stdint.h>
 #include <kernel/bootinfo.hxx>
 
+	typedef struct s_pos_point {
+		uint32_t x;
+		uint32_t y;
+	} positional_point;
+
+	typedef struct s_dimensions {
+		uint32_t w;
+		uint32_t h;
+	} dimensions;
+
 	inline uint64_t FONT[256] = {
 			0x0000000000000000,
 			0x0000000000000000,
@@ -268,11 +278,12 @@
 
 	extern Framebuffer gop;
 
-	void plot_pixel(int x, int y, uint32_t pixel);
-	void plot_pixel_buffer(int x, int y, uint32_t pixel);
-
-	void put_char(char ch, int x, int y, uint32_t color);
-	void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color);
+	void plot_pixel(positional_point posi, uint32_t pixel);
+	void plot_pixel_buffer(positional_point posi, uint32_t pixel);
+	positional_point pos(uint32_t x, uint32_t y);
+	dimensions dims(uint32_t w, uint32_t h);
+	void rect(positional_point posi, dimensions dimens, uint32_t color);
 	void buff();
+	positional_point rect_center(positional_point posTL, positional_point posBR);
 
 #endif //MICROCORE_GFX_HXX
