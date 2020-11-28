@@ -5,8 +5,11 @@ extern ctor_global
 extern loadIDT64
 extern loadGDT64
 extern restart_cold
+extern hex_str_serial
 
 kernel_entry:
+
+	mov r15, rdi					;	preserve parameters
 
 	mov esp, stack_end				;	reconfigure the stack
 
@@ -16,8 +19,6 @@ kernel_entry:
 
 	; interrupts
 	cli								;	clear the interrupt flag
-
-	push rax
 
 	; long mode control label
 	mov ecx, 0xC0000080          	; 	Set the C-register to 0xC0000080, which is the EFER MSR.
@@ -30,22 +31,19 @@ kernel_entry:
     or rax, 1 << 31              	; 	Set the PG-bit, which is the 32nd bit (bit 31).
     mov cr0, rax                 	;	Set control register 0 to the A-register.
 
-	pop rax
-
 	; gdt
 	call loadGDT64
 
 	; idt
 	call loadIDT64
 
+
 	; interrupts
 	sti								;	set the interrupt flag
 
-	push rax
-
 	call ctor_global				;	call global constructors
 
-	pop rax							;	push the arguments back
+	mov rdi, r15					;	bring back original rdi
 
 	call kernel_main				;	call kernel main
 
