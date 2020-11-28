@@ -38,7 +38,7 @@ typedef struct {
 	int        		             SetsToZero;     // Set clears sub-second time
 } Efi_Time_Capabillities;
 
-#define EfiApi
+#define EfiApi __attribute__((ms_abi))
 
 typedef struct s_memory_region_desc {
 	uint32_t type;

@@ -121,6 +121,7 @@ void ExceptionHandler(Registers& registers)
 
 void InterruptHandler(Registers& registers)
 {
+	serial_msg("INTERRUPT ");
 	if (registers.interruptNumber < 32)
 	{
 		ExceptionHandler(registers);
@@ -136,7 +137,7 @@ void InterruptHandler(Registers& registers)
 		if (keycode < 0 || keycode == prevKeyCode || keycode == 32)
 			return;
 
-		terminal.put_char(getChar(keycode), 15);
+		serial_msg(getChar(keycode));
 
 		prevKeyCode = keycode;
 	}

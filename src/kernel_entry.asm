@@ -4,6 +4,7 @@ extern kernel_main
 extern ctor_global
 extern loadIDT64
 extern loadGDT64
+extern restart_cold
 
 kernel_entry:
 
@@ -35,10 +36,10 @@ kernel_entry:
 	call loadGDT64
 
 	; idt
-	; call loadIDT64
+	call loadIDT64
 
 	; interrupts
-	; sti							;	set the interrupt flag
+	sti								;	set the interrupt flag
 
 	push rax
 
@@ -51,6 +52,8 @@ kernel_entry:
 	.halt:							;	hang
 		hlt
 		jmp .halt
+
+	call restart_cold				;	if loop breaks save system from fatal errors
 
 
 section .bss

@@ -35,7 +35,7 @@ isr_common_stub:
    call popa
    add rsp, 8 ; Cleans up the pushed error code and pushed ISR number
    sti
-   iret ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+   iretq ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'
@@ -60,7 +60,7 @@ irq_common_stub:
     call popa
     add rsp, 8
     sti
-    iret
+    iretq
 
 ; We don't get information about which interrupt was caller
 ; when the handler is run, so we will need to have a different handler
