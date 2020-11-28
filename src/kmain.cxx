@@ -58,7 +58,19 @@ void kernel_main(Boot_Info *bootloader_info)
 
 //	terminal.staticLogo = true;
 
-	terminal.put_entry_at('C', 0x00FFFF, 0, 0);
+	terminal.put_entry_at('H', 0x00FFFF, 0,	 0);
+	terminal.put_entry_at('e', 0x00FFFF, 1,	 0);
+	terminal.put_entry_at('l', 0x00FFFF, 2,	 0);
+	terminal.put_entry_at('l', 0x00FFFF, 3,	 0);
+	terminal.put_entry_at('o', 0x00FFFF, 4,	 0);
+	terminal.put_entry_at(',', 0x00FFFF, 5,	 0);
+	terminal.put_entry_at(' ', 0x00FFFF, 6,	 0);
+	terminal.put_entry_at('w', 0x00FFFF, 7,	 0);
+	terminal.put_entry_at('o', 0x00FFFF, 8,	 0);
+	terminal.put_entry_at('r', 0x00FFFF, 9,	 0);
+	terminal.put_entry_at('l', 0x00FFFF, 10, 0);
+	terminal.put_entry_at('d', 0x00FFFF, 11, 0);
+	terminal.put_entry_at('!', 0x00FFFF, 12, 0);
 
 //	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
