@@ -97,15 +97,7 @@ void kernel_main()
 
 	//	terminal.clear();
 
-	Efi_Time *time = (Efi_Time *)0xD1337;
-
-	UEFI->GetTime(time, nullptr);
-
-	serial_msg('\n');
-
-	serial_msg("Current minute: ");
-
-	hex_str_serial(time->Minute);
+	serial_msg("\n\nKernel configured.");
 }
 
 }

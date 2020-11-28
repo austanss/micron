@@ -1,6 +1,6 @@
-global flushIDT
+global loadIDT64
 
 loadIDT64:
-	mov eax, [esp+4]
-	lidt [eax]
+	mov rax, [rsp+4]
+	lidt [rax]
 	ret
