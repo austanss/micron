@@ -54,7 +54,7 @@ void Terminal::clear()
 	}
 }
 
-void Terminal::put_entry_at(char c, uint32_t color, size_t x, size_t y)
+void Terminal::put_entry_at(char c, uint32_t color, size_t xpos, size_t ypos)
 {
 	uint64_t font_selector = FONT[c];
 
@@ -72,9 +72,9 @@ void Terminal::put_entry_at(char c, uint32_t color, size_t x, size_t y)
 //		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 //	}
 
-	for (uint32_t y = 0, yy = 0; y < 8; y++, yy += 2)
+	for (uint32_t y = 0, yy = (ypos * 16); y < 8; y++, yy += 2)
 	{
-		for (uint32_t x = 0, xx = 0; x < 8; x++, xx += 2)
+		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2)
 		{
 			if (bits[(8 * y) + x])
 				plot_pixel(pos(xx, 		yy), 		color);
