@@ -6,7 +6,7 @@
 #include "kernel/kutil.hxx"
 #include "kernel/gfx.hxx"
 
-// This terminal emulates a 128x96 text mode
+// This terminal emulates a 64x48 text mode
 
 enum vga_color
 {
@@ -54,7 +54,7 @@ void Terminal::clear()
 	}
 }
 
-void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
+void Terminal::put_entry_at(char c, uint32_t color, size_t x, size_t y)
 {
 	uint64_t font_selector = FONT[c];
 
@@ -65,19 +65,6 @@ void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 		bits[i] = get_bit(font_selector, i);
 	}
 
-	uint8_t new_bits[64];
-
-	int revIndex = 0;
-	int arrIndex = 64 - 1;
-	while (arrIndex >= 0)
-	{
-		/* Copy value from original array to reverse array */
-		new_bits[revIndex] = bits[arrIndex];
-
-		revIndex++;
-		arrIndex--;
-	}
-
 //	for (int i = 63; i >= 0; i--)
 //	{
 //		if ((i + 1) % 8 == 0)
@@ -85,12 +72,15 @@ void Terminal::put_entry_at(char c, uint8_t color, size_t x, size_t y)
 //		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 //	}
 
-	for (int y = 0; y < 8; y++)
+	for (uint32_t y = 0, yy = 0; y < 8; y++, yy += 2)
 	{
-		for (int x = 0; x < 8; x++)
+		for (uint32_t x = 0, xx = 0; x < 8; x++, xx += 2)
 		{
-			if (new_bits[x * y])
-				plot_pixel(x, y, 0xFFFFFFFF);
+			if (bits[(8 * y) + x])
+				plot_pixel(pos(xx, 		yy), 		color);
+				plot_pixel(pos(xx + 1, 	yy), 		color);
+				plot_pixel(pos(xx, 		yy + 1), 	color);
+				plot_pixel(pos(xx + 1, 	yy + 1), 	color);
 		}
 	}
 }

@@ -10,13 +10,36 @@ uint32_t height = gop.y_resolution;
 
 Framebuffer gop;
 
-void rect(int x, int y, uint32_t w, uint32_t h, uint32_t color) {
+positional_point pos(uint32_t x, uint32_t y) {
 
-	for (unsigned int xx = x; (xx <= (x + w)) && (xx < width); xx++)
-		for (unsigned int yy = y; (yy <= (y + h)) && (yy < height); yy++)
-			plot_pixel(xx, yy, color);
+	positional_point posi;
+	posi.x = x;
+	posi.y = y;
+	return posi;
+}
 
-	buff();
+dimensions dims(uint32_t w, uint32_t h) {
+
+	dimensions dimens;
+	dimens.w = w;
+	dimens.h = h;
+	return dimens;
+}
+
+void rect(positional_point posi, dimensions dimens, uint32_t color) {
+
+	positional_point rect_relative_center = rect_center(pos(0, 0), pos(dimens.w, dimens.h));
+
+	posi.x -= rect_relative_center.x;
+	posi.y -= rect_relative_center.y;
+
+	positional_point rect_absolute_center = pos(posi.x + rect_relative_center.x, posi.y + rect_relative_center.y);
+
+	for (uint32_t xx = (rect_absolute_center.x - (dimens.w / 2)); (xx <= (rect_absolute_center.x + (dimens.w / 2))) && (xx < width); xx++)
+		for (uint32_t yy = (rect_absolute_center.y - (dimens.h / 2)); (yy <= rect_absolute_center.y + (dimens.h / 2)) && (yy < height); yy++)
+			plot_pixel(pos(xx, yy), color);
+
+	// buff();
 }
 
 void buff() {
@@ -28,13 +51,17 @@ void buff() {
 	}
 }
 
-void plot_pixel(int x, int y, uint32_t pixel)
+void plot_pixel(positional_point posi, uint32_t pixel)
 {
-	*((uint32_t*)(gop.framebuffer_base_addr + 4 * gop.pixels_per_scan_line * y + 4 * x)) = pixel;
+	*((uint32_t*)(gop.framebuffer_base_addr + 4 * gop.pixels_per_scan_line * posi.y + 4 * posi.x)) = pixel;
 }
 
-void plot_pixel_buffer(int x, int y, uint32_t pixel)
+void plot_pixel_buffer(positional_point posi, uint32_t pixel)
 {
-	*(buffer + 4 * gop.pixels_per_scan_line * y + 4 * x) = pixel;
+	*(buffer + 4 * gop.pixels_per_scan_line * posi.y + 4 * posi.x) = pixel;
 }
 
+positional_point rect_center(positional_point posTL, positional_point posBR)
+{
+	return pos((posTL.x + posBR.x) / 2, (posTL.y + posBR.y) / 2);
+}
