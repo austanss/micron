@@ -245,6 +245,20 @@ void Terminal::write(const char *data, size_t size)
 }
 void Terminal::write(const char *data)
 {
+	if (strcomp(data, terminal_line))
+	{
+		put_char('\n', 0x000000);
+		for (int i = 1; i <= VGA_WIDTH; i++)
+		{
+			if (i % 2 == 0)
+				put_char('=', 0xFFFFFF);
+			else
+				put_char('-', 0xFFFFFF);
+		}
+		put_char('\n', 0x000000);
+		return;
+	}
+
 	write(data, strlen(data));
 }
 void Terminal::setCursor(size_t columnc, size_t rowc)

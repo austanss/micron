@@ -7,7 +7,8 @@
     #define status_pend "$WHITE![$LIGHT_BLUE!-$WHITE!] $LIGHT_GREY!\0"
     #define status_good "$WHITE![$LIGHT_GREEN!+$WHITE!] $LIGHT_GREY!\0"
     #define status_fail "$WHITE![$RED!X$WHITE!] $LIGHT_GREY!\0"
-    #define status_eol "\n"
+    #define status_eol "\n\0"
+	#define terminal_line "$TERM_LINE!\0"
 
 class Terminal
 {

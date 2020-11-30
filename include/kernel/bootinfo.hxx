@@ -223,8 +223,8 @@ typedef struct s_framebuffer {
  */
 typedef struct s_boot_info {
 	uint64_t verification;
+	Framebuffer *vbe_framebuffer;
 	Memory_Map_Descriptor *memory_map;
-	Framebuffer vbe_framebuffer;
 	uint64_t mmap_size;
 	uint64_t mmap_descriptor_size;
 	Efi_Runtime_Services *runtime_services;
