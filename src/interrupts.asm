@@ -1,13 +1,33 @@
 ; Defined in GDT.cpp
 [extern ISRHandler]
 [extern IRQHandler]
-[extern popa]
-[extern pusha]
+
+%macro pusha 0
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rsp
+    push rbp
+    push rsi
+    push rdi
+%endmacro
+
+%macro popa 0
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rsp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+%endmacro
 
 ; Common ISR code
 isr_common_stub:
   ; 1. Save CPU state
-   call pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+   pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
    mov ax, ds ; Lower 16-bits of eax = ds.
    push rax ; save the data segment descriptor
    mov ax, 0x10  ; kernel data segment descriptor
@@ -22,6 +42,7 @@ isr_common_stub:
    pop r12
    push rax
    push rsp
+   mov rdi, rbp
    call ISRHandler
    pop rax
 
@@ -32,7 +53,7 @@ isr_common_stub:
    mov es, ax
    mov fs, ax
    mov gs, ax
-   call popa
+   popa
    add rsp, 8 ; Cleans up the pushed error code and pushed ISR number
    sti
    iretq ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
@@ -40,16 +61,7 @@ isr_common_stub:
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'
 irq_common_stub:
-    call pusha
-    mov ax, ds
-    push rax
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    cld
-    push rsp
+
     call IRQHandler ; Different than the ISR code
     pop rax
     pop rax
@@ -57,7 +69,6 @@ irq_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call popa
     add rsp, 8
     sti
     iretq

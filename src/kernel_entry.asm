@@ -61,8 +61,6 @@ kernel_entry:
 	; interrupts
 	sti								;	set the interrupt flag
 
-	;int 0x06
-
 	call ctor_global				;	call global constructors
 
 	mov edi, 0x00FFFF00
@@ -70,7 +68,9 @@ kernel_entry:
 
 	mov rdi, r15					;	bring back original rdi
 
-	call kernel_main				;	call kernel main
+	call kernel_main				;	call kernel
+
+	int 0x0d
 
 	.halt:							;	hang
 		hlt
@@ -83,7 +83,7 @@ set_status_color:
 	mov r14, [asm_framebuffer_ptr]
 %rep 200
 	mov [r14], edi
-	inc r14
+	add r14, 4
 %endrep
 	pop r14
 	ret
