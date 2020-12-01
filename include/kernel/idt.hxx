@@ -4,35 +4,24 @@
 
 extern "C" {
 
-struct __attribute__((packed)) IDTEntry
-{
-	volatile uint16_t base_lower;
-	volatile uint16_t sel;
-	volatile uint8_t  always0;
-	volatile uint8_t  flags;
-	volatile uint16_t base_upper;
-};
+typedef struct {
+	uint16_t  baseLow;
+	uint16_t  selector;
+	uint8_t  reservedIst;
+	uint8_t  flags;
+	uint16_t  baseMid;
+	uint32_t  baseHigh;
+	uint32_t  reserved;
+} __attribute__((packed)) idt_descriptor;
 
-struct __attribute__((packed)) IDTPointer
-{
-	volatile uint16_t limit;
-	volatile uint32_t base;
-};
+/*
+* Interrupt Descriptor Pointer
+*/
+typedef struct {
+	uint16_t  limit;
+	uint64_t  base;
+} __attribute__((packed)) idt_ptr;
 
-struct __attribute__((packed)) GDTEntry
-{
-	volatile uint16_t limit_low;
-	volatile uint16_t base_low;
-	volatile uint8_t  base_middle;
-	volatile uint8_t  access;
-	volatile uint8_t  granularity;
-	volatile uint8_t  base_high;
-};
-
-struct __attribute__((packed)) GDTPointer
-{
-	volatile uint16_t limit;
-	volatile uint32_t base;
-};
+void loadIDT();
 
 }
