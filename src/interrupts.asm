@@ -348,7 +348,8 @@ irq0:
 ;	push byte 0
 ;	push byte 32
 ;	jmp irq_common_stub
-    nop
+	sti
+	iretq
 
 irq1:
 	cli
