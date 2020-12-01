@@ -69,8 +69,9 @@ kernel_entry:
 	mov rdi, r15					;	bring back original rdi
 
 	call kernel_main				;	call kernel
+;	sti
 
-	int 0x0d
+	int 0x21
 
 	.halt:							;	hang
 		hlt

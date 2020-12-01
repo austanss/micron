@@ -47,6 +47,7 @@ void kernel_main(Boot_Info *bootloader_info)
 	serial_msg("\nFRAMEBUFFER ADDRESS: ");
 
 	hex_str_serial(bootloader_info->vbe_framebuffer->framebuffer_base_addr);
+	serial_msg("\n\n");
 
 	gop = *(bootloader_info->vbe_framebuffer);
 

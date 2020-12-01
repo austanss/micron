@@ -37,22 +37,14 @@ isr_common_stub:
    mov gs, ax
 
   ; 2. Call C handler
-   cld
-   pop rax
-   pop r12
-   push rax
-   push rsp
-   mov rdi, rbp
    call ISRHandler
-   pop rax
 
   ; 3. Restore state
-   push r12
-   pop rax
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
+   pop rbx
+   mov ds, bx
+   mov es, bx
+   mov fs, bx
+   mov gs, bx
    popa
    add rsp, 8 ; Cleans up the pushed error code and pushed ISR number
    sti
@@ -61,7 +53,10 @@ isr_common_stub:
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'
 irq_common_stub:
-
+	pop rsi
+	pop rdi
+	push rdi
+	push rsi
     call IRQHandler ; Different than the ISR code
     pop rax
     pop rax

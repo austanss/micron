@@ -4,6 +4,7 @@
 #include "kernel/io.hxx"
 #include "kernel/kutil.hxx"
 #include "kernel/kbd.hxx"
+#include "kernel/power.hxx"
 
 uint8_t prevKeyCode = 156;
 
@@ -74,60 +75,65 @@ typedef struct s_registers
 void ExceptionHandler(Registers& registers)
 {
 	Terminal& terminal = Terminal::instance();
+	terminal.clear();
 
-	terminal << "$RED!ERROR: $WHITE!" << registers.interruptNumber << " -/- ";
-	writeHex(registers.errorCode);
-	terminal << "\n";
-	terminal << "DS: ";
-	writeHex(registers.ds);
-	terminal << "\n";
-	terminal << "RDI: ";
-	writeHex(registers.rdi);
-	terminal << " | RSI: ";
-	writeHex(registers.rsi);
-	terminal << " | RBP: ";
-	writeHex(registers.rbp);
-	terminal << " | RSP: ";
-	writeHex(registers.rsp);
-	terminal << "\n";
-	terminal << "RBX: ";
-	writeHex(registers.rbx);
-	terminal << " | RDX: ";
-	writeHex(registers.rdx);
-	terminal << " | RCX: ";
-	writeHex(registers.rcx);
-	terminal << " | RAX: ";
-	writeHex(registers.rax);
-	terminal << "\n";
-	terminal << "RIP: ";
-	writeHex(registers.rip);
-	terminal << " | CS: ";
-	writeHex(registers.cs);
-	terminal << "\n";
-	terminal << "RFLAGS: ";
-	writeHex(registers.rflags);
-	terminal << " | USERRSP: ";
-	writeHex(registers.userrsp);
-	terminal << "\n";
-	terminal << "SS: ";
-	writeHex(registers.ss);
-	terminal << "\n";
-	while (true);
+	terminal << "$RED!FATAL ERROR: $WHITE!The CPU has thrown a fatal exception and the system must terminate.\n"
+			 << "A register dump has been printed to serial output.\n"
+			 << "\n"
+			 << "The system will restart momentarily...";
+	serial_msg("\n\nFATAL ERROR: CPU EXCEPTION ");
+	hex_str_serial(registers.interruptNumber);
+	serial_msg(" -/- ERROR CODE ");
+	hex_str_serial(registers.errorCode);
+	serial_msg("\n");
+	serial_msg("DS: ");
+	hex_str_serial(registers.ds);
+	serial_msg("\n");
+	serial_msg("RDI: ");
+	hex_str_serial(registers.rdi);
+	serial_msg(" | RSI: ");
+	hex_str_serial(registers.rsi);
+	serial_msg(" | RBP: ");
+	hex_str_serial(registers.rbp);
+	serial_msg(" | RSP: ");
+	hex_str_serial(registers.rsp);
+	serial_msg("\n");
+	serial_msg("RBX: ");
+	hex_str_serial(registers.rbx);
+	serial_msg(" | RDX: ");
+	hex_str_serial(registers.rdx);
+	serial_msg(" | RCX: ");
+	hex_str_serial(registers.rcx);
+	serial_msg(" | RAX: ");
+	hex_str_serial(registers.rax);
+	serial_msg("\n");
+	serial_msg("RIP: ");
+	hex_str_serial(registers.rip);
+	serial_msg(" | CS: ");
+	hex_str_serial(registers.cs);
+	serial_msg("\n");
+	serial_msg("RFLAGS: ");
+	hex_str_serial(registers.rflags);
+	serial_msg(" | USERRSP: ");
+	hex_str_serial(registers.userrsp);
+	serial_msg("\n");
+	serial_msg("SS: ");
+	hex_str_serial(registers.ss);
+	serial_msg("\n");
+	asm volatile("cli");
+	restart_cold();
 }
 
-
-void InterruptHandler(Registers& registers)
+void ISRHandler(Registers registers)
 {
-	serial_msg("INTERRUPT ");
-	if (registers.interruptNumber < 32)
-	{
-		ExceptionHandler(registers);
-		return;
-	}
+    ExceptionHandler(registers);
+}
 
-	Terminal& terminal = Terminal::instance();
+void IRQHandler(uint8_t irq_code, uint8_t interrupt_code)
+{
+	serial_msg("IRQ TRIGGERED\n");
 
-	if (registers.interruptNumber == 33)
+	if (irq_code == 1)
 	{
 		uint8_t keycode = inb(0x60);
 
@@ -139,20 +145,7 @@ void InterruptHandler(Registers& registers)
 		prevKeyCode = keycode;
 	}
 
-//	terminal << "Interrupt: ";
-//	terminal << registers.interruptNumber;
-//	terminal << Terminal::EOL;
-}
-
-void ISRHandler(Registers& registers)
-{
-    InterruptHandler(registers);
-}
-
-void IRQHandler(Registers& registers)
-{
-    InterruptHandler(registers);
-    if (registers.interruptNumber >= 40)
+    if (interrupt_code >= 40)
         outb(0xA0, 0x20); /* slave */
     outb(0x20, 0x20); /* master */
 }

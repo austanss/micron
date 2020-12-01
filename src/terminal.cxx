@@ -51,15 +51,14 @@ Terminal::Terminal() : row(0), column(0)
 
 void Terminal::clear()
 {
-	uint32_t *buffer = (uint32_t *) gop.framebuffer_base_addr;
 	for (unsigned int y = 0; y < VGA_HEIGHT; y++)
 	{
 		for (unsigned int x = 0; x < VGA_WIDTH; x++)
 		{
-			uint32_t index = (y * VGA_WIDTH) + x;
-			buffer[index] = 0x000000;
+			put_entry_at(' ', 0x0, x, y);
 		}
 	}
+	setCursor(0, 0);
 }
 
 void Terminal::put_entry_at(char c, uint32_t color, size_t xpos, size_t ypos)
@@ -97,6 +96,15 @@ void Terminal::put_entry_at(char c, uint32_t color, size_t xpos, size_t ypos)
 				plot_pixel(pos(xx + 1, yy + 1), color);
 				plot_pixel(pos(xx, yy + 2), color);
 				plot_pixel(pos(xx + 1, yy + 2), color);
+			}
+			else
+			{
+				plot_pixel(pos(xx, yy), 0x00000000);
+				plot_pixel(pos(xx + 1, yy), 0x00000000);
+				plot_pixel(pos(xx, yy + 1), 0x00000000);
+				plot_pixel(pos(xx + 1, yy + 1), 0x00000000);
+				plot_pixel(pos(xx, yy + 2), 0x00000000);
+				plot_pixel(pos(xx + 1, yy + 2), 0x00000000);
 			}
 		}
 	}
@@ -266,6 +274,7 @@ void Terminal::setCursor(size_t columnc, size_t rowc)
 	column = columnc;
 	row = rowc;
 }
+
 void Terminal::write(int data)
 {
 	auto convert = [](unsigned int num)
