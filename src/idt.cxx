@@ -137,14 +137,14 @@ void ISRHandler(Registers& registers)
 
 void IRQHandler(Registers& registers)
 {
-	serial_msg("IRQ TRIGGERED\n");
-
 	if (registers.interruptNumber == 33)
 	{
-		serial_msg("KEYBOARD PRESSED\n");
 		uint8_t keycode = inb(0x60);;
 
-		Terminal::instance().put_char(getChar(keycode), 0xFFFFFFFF);
+		char* charr = "$WHITE! \0";
+		charr[7] = getChar(keycode);
+
+		Terminal::instance().write(charr);
 
 		prevKeyCode = keycode;
 	}
