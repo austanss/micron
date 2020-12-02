@@ -135,23 +135,24 @@ void ISRHandler(Registers& registers)
     ExceptionHandler(registers);
 }
 
-void IRQHandler(uint8_t irq_code, uint8_t interrupt_code)
+void IRQHandler(Registers& registers)
 {
 	serial_msg("IRQ TRIGGERED\n");
 
-	if (irq_code == 1)
+	if (registers.interruptNumber == 33)
 	{
+		serial_msg("KEYBOARD PRESSED\n");
 		uint8_t keycode = inb(0x60);
 
 		if (keycode < 0 || keycode == prevKeyCode || keycode == 32)
 			return;
 
-		serial_msg(getChar(keycode));
+		Terminal::instance().put_char(getChar(keycode), 0xFFFFFFFF);
 
 		prevKeyCode = keycode;
 	}
 
-    if (interrupt_code >= 40)
+    if (registers.interruptNumber >= 40)
         outb(0xA0, 0x20); /* slave */
     outb(0x20, 0x20); /* master */
 }
