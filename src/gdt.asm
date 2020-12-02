@@ -2,8 +2,19 @@ global loadGDT64
 global GDT64
 
 loadGDT64:
+	push rax
 	lgdt [GDT64.Pointer]        ; Load the new GDT pointer
-	ret
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+   	mov fs, ax
+   	mov gs, ax
+   	mov ss, ax
+	pop rax
+	jmp far [cs_ptr]
+
+	.ret:
+		ret
 
 
 GDT64:                           ; Global Descriptor Table (64-bit).
@@ -31,3 +42,7 @@ GDT64:                           ; Global Descriptor Table (64-bit).
     .Pointer:                    ; The GDT-pointer.
     dw $ - GDT64 - 1             ; Limit.
     dq GDT64                     ; Base.
+
+cs_ptr:
+	dq loadGDT64.ret
+	dw 0x08

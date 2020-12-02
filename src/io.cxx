@@ -18,7 +18,7 @@ uint8_t inb(uint16_t port)
 	return ret;
 }
 
-void IRQ_set_mask(unsigned char IRQLine) {
+void irq_mask(unsigned char IRQLine) {
     uint16_t port;
     uint8_t value;
  
@@ -32,13 +32,14 @@ void IRQ_set_mask(unsigned char IRQLine) {
     outb(port, value);        
 }
  
-void IRQ_clear_mask(unsigned char IRQLine) {
+void irq_unmask(uint8_t IRQLine)
+{
     uint16_t port;
     uint8_t value;
  
-    if(IRQLine < 8) {
+    if (IRQLine < 8)
         port = PIC1_DATA;
-    } else {
+    else {
         port = PIC2_DATA;
         IRQLine -= 8;
     }

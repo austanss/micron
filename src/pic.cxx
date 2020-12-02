@@ -1,7 +1,7 @@
 #include "kernel/pic.hxx"
 #include "kernel/io.hxx"
 
-void PIC_sendEOI(unsigned char irq)
+void pic_send_eoi(unsigned char irq)
 {
 	if(irq >= 8)
 		outb(PIC2_COMMAND,PIC_EOI);
@@ -9,7 +9,7 @@ void PIC_sendEOI(unsigned char irq)
 	outb(PIC1_COMMAND,PIC_EOI);
 }
 
-void PIC_remap(int offset1, int offset2)
+extern "C" void pic_remap(int offset1, int offset2)
 {
 	unsigned char a1, a2;
 
@@ -38,10 +38,6 @@ void PIC_remap(int offset1, int offset2)
 	outb(PIC2_DATA, a2);
 }
 
-extern "C" {
-
-void configurePIC(void) {
-	PIC_remap(0x20, 0x28);
-}
-
+extern "C" void configurePIC(void) {
+	pic_remap(0x20, 0x28);
 }

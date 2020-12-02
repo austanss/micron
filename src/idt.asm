@@ -1,6 +1,5 @@
-global loadIDT64
+global lidt
 
-loadIDT64:
-	mov rax, [rsp+4]
-	lidt [rax]
+lidt:
+	lidt [rdi]
 	ret
