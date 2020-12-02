@@ -116,10 +116,18 @@ void Terminal::put_char(char c, uint32_t color)
 	if (c == 0)
 		return;
 
-	if (c != '\n')
+	if (c == '\b')
 	{
-		put_entry_at(c, color, column, row);
+		if (--column < 0)
+			column = (VGA_WIDTH - 1);
+
+		put_entry_at(' ', 0x0, column, row);
+		return;
 	}
+
+	if (c != '\n')
+		put_entry_at(c, color, column, row);
+
 	if (++column >= VGA_WIDTH)
 	{
 		column = 0;
