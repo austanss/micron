@@ -142,10 +142,7 @@ void IRQHandler(Registers& registers)
 	if (registers.interruptNumber == 33)
 	{
 		serial_msg("KEYBOARD PRESSED\n");
-		uint8_t keycode = inb(0x60);
-
-		if (keycode < 0 || keycode == prevKeyCode || keycode == 32)
-			return;
+		uint8_t keycode = inb(0x60);;
 
 		Terminal::instance().put_char(getChar(keycode), 0xFFFFFFFF);
 
