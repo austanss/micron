@@ -67,9 +67,19 @@ extern void lidt(uint64_t);
 typedef struct s_registers
 {
 	uint64_t ds;
-	uint64_t rdi, rsi, rbp, rsp, rbx, rdx, rcx, rax;
-	uint64_t interruptNumber, errorCode;
-	uint64_t rip, cs, rflags, userrsp, ss;
+	uint64_t rdi;
+	uint64_t rsi;
+	uint64_t rbp;
+	uint64_t rbx;
+	uint64_t rdx;
+	uint64_t rcx;
+	uint64_t rax;
+	uint64_t interruptNumber;
+	uint64_t errorCode;
+	uint64_t rip;
+	uint64_t cs;
+	uint64_t rflags;
+	uint64_t ss;
 } Registers;
 
 void ExceptionHandler(Registers& registers)
@@ -96,7 +106,7 @@ void ExceptionHandler(Registers& registers)
 	serial_msg(" | RBP: ");
 	hex_str_serial(registers.rbp);
 	serial_msg(" | RSP: ");
-	hex_str_serial(registers.rsp);
+	hex_str_serial(registers.ss);
 	serial_msg("\n");
 	serial_msg("RBX: ");
 	hex_str_serial(registers.rbx);
@@ -114,17 +124,13 @@ void ExceptionHandler(Registers& registers)
 	serial_msg("\n");
 	serial_msg("RFLAGS: ");
 	hex_str_serial(registers.rflags);
-	serial_msg(" | USERRSP: ");
-	hex_str_serial(registers.userrsp);
 	serial_msg("\n");
-	serial_msg("SS: ");
-	hex_str_serial(registers.ss);
 	serial_msg("\n");
 	asm volatile("cli");
 	restart_cold();
 }
 
-void ISRHandler(Registers registers)
+void ISRHandler(Registers& registers)
 {
     ExceptionHandler(registers);
 }

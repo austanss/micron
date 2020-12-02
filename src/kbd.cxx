@@ -4,6 +4,7 @@
 
 #include "kernel/kbd.hxx"
 #include "kernel/terminal.hxx"
+#include "kernel/io.hxx"
 
 void FnHandlerF1  ()  { }
 void FnHandlerF2  ()  { }
@@ -422,4 +423,5 @@ void Keyboard::Initialize()
 	Keyboard::alt_down = false;
 	Keyboard::ctrl_down = false;
 	Keyboard::fn_down = false;
+	irq_unmask(1);
 }

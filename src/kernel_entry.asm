@@ -59,7 +59,7 @@ kernel_entry:
 	call configurePIC
 
 	; interrupts
-	sti								;	set the interrupt flag
+;	sti								;	set the interrupt flag
 
 	call ctor_global				;	call global constructors
 
@@ -69,10 +69,11 @@ kernel_entry:
 	mov rdi, r15					;	bring back original rdi
 
 	call kernel_main				;	call kernel
-;	sti
+	sti
 
-	int 0x21
+	int 0x0d
 
+	cli
 	.halt:							;	hang
 		hlt
 		jmp .halt
