@@ -37,15 +37,15 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	serial_msg("\nBOOTINFO ADDRESS: ");
 
-	hex_str_serial((uintptr_t)bootloader_info);
+	int2serial_hex((uintptr_t)bootloader_info);
 
 	serial_msg("\nBOOTINFO CHECKSUM: ");
 
-	hex_str_serial(bootloader_info->verification);
+	int2serial_hex(bootloader_info->verification);
 
 	serial_msg("\nFRAMEBUFFER ADDRESS: ");
 
-	hex_str_serial(bootloader_info->vbe_framebuffer->framebuffer_base_addr);
+	int2serial_hex(bootloader_info->vbe_framebuffer->framebuffer_base_addr);
 	serial_msg("\n\n");
 
 	gop = *(bootloader_info->vbe_framebuffer);
@@ -63,8 +63,16 @@ void kernel_main(Boot_Info *bootloader_info)
 	terminal << status_good << "Keyboard operational!" << status_eol;
 
 	terminal << status_pend << "Setting up paging..." << status_eol;
-	beginPaging();
-	terminal << status_good << "Paging has been initialized!" << status_eol;
+//	begin_paging();
+	terminal << status_fail << "Paging has been manually disabled." << status_eol;
+
+	terminal << status_pend << "Mapping memory..." << status_eol;
+	memory_info* mem_info = map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
+	terminal << status_good << "Memory has been mapped!" << status_eol;
+
+	terminal << status_pend << "Starting memory manager..." << status_eol;
+	start_memory_manager(mem_info);
+	terminal << status_good << "Managing memory!" << status_eol;
 
 	serial_msg("\n\nKernel configured.");
 
@@ -76,6 +84,8 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	terminal << status_good << "microNET: boot success" << status_eol;
 	terminal << terminal_line << status_eol;
+
+	terminal << "Testing itoa: " << itoa(7, 10) << status_eol;
 }
 
 }

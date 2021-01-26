@@ -5,11 +5,9 @@ extern ctor_global
 extern loadIDT
 extern loadGDT64
 extern restart_cold
-extern hex_str_serial
 extern puts
 extern serial_msg
 extern configurePIC
-extern setupPaging
 
 kernel_entry:
 
@@ -52,9 +50,6 @@ kernel_entry:
 
 	; idt
 	call loadIDT
-
-	; paging
-	call setupPaging
 
 	mov edi, 0xFF00FF00
 	call set_status_color

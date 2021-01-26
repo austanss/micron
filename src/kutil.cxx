@@ -23,7 +23,7 @@ void writeHex(uint32_t num)
     Terminal::instance().write(hex_str(num));     /* print it */
 }
 
-extern "C" void hex_str_serial(uint64_t num)
+extern "C" void int2serial_hex(uint64_t num)
 {
 	char buffer[19];
 	buffer[0] = '0';
@@ -36,4 +36,28 @@ extern "C" void hex_str_serial(uint64_t num)
 	buffer[18]= '\0';         /* terminate string */
 
 	serial_msg(buffer);
+}
+
+const char* digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+void int2serial_any(int64_t value, int base)
+{
+	if ( ( value / base ) != 0 )
+	{
+		int2serial_any( value / base, base );
+	}
+	serial_msg( digits[ value % base ] );
+}
+
+char* itoa(int val, int base)
+{
+	static char buf[32] = {0};
+
+	int i = 30;
+
+	for(; val && i ; --i, val /= base)
+
+		buf[i] = "0123456789abcdef"[val % base];
+
+	return &buf[i+1];
 }

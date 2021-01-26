@@ -1,5 +1,5 @@
 global memset
-global setupPaging
+global setup_paging
 
 memset:
 	push rbp
@@ -11,7 +11,7 @@ memset:
 	pop rbp
 	ret
 
-setupPaging:
+setup_paging:
    	; Fetch the pointer to the paging directory
    	mov rax, [rsp + 4]
    	mov cr3, rax
