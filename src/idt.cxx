@@ -1,4 +1,4 @@
-#include "kernel/asmfuncs.hxx"
+#include "kernel/memory.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/terminal.hxx"
 #include "kernel/io.hxx"

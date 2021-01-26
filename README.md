@@ -20,11 +20,8 @@ While it may sound enticing for embedded systems to squeeze more performance, in
 
 ## Building
 ```
-make bin ARCH=[arch]
+make kernel
 ```
-You must specify the architecture to build for.\
-Currently, we have support for these architectures:
- - x86_64
 
 Object files will be located in `bin/obj`.\
 The binary will be located in `bin` (`microCORE.kernel`).\

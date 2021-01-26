@@ -23,5 +23,6 @@ typedef struct {
 } __attribute__((packed)) idt_ptr;
 
 void loadIDT();
+void initIDT();
 
 }

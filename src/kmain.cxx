@@ -1,6 +1,6 @@
 #include "kernel/kutil.hxx"
 #include "kernel/terminal.hxx"
-#include "kernel/mem.hxx"
+#include "kernel/memory.hxx"
 #include "kernel/logo.hxx"
 #include "kernel/macros.hxx"
 #include "kernel/kbd.hxx"
@@ -18,7 +18,6 @@
     #define ARCH "$RED!UNKNOWN"
 #endif
 
-#define OS_CONTINOUS_RAM_START 0x100000
 
 extern "C" {
 
@@ -61,22 +60,13 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	terminal << status_pend << "Initializing keyboard..." << status_eol;
 	Keyboard::Initialize();
-	terminal << status_fail << "Keyboard currently dysfunctional." << status_eol;
-
+	terminal << status_good << "Keyboard operational!" << status_eol;
 
 	terminal << status_pend << "Setting up paging..." << status_eol;
-//	beginPaging();
-	terminal << status_fail << "Paging has been manually disabled." << status_eol;
+	beginPaging();
+	terminal << status_good << "Paging has been initialized!" << status_eol;
 
-
-	rect(pos(200, 300), dims(20, 20), 0xFFFF00);
-//	DO(8) {
-//	    terminal << "[TEST]\n";
-//	}
-
-	//	terminal.clear();
-
-	// serial_msg("\n\nKernel configured.");
+	serial_msg("\n\nKernel configured.");
 
 	dimensions term_size = Terminal::get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
 
@@ -84,7 +74,7 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	terminal << status_pend << "Current terminal size: " << term_size.w << "x" << term_size.h << status_eol;
 
-	terminal << status_good << "microNET: boot success (microCORE architecture " << ARCH << ")" << status_eol;
+	terminal << status_good << "microNET: boot success" << status_eol;
 	terminal << terminal_line << status_eol;
 }
 

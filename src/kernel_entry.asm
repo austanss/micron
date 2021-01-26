@@ -9,6 +9,7 @@ extern hex_str_serial
 extern puts
 extern serial_msg
 extern configurePIC
+extern setupPaging
 
 kernel_entry:
 
@@ -35,7 +36,6 @@ kernel_entry:
 
 	mov esp, stack_end				;	reconfigure the stack
 
-
 	; ensure we are in long mode
 	; and replace the UEFI-owned
 	; existing GDT and IDT, ofc
@@ -53,6 +53,9 @@ kernel_entry:
 	; idt
 	call loadIDT
 
+	; paging
+	call setupPaging
+
 	mov edi, 0xFF00FF00
 	call set_status_color
 
@@ -69,8 +72,6 @@ kernel_entry:
 	mov rdi, r15					;	bring back original rdi
 
 	call kernel_main				;	call kernel
-
-	;int 0x0d
 
 	.halt:							;	hang
 		hlt
