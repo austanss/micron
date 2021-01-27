@@ -3,6 +3,9 @@
 //
 
 #include "kernel/memory.hxx"
+#include "kernel/io.hxx"
+#include "kernel/kutil.hxx"
+#include <cstdint>
 
 // variables
 size_t memory_size;
@@ -41,6 +44,13 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 	uint64_t pages = 0;
 
 	uint32_t counter = 0;
+
+	for (int i = 0; i < (map_size / desc_size - 1); i++)
+	{
+		conventional_chunks[i].pages = 0;
+		conventional_chunks[i].start = 0;
+	}
+
 	serial_msg("\n\nMEMORY MAP:\n-=-=-=-=-=-\n");
 
 	while (offset < endOfMemoryMap)
@@ -52,7 +62,7 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 			  || desc->type == 0x04 || desc->type == 0x05)
 					pages += desc->count;
 
-		if (desc->type == 0x07)
+		if (desc->type == 0x07 && desc->physical_start != 0x100000)
 		{
 			conventional_memory_chunk cmchunk;
 			cmchunk.start = (void *)desc->physical_start;
@@ -74,7 +84,55 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 		counter++;
 	}
 
+	for (conventional_memory_chunk i : conventional_chunks)
+	{
+		if (i.start == nullptr)
+			break;
+			
+		serial_msg("chunk at ");
+		int2serial_hex((uint64_t)i.start);
+		serial_msg(": ");
+		serial_msg(itoa(i.pages * 0x1000 / 1024, 10));
+		serial_msg(" kilobytes\n");
+	}
+
+	conventional_memory_chunk* largest_memory_chunk;
+
+	largest_memory_chunk->pages = 0;
+	largest_memory_chunk->start = 0;
+
+	for (int i = 0; conventional_chunks[i].start != nullptr; i++)
+	{
+		if (conventional_chunks[i].pages > largest_memory_chunk->pages)
+			largest_memory_chunk = &conventional_chunks[i];
+	}
+
+	meminfo->user_heap = largest_memory_chunk->start;
+	meminfo->user_heap_size = largest_memory_chunk->pages * 0x1000;
+
+	largest_memory_chunk->pages = 0;
+	largest_memory_chunk->start = 0;
+
+	for (int i = 0; conventional_chunks[i].start != nullptr; i++)
+	{
+		if (conventional_chunks[i].pages > largest_memory_chunk->pages)
+			largest_memory_chunk = &conventional_chunks[i];
+	}
+
+	meminfo->kernel_heap = largest_memory_chunk->start;
+	meminfo->kernel_heap_size = largest_memory_chunk->pages * 0x1000;
+
 	meminfo->memory_size = pages * 0x1000;
+
+	serial_msg("Kernel heap: ");
+	int2serial_hex((uint64_t)meminfo->kernel_heap);
+	serial_msg(", ");
+	serial_msg(itoa((int64_t)meminfo->kernel_heap_size / 1024, 10));
+	serial_msg(" kilobytes.\nUser heap: ");
+	int2serial_hex((uint64_t)meminfo->user_heap);
+	serial_msg(", ");
+	serial_msg(itoa((int64_t)meminfo->user_heap_size / 1024, 10));
+	serial_msg(" kilobytes.\n");
 
 	return meminfo;
 }
@@ -82,6 +140,7 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 void start_memory_manager(memory_info* mem_info)
 {
 	memory_size = mem_info->memory_size;
+
 }
 
 // paging
