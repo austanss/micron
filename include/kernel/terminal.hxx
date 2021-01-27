@@ -14,6 +14,10 @@ class Terminal
 {
 
 public:
+    static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
+    {
+    	return (uint16_t)uc | (uint16_t)color << 8;
+    }
 	size_t row;
 	size_t column;
     static Terminal &instance();
@@ -25,6 +29,7 @@ public:
     void println(const char* data = "");
     void shift();
 	void clear();
+    uint32_t convert_vga_to_pix(uint8_t vga_color);
 	void setCursor(size_t columnc, size_t rowc);
 	static dimensions get_optimal_size(dimensions screen_res);
 	bool staticLogo = false;

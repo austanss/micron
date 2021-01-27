@@ -6,11 +6,12 @@
 #include "kernel/uart.hxx"
 #include "kernel/kutil.hxx"
 #include "kernel/gfx.hxx"
+#include "kernel/macros.hxx"
 #include <cstdint>
 
 // This terminal emulates a dynamically-sized text mode
 
-uint8_t* text_buffer;
+uint16_t* text_buffer;
 
 enum vga_color
 {
@@ -38,22 +39,30 @@ enum vga_color
 
 Terminal::Terminal() : row(0), column(0)
 {
-	uint32_t *buffer = (uint32_t *) gop.framebuffer_base_addr;
-
-	dimensions size;
-
-	size = get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
+	dimensions size = get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
 
 	VGA_WIDTH = size.w;
 	VGA_HEIGHT = size.h;
 
 	for (unsigned int x = 0; x <= gop.x_resolution; x++)
 		for (unsigned int y = 0; y <= gop.y_resolution; y++)
-			plot_pixel_buffer(pos(x, y), 0x0);
+			buffer[y * gop.x_resolution + x] = 0x00000000;
 
 	buff();
 
-	text_buffer = (uint8_t *)kmalloc((size.h * size.w) * 2);
+	text_buffer = (uint16_t *)kmalloc((size.h * size.w) * 2 + 8);
+
+	uint8_t* text = (uint8_t *)text_buffer;
+	text[0] = 'T';
+	text[1] = 'E';
+	text[2] = 'X';
+	text[3] = 'T';
+	text[4] = 'B';
+	text[5] = 'U';
+	text[6] = 'F';
+	text[7] = 'F';
+
+	text_buffer += 8;
 }
 
 void Terminal::clear()
@@ -73,20 +82,14 @@ void Terminal::put_entry_at(char c, uint8_t vga_color, size_t xpos, size_t ypos)
 	if (ypos > VGA_HEIGHT)
 		return;
 
-
-	text_buffer[(ypos * VGA_WIDTH + xpos) * 2] 		= c;
-	text_buffer[(ypos * VGA_WIDTH + xpos) * 2 + 1] 	= vga_color;
+	text_buffer[(ypos * VGA_WIDTH + xpos)] = vga_entry(c, vga_color);
 
 	render_entry_at(xpos, ypos);
 }
 
-void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
+uint32_t Terminal::convert_vga_to_pix(uint8_t vga_color)
 {
-  	uint32_t color;
-
-	char c = text_buffer[(ypos * VGA_WIDTH + xpos) * 2];
-	uint8_t vga_color = text_buffer[(ypos * VGA_WIDTH + xpos) * 2 + 1];
-
+	uint32_t color;
 	switch (vga_color) 
 	{
 		case VGA_COLOR_BLACK:
@@ -154,6 +157,20 @@ void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 			break;
 	}
 
+	return color;
+}
+
+void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
+{
+  	uint32_t color;
+
+	uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
+
+	uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
+	char c = entry ^ 0b1111111100000000;
+
+	color = convert_vga_to_pix(vga_color);
+
     uint64_t font_selector = FONT[c];
 
     uint8_t bits[64];
@@ -170,7 +187,7 @@ void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 		//	}
 
 	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
-		for (uint32_t x = 0, xx = ((xpos / 2) * 16); x < 8; x++, xx += 2) {
+		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
 			if (bits[(8 * y) + x]) {
 				plot_pixel(pos(xx, yy), color);
 				plot_pixel(pos(xx + 1, yy), color);
@@ -194,123 +211,72 @@ void Terminal::render_buffer()
 {
 	for (uint16_t ypos = 0; ypos < VGA_HEIGHT; ypos++)
 	{
-		for (uint16_t xpos = 0; xpos < (VGA_WIDTH * 2); xpos += 2)
+		for (uint16_t xpos = 0; xpos < (VGA_WIDTH * 2); xpos++)
 		{
 			uint32_t color;
 
-			char c = text_buffer[ypos * VGA_WIDTH + xpos * 2];
-			uint8_t vga_color = text_buffer[ypos * VGA_WIDTH + xpos * 2 + 1];
+			uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
 
-			switch (vga_color)
-			{
-				case VGA_COLOR_BLACK:
-					color = 0x000000;
-					break;
+			uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
+			char c = entry ^ 0b1111111100000000;
 
-				case VGA_COLOR_WHITE:
-					color = 0xFFFFFF;
-					break;
-
-				case VGA_COLOR_RED:
-					color = 0xFF0000;
-					break;
-
-				case VGA_COLOR_BLUE:
-					color = 0x2222FF;
-					break;
-
-				case VGA_COLOR_GREEN:
-					color = 0x22FF22;
-					break;
-
-				case VGA_COLOR_CYAN:
-					color = 0x11FFFF;
-					break;
-
-				case VGA_COLOR_MAGENTA:
-					color = 0xFF01AA;
-					break;
-
-				case VGA_COLOR_BROWN:
-					color = 0xFFEBCD;
-					break;
-
-				case VGA_COLOR_LIGHT_GREY:
-					color = 0xDDDDDD;
-					break;
-
-				case VGA_COLOR_DARK_GREY:
-					color = 0x555555;
-					break;
-
-				case VGA_COLOR_LIGHT_BLUE:
-					color = 0x01AAFF;
-					break;
-
-				case VGA_COLOR_LIGHT_GREEN:
-					color = 0x01FF01;
-					break;
-
-				case VGA_COLOR_LIGHT_CYAN:
-					color = 0x01DDFF;
-					break;
-
-				case VGA_COLOR_LIGHT_RED:
-					color = 0xFF2222;
-					break;
-
-				case VGA_COLOR_LIGHT_MAGENTA:
-					color = 0xFF0077;
-					break;
-
-				case VGA_COLOR_LIGHT_BROWN:
-					color = 0x8B4513;
-					break;
-			}
-			
+			color = convert_vga_to_pix(vga_color);
 
 			uint64_t font_selector = FONT[c];
 
 			uint8_t bits[64];
 
-			for (uint8_t i = 1; i <= 64; i++)
-			{
+			for (uint8_t i = 1; i <= 64; i++) {
 				bits[i] = get_bit(font_selector, i);
 			}
 
-		//	for (int i = 63; i >= 0; i--)
-		//	{
-		//		if ((i + 1) % 8 == 0)
-		//			serial_msg('\n');
-		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
-		//	}
+				//	for (int i = 63; i >= 0; i--)
+				//	{
+				//		if ((i + 1) % 8 == 0)
+				//			serial_msg('\n');
+				//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
+				//	}
 
-			for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3)
-			{
-				for (uint32_t x = 0, xx = ((xpos / 2) * 16); x < 8; x++, xx += 2)
-				{
+			for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
+				for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
 					if (bits[(8 * y) + x]) {
-						plot_pixel_buffer(pos(xx, yy), color);
-						plot_pixel_buffer(pos(xx + 1, yy), color);
-						plot_pixel_buffer(pos(xx, yy + 1), color);
-						plot_pixel_buffer(pos(xx + 1, yy + 1), color);
-						plot_pixel_buffer(pos(xx, yy + 2), color);
-						plot_pixel_buffer(pos(xx + 1, yy + 2), color);
-					}
-					else
-					{
-						plot_pixel_buffer(pos(xx, yy), 0x00000000);
-						plot_pixel_buffer(pos(xx + 1, yy), 0x00000000);
-						plot_pixel_buffer(pos(xx, yy + 1), 0x00000000);
-						plot_pixel_buffer(pos(xx + 1, yy + 1), 0x00000000);
-						plot_pixel_buffer(pos(xx, yy + 2), 0x00000000);
-						plot_pixel_buffer(pos(xx + 1, yy + 2), 0x00000000);
+						plot_pixel(pos(xx, yy), color);
+						plot_pixel(pos(xx + 1, yy), color);
+						plot_pixel(pos(xx, yy + 1), color);
+						plot_pixel(pos(xx + 1, yy + 1), color);
+						plot_pixel(pos(xx, yy + 2), color);
+						plot_pixel(pos(xx + 1, yy + 2), color);
+					} else {
+						plot_pixel(pos(xx, yy), 0x00000000);
+						plot_pixel(pos(xx + 1, yy), 0x00000000);
+						plot_pixel(pos(xx, yy + 1), 0x00000000);
+						plot_pixel(pos(xx + 1, yy + 1), 0x00000000);
+						plot_pixel(pos(xx, yy + 2), 0x00000000);
+						plot_pixel(pos(xx + 1, yy + 2), 0x00000000);
 					}
 				}
 			}
 		}
 	}
 	buff();
+}
+
+void Terminal::shift()
+{
+    for (int i = 0; i < VGA_WIDTH; i++)
+    {
+        text_buffer[i] = vga_entry(0, 0);
+    }
+
+    DO(VGA_WIDTH) // shift VGA_WIDTH times
+    {
+        for (int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
+            text_buffer[i] = text_buffer[i + 1]; // shift vga buffer to the left
+        }
+    }
+	row--;
+
+	render_buffer();
 }
 
 void Terminal::put_char(char c, uint8_t color)
@@ -447,26 +413,6 @@ void Terminal::println(const char *data)
 {
 	write(data);
 	write("\n");
-}
-
-void Terminal::shift()
-{
-    for (uint32_t i = 0; i < ((16 * 24) * VGA_WIDTH); i++)
-	{
-		*((uint32_t *)(gop.framebuffer_base_addr + i)) = 0x000000;
-	}
-
-
-    if (staticLogo)
-    {
-        size_t rowtemp = row;
-        size_t coltemp = column;
-        setCursor(0, 0);
-        Terminal::instance() << logo;
-        setCursor(coltemp, rowtemp);
-    }
-
-	row--;
 }
 
 Terminal& Terminal::instance()

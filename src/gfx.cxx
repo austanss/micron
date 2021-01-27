@@ -38,13 +38,14 @@ void rect(positional_point posi, dimensions dimens, uint32_t color) {
 
 	for (uint32_t xx = (rect_absolute_center.x - (dimens.w / 2)); (xx <= (rect_absolute_center.x + (dimens.w / 2))) && (xx < width); xx++)
 		for (uint32_t yy = (rect_absolute_center.y - (dimens.h / 2)); (yy <= rect_absolute_center.y + (dimens.h / 2)) && (yy < height); yy++)
-			plot_pixel_buffer(pos(xx, yy), color);
+			plot_pixel(pos(xx, yy), color);
 
 	buff();
 }
 
 void buff() {
-	memcpy((void *)gop.framebuffer_base_addr, (void *)buffer, gop.framebuffer_size);
+
+	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.x_resolution * gop.y_resolution * 4);
 }
 
 void plot_pixel(positional_point posi, uint32_t pixel)

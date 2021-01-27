@@ -27,6 +27,6 @@ extern "C" void* 	malloc(size_t bytes);
 extern "C" void 	free(void* data);
 extern "C" void* 	kmalloc(size_t bytes);
 extern "C" void 	kfree(void* data);
-extern "C" void*	memcpy(void *__restrict dst, const void *__restrict src, size_t count);
+extern "C" void 	*memcpy(void *__restrict dst, const void *__restrict src, size_t count);
 void		 		map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_size);
 void 				start_memory_manager();

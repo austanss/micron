@@ -242,11 +242,13 @@ void begin_paging() {
 
 void *memcpy(void *__restrict dst, const void *__restrict src, size_t count)
 {
-   const char *__restrict s = (char *) src;
-   char *__restrict d = (char *) dst;
-   
-   while (count --> 0)
-      *d++ = *s++;
-      
-   return dst;
+	serial_msg("memcpy from ");
+	serial_msg(itoa((uint64_t)src, 16));
+	serial_msg(" to ");
+	serial_msg(itoa((uint64_t)dst, 16));
+	serial_msg(" for ");
+	serial_msg(itoa((uint64_t)count, 10));
+	serial_msg(" bytes\n");
+	asm volatile ("cld; rep movsb" : "+c" (count), "+S" (src), "+D" (dst) :: "memory");
+	return dst;
 }

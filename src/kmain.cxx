@@ -59,8 +59,6 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	Terminal& terminal = Terminal::instance();
 
-//	rect(pos(200, 300), dims(100, 100), 0xAA00AA00);
-
 	terminal.setCursor(0, 0);
 	terminal << "\n  microNET  \n";
 	terminal <<   "-----------+\n\n";
