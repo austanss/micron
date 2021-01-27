@@ -7,8 +7,18 @@
 #include "kernel/kutil.hxx"
 #include <cstdint>
 
+//////////////////////////////////////////
 // variables
+//////////////////////////////////////////
+
 size_t memory_size;
+conventional_memory_chunk user_heap;
+conventional_memory_chunk kernel_heap;
+void* kernel_heap_allocator_ptr;
+void* user_heap_allocator_ptr;
+memory_info* meminfo;
+
+bool allocator_on = false;
 
 const char *memory_types[] =
 {
@@ -28,11 +38,13 @@ const char *memory_types[] =
 	"EfiPalCode",
 };
 
+//////////////////////////////////////////
 // malloc
-memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_size)
-{
-	memory_info* meminfo;
+//////////////////////////////////////////
 
+
+void map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_size)
+{
 	conventional_memory_chunk conventional_chunks[map_size / desc_size];
 	uint8_t c_c_index = 0;
 
@@ -45,7 +57,7 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 
 	uint32_t counter = 0;
 
-	for (int i = 0; i < (map_size / desc_size - 1); i++)
+	for (unsigned int i = 0; i < (map_size / desc_size - 1); i++)
 	{
 		conventional_chunks[i].pages = 0;
 		conventional_chunks[i].start = 0;
@@ -132,17 +144,87 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 	serial_msg(", ");
 	serial_msg(itoa((int64_t)meminfo->user_heap_size / 1024, 10));
 	serial_msg(" kilobytes.\n");
-
-	return meminfo;
 }
 
-void start_memory_manager(memory_info* mem_info)
+void start_memory_manager()
 {
-	memory_size = mem_info->memory_size;
+	memory_size = meminfo->memory_size;
 
+	kernel_heap.start = meminfo->kernel_heap;
+	kernel_heap.pages = meminfo->kernel_heap_size / 0x1000;
+	user_heap.start = meminfo->user_heap;
+	user_heap.pages = meminfo->user_heap_size / 0x1000;
+
+	user_heap_allocator_ptr = user_heap.start;
+	kernel_heap_allocator_ptr = kernel_heap.start;
+
+	serial_msg("User heap allocator pointer is at ");
+	int2serial_hex((uint64_t)meminfo->user_heap);
+	serial_msg("\nKernel heap allocator pointer is at ");
+	int2serial_hex((uint64_t)meminfo->kernel_heap);
+	serial_msg("\n");
+
+	allocator_on = true;	
 }
 
+void* malloc(size_t bytes)
+{
+	if (!allocator_on)
+		return nullptr;
+
+	serial_msg("allocating ");
+	serial_msg(itoa(bytes, 10));
+	serial_msg(" byte(s) on user heap, at");	
+
+	void* return_address = user_heap_allocator_ptr;
+
+	serial_msg(itoa((uint64_t)return_address, 16));
+	serial_msg("\n");
+
+	user_heap_allocator_ptr = static_cast<char *>(user_heap_allocator_ptr) + bytes;	
+
+	return return_address;
+}
+
+void free(void* data)
+{
+	if (!allocator_on)
+		return;
+
+	return;	
+}
+
+void* kmalloc(size_t bytes)
+{
+	if (!allocator_on)
+		return nullptr;
+
+	serial_msg("allocating ");
+	serial_msg(itoa(bytes, 10));
+	serial_msg(" byte(s) on kernel heap, at ");
+
+	void* return_address = kernel_heap_allocator_ptr;
+
+	serial_msg(itoa((uint64_t)return_address, 16));
+	serial_msg("\n");
+
+	kernel_heap_allocator_ptr = static_cast<char *>(kernel_heap_allocator_ptr) + bytes;	
+
+	return return_address;
+}
+
+void kfree(void* data)
+{
+	if (!allocator_on)
+		return;
+
+	return;	
+}
+
+//////////////////////////////////////////
 // paging
+//////////////////////////////////////////
+
 volatile uint64_t pageDirectory[1024] __attribute__ ((aligned (4096)));
 volatile uint64_t firstPageTable[1024] __attribute__ ((aligned (4096)));
 
@@ -152,4 +234,19 @@ void begin_paging() {
 	}
 	pageDirectory[0] = ((uint64_t)firstPageTable) | 3;
 	setup_paging((void*)&pageDirectory);
+}
+
+//////////////////////////////////////////
+// memops
+//////////////////////////////////////////
+
+void *memcpy(void *__restrict dst, const void *__restrict src, size_t count)
+{
+   const char *__restrict s = (char *) src;
+   char *__restrict d = (char *) dst;
+   
+   while (count --> 0)
+      *d++ = *s++;
+      
+   return dst;
 }

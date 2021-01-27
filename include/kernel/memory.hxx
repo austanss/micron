@@ -20,10 +20,13 @@ typedef struct s_conv_mem_chunk {
 	size_t pages;
 } conventional_memory_chunk;
 
-extern "C" void begin_paging();
-extern "C" void memset(void* destination, uint32_t value, size_t length);
-extern "C" void setup_paging(void* pageDirectory);
-extern "C" void* malloc(size_t bytes);
-extern "C" void free(void* data);
-memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_size);
-void start_memory_manager(memory_info* mem_info);
+extern "C" void 	begin_paging();
+extern "C" void 	memset(void* destination, uint32_t value, size_t length);
+extern "C" void 	setup_paging(void* pageDirectory);
+extern "C" void* 	malloc(size_t bytes);
+extern "C" void 	free(void* data);
+extern "C" void* 	kmalloc(size_t bytes);
+extern "C" void 	kfree(void* data);
+extern "C" void*	memcpy(void *__restrict dst, const void *__restrict src, size_t count);
+void		 		map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_size);
+void 				start_memory_manager();

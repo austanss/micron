@@ -1,6 +1,7 @@
+#include "kernel/memory.hxx"
 #include <kernel/gfx.hxx>
 
-uint32_t *buffer = (uint32_t *)0xB00B1E5;
+uint32_t *buffer;
 
 uint32_t *screen = (uint32_t *)gop.framebuffer_base_addr;
 
@@ -37,18 +38,13 @@ void rect(positional_point posi, dimensions dimens, uint32_t color) {
 
 	for (uint32_t xx = (rect_absolute_center.x - (dimens.w / 2)); (xx <= (rect_absolute_center.x + (dimens.w / 2))) && (xx < width); xx++)
 		for (uint32_t yy = (rect_absolute_center.y - (dimens.h / 2)); (yy <= rect_absolute_center.y + (dimens.h / 2)) && (yy < height); yy++)
-			plot_pixel(pos(xx, yy), color);
+			plot_pixel_buffer(pos(xx, yy), color);
 
-	// buff();
+	buff();
 }
 
 void buff() {
-
-	for (unsigned int i = 0; i < (width * height); i++)
-	{
-		if (screen[i] != buffer[i])
-			screen[i] = buffer[i];
-	}
+	memcpy((void *)gop.framebuffer_base_addr, (void *)buffer, gop.framebuffer_size);
 }
 
 void plot_pixel(positional_point posi, uint32_t pixel)

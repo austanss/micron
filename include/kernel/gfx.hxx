@@ -277,6 +277,7 @@
 	};
 
 	extern Framebuffer gop;
+	extern uint32_t* buffer;
 
 	void plot_pixel(positional_point posi, uint32_t pixel);
 	void plot_pixel_buffer(positional_point posi, uint32_t pixel);

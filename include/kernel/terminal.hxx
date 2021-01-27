@@ -17,8 +17,8 @@ public:
 	size_t row;
 	size_t column;
     static Terminal &instance();
-    void put_entry_at(char c, uint32_t color, size_t x, size_t y);
-    void put_char(char c, uint32_t color);
+    void put_entry_at(char c, uint8_t vga_color, size_t x, size_t y);
+    void put_char(char c, uint8_t color);
     void write(const char* data, size_t size);
     void write(const char* data);
     void write(int num);
@@ -28,6 +28,8 @@ public:
 	void setCursor(size_t columnc, size_t rowc);
 	static dimensions get_optimal_size(dimensions screen_res);
 	bool staticLogo = false;
+    void render_buffer();
+    void render_entry_at(uint16_t xpos, uint16_t ypos);
 
 private:
 	Terminal();

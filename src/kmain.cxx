@@ -11,6 +11,7 @@
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
 #include "kernel/power.hxx"
+#include <cstdint>
 
 #define __hang__ while (true);
 
@@ -48,44 +49,41 @@ void kernel_main(Boot_Info *bootloader_info)
 	int2serial_hex(bootloader_info->vbe_framebuffer->framebuffer_base_addr);
 	serial_msg("\n\n");
 
+	map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
+
+	start_memory_manager();
+
 	gop = *(bootloader_info->vbe_framebuffer);
+
+	buffer = (uint32_t *)kmalloc(gop.x_resolution * gop.y_resolution * 4);
 
 	Terminal& terminal = Terminal::instance();
 
+//	rect(pos(200, 300), dims(100, 100), 0xAA00AA00);
+
 	terminal.setCursor(0, 0);
-	terminal << logo;
+	terminal << "\n  microNET  \n";
+	terminal <<   "-----------+\n\n";
+
+	terminal << "[$GREEN!kernel-startup$WHITE!] mapping memory" << status_eol;
+
+	terminal << "[$GREEN!kernel-startup$WHITE!] starting malloc" << status_eol;
+
+	terminal << "[$GREEN!kernel-startup$WHITE!] configuring terminal";
 	terminal << status_eol;
 
-	terminal.staticLogo = true;
-
-	terminal << status_pend << "Initializing keyboard..." << status_eol;
+	terminal << "[$GREEN!kernel-startup$WHITE!] starting keyboard" << status_eol;
 	Keyboard::Initialize();
-	terminal << status_good << "Keyboard operational!" << status_eol;
-
-	terminal << status_pend << "Setting up paging..." << status_eol;
-//	begin_paging();
-	terminal << status_fail << "Paging has been manually disabled." << status_eol;
-
-	terminal << status_pend << "Mapping memory..." << status_eol;
-	memory_info* mem_info = map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
-	terminal << status_good << "Memory has been mapped!" << status_eol;
-
-	terminal << status_pend << "Starting memory manager..." << status_eol;
-	start_memory_manager(mem_info);
-	terminal << status_good << "Managing memory!" << status_eol;
 
 	serial_msg("\n\nKernel configured.");
 
 	dimensions term_size = Terminal::get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
 
-	terminal << status_pend << "Current display resolution: " << gop.x_resolution << "x" << gop.y_resolution << status_eol;
+	terminal << "[$GREEN!kernel-startup$WHITE!] res=" << gop.x_resolution << "x" << gop.y_resolution << " term=" << term_size.w << "x" << term_size.h << "\n";
 
-	terminal << status_pend << "Current terminal size: " << term_size.w << "x" << term_size.h << status_eol;
+	terminal << "[$GREEN!kernel-startup$WHITE!] boot success" << status_eol;
+	terminal << "-=-" << status_eol;
 
-	terminal << status_good << "microNET: boot success" << status_eol;
-	terminal << terminal_line << status_eol;
-
-	terminal << "Testing itoa: " << itoa(7, 10) << status_eol;
 }
 
 }
