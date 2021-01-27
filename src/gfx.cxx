@@ -45,7 +45,7 @@ void rect(positional_point posi, dimensions dimens, uint32_t color) {
 
 void buff() {
 
-	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.x_resolution * gop.y_resolution * 4);
+	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.framebuffer_size);
 }
 
 void plot_pixel(positional_point posi, uint32_t pixel)

@@ -240,19 +240,19 @@ void Terminal::render_buffer()
 			for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
 				for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
 					if (bits[(8 * y) + x]) {
-						plot_pixel(pos(xx, yy), color);
-						plot_pixel(pos(xx + 1, yy), color);
-						plot_pixel(pos(xx, yy + 1), color);
-						plot_pixel(pos(xx + 1, yy + 1), color);
-						plot_pixel(pos(xx, yy + 2), color);
-						plot_pixel(pos(xx + 1, yy + 2), color);
+						plot_pixel_buffer(pos(xx, yy), color);
+						plot_pixel_buffer(pos(xx + 1, yy), color);
+						plot_pixel_buffer(pos(xx, yy + 1), color);
+						plot_pixel_buffer(pos(xx + 1, yy + 1), color);
+						plot_pixel_buffer(pos(xx, yy + 2), color);
+						plot_pixel_buffer(pos(xx + 1, yy + 2), color);
 					} else {
-						plot_pixel(pos(xx, yy), 0x00000000);
-						plot_pixel(pos(xx + 1, yy), 0x00000000);
-						plot_pixel(pos(xx, yy + 1), 0x00000000);
-						plot_pixel(pos(xx + 1, yy + 1), 0x00000000);
-						plot_pixel(pos(xx, yy + 2), 0x00000000);
-						plot_pixel(pos(xx + 1, yy + 2), 0x00000000);
+						plot_pixel_buffer(pos(xx, yy), 0x00000000);
+						plot_pixel_buffer(pos(xx + 1, yy), 0x00000000);
+						plot_pixel_buffer(pos(xx, yy + 1), 0x00000000);
+						plot_pixel_buffer(pos(xx + 1, yy + 1), 0x00000000);
+						plot_pixel_buffer(pos(xx, yy + 2), 0x00000000);
+						plot_pixel_buffer(pos(xx + 1, yy + 2), 0x00000000);
 					}
 				}
 			}
