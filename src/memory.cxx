@@ -88,7 +88,7 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 	{
 		if (i.start == nullptr)
 			break;
-			
+
 		serial_msg("chunk at ");
 		int2serial_hex((uint64_t)i.start);
 		serial_msg(": ");
@@ -111,7 +111,6 @@ memory_info* map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64
 	meminfo->user_heap_size = largest_memory_chunk->pages * 0x1000;
 
 	largest_memory_chunk->pages = 0;
-	largest_memory_chunk->start = 0;
 
 	for (int i = 0; conventional_chunks[i].start != nullptr; i++)
 	{
