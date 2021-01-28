@@ -1,58 +1,35 @@
-#include "kernel/terminal.hxx"
-#include "kernel/memory.hxx"
-#include "kernel/string.hxx"
-#include "kernel/io.hxx"
-#include "kernel/logo.hxx"
-#include "kernel/uart.hxx"
-#include "kernel/kutil.hxx"
-#include "kernel/gfx.hxx"
-#include "kernel/macros.hxx"
+#include <stddef.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <limits.h>
+#include "kernel/terminal.hxx"
+#include "kernel/memory.hxx"
+#include "kernel/io.hxx"
+#include "kernel/kutil.hxx"
+#include "kernel/gfx.hxx"
 
 // This terminal emulates a dynamically-sized text mode
 
-uint16_t* text_buffer;
+uint16_t* terminal::text_buffer;
 
-enum vga_color
-{
-    VGA_COLOR_BLACK = 0,
-	VGA_COLOR_BLUE = 1,
-	VGA_COLOR_GREEN = 2,
-	VGA_COLOR_CYAN = 3,
-	VGA_COLOR_RED = 4,
-	VGA_COLOR_MAGENTA = 5,
-	VGA_COLOR_BROWN = 6,
-	VGA_COLOR_LIGHT_GREY = 7,
-	VGA_COLOR_DARK_GREY = 8,
-	VGA_COLOR_LIGHT_BLUE = 9,
-	VGA_COLOR_LIGHT_GREEN = 10,
-	VGA_COLOR_LIGHT_CYAN = 11,
-	VGA_COLOR_LIGHT_RED = 12,
-	VGA_COLOR_LIGHT_MAGENTA = 13,
-	VGA_COLOR_LIGHT_BROWN = 14,
-	VGA_COLOR_WHITE = 15
-};
-
-#define CHECK_COLOR(farbe)          \
-	if (strcomp(#farbe, colorCode)) \
+#define check_vga_color(farbe)          \
+	if (util::strcomp(#farbe, colorCode)) \
 		color = VGA_COLOR_##farbe;
 
-Terminal::Terminal() : row(0), column(0)
+terminal::terminal() : row(0), column(0)
 {
-	dimensions size = get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
+	gfx::shapes::dimensions size = get_optimal_size(gfx::shapes::dims(gfx::gop.x_resolution, gfx::gop.y_resolution));
 
 	VGA_WIDTH = size.w;
 	VGA_HEIGHT = size.h;
 
-	for (unsigned int x = 0; x <= gop.x_resolution; x++)
-		for (unsigned int y = 0; y <= gop.y_resolution; y++)
-			buffer[y * gop.x_resolution + x] = 0x00000000;
+	for (unsigned int x = 0; x <= gfx::gop.x_resolution; x++)
+		for (unsigned int y = 0; y <= gfx::gop.y_resolution; y++)
+			gfx::buffer[y * gfx::gop.x_resolution + x] = 0x00000000;
 
-	buff();
+	gfx::screen::buff();
 
-	text_buffer = (uint16_t *)kmalloc((size.h * size.w) * 2 + 8);
+	text_buffer = (uint16_t *)memory::allocation::kmalloc((size.h * size.w) * 2 + 8);
 
 	uint8_t* text = (uint8_t *)text_buffer;
 	text[0] = 'T';
@@ -67,7 +44,7 @@ Terminal::Terminal() : row(0), column(0)
 	text_buffer += 8;
 }
 
-void Terminal::clear()
+void terminal::clear()
 {
 	for (unsigned int y = 0; y < VGA_HEIGHT; y++)
 		for (unsigned int x = 0; x < VGA_WIDTH; x++)
@@ -76,7 +53,7 @@ void Terminal::clear()
 	setCursor(0, 0);
 }
 
-void Terminal::put_entry_at(char c, uint8_t vga_color, size_t xpos, size_t ypos)
+void terminal::put_entry_at(char c, uint8_t vga_color, size_t xpos, size_t ypos)
 {
 	if (xpos > VGA_WIDTH)
 		return;
@@ -87,10 +64,9 @@ void Terminal::put_entry_at(char c, uint8_t vga_color, size_t xpos, size_t ypos)
 	text_buffer[(ypos * VGA_WIDTH + xpos)] = vga_entry(c, vga_color);
 
 	render_entry_at(xpos, ypos);
-	render_entry_at_buffer(xpos, ypos);
 }
 
-uint32_t Terminal::convert_vga_to_pix(uint8_t vga_color)
+uint32_t terminal::convert_vga_to_pix(uint8_t vga_color)
 {
 	uint32_t color;
 	switch (vga_color) 
@@ -163,7 +139,7 @@ uint32_t Terminal::convert_vga_to_pix(uint8_t vga_color)
 	return color;
 }
 
-void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
+void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 {
   	uint32_t color;
 
@@ -174,12 +150,12 @@ void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 
 	color = convert_vga_to_pix(vga_color);
 
-    uint64_t font_selector = FONT[c];
+    uint64_t font_selector = gfx::fonts::get_character_font(c);
 
     uint8_t bits[64];
 
 	for (uint8_t i = 1; i <= 64; i++) {
-		bits[i] = get_bit(font_selector, i);
+		bits[i] = util::get_bit(font_selector, i);
 	}
 
 		//	for (int i = 63; i >= 0; i--)
@@ -192,25 +168,25 @@ void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
 		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
 			if (bits[(8 * y) + x]) {
-				plot_pixel(pos(xx, yy), color);
-				plot_pixel(pos(xx + 1, yy), color);
-				plot_pixel(pos(xx, yy + 1), color);
-				plot_pixel(pos(xx + 1, yy + 1), color);
-				plot_pixel(pos(xx, yy + 2), color);
-				plot_pixel(pos(xx + 1, yy + 2), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 1), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 1), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 2), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 2), color);
 			} else {
-				plot_pixel(pos(xx, yy), 0x00000000);
-				plot_pixel(pos(xx + 1, yy), 0x00000000);
-				plot_pixel(pos(xx, yy + 1), 0x00000000);
-				plot_pixel(pos(xx + 1, yy + 1), 0x00000000);
-				plot_pixel(pos(xx, yy + 2), 0x00000000);
-				plot_pixel(pos(xx + 1, yy + 2), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 1), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 1), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 2), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 2), 0x00000000);
 			}
 		}
 	}
 }
 
-void Terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
+void terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 {
   	uint32_t color;
 
@@ -221,12 +197,12 @@ void Terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 
 	color = convert_vga_to_pix(vga_color);
 
-    uint64_t font_selector = FONT[c];
+    uint64_t font_selector = gfx::fonts::get_character_font(c);
 
     uint8_t bits[64];
 
 	for (uint8_t i = 1; i <= 64; i++) {
-		bits[i] = get_bit(font_selector, i);
+		bits[i] = util::get_bit(font_selector, i);
 	}
 
 		//	for (int i = 63; i >= 0; i--)
@@ -239,25 +215,25 @@ void Terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
 		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
 			if (bits[(8 * y) + x]) {
-				plot_pixel_buffer(pos(xx, yy), color);
-				plot_pixel_buffer(pos(xx + 1, yy), color);
-				plot_pixel_buffer(pos(xx, yy + 1), color);
-				plot_pixel_buffer(pos(xx + 1, yy + 1), color);
-				plot_pixel_buffer(pos(xx, yy + 2), color);
-				plot_pixel_buffer(pos(xx + 1, yy + 2), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 1), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 1), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 2), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 2), color);
 			} else {
-				plot_pixel_buffer(pos(xx, yy), 0x00000000);
-				plot_pixel_buffer(pos(xx + 1, yy), 0x00000000);
-				plot_pixel_buffer(pos(xx, yy + 1), 0x00000000);
-				plot_pixel_buffer(pos(xx + 1, yy + 1), 0x00000000);
-				plot_pixel_buffer(pos(xx, yy + 2), 0x00000000);
-				plot_pixel_buffer(pos(xx + 1, yy + 2), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 1), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 1), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 2), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 2), 0x00000000);
 			}
 		}
 	}
 }
 
-void Terminal::render_buffer()
+void terminal::render_buffer()
 {
 	for (uint16_t ypos = 0; ypos < VGA_HEIGHT; ypos++)
 	{
@@ -266,20 +242,20 @@ void Terminal::render_buffer()
 			render_entry_at_buffer(xpos, ypos);
 		}
 	}
-	buff();
+	gfx::screen::buff();
 }
 
-void Terminal::shift()
+void terminal::shift()
 {
-    for (int i = 0; i < VGA_WIDTH; i++)
+    for (size_t i = 0; i < VGA_WIDTH; i++)
     {
         text_buffer[i] = vga_entry(0, 0);
     }
 
-    DO(VGA_WIDTH) // shift VGA_WIDTH times
+    for (size_t i = 0; i < VGA_WIDTH; i++)
     {
-        for (int i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
-            text_buffer[i] = text_buffer[i + 1]; // shift text buffer to the left
+        for (size_t i = 0; i < (VGA_HEIGHT * VGA_WIDTH); i++) {
+            text_buffer[i] = text_buffer[i + 1]; // shift text gfx::buffer to the left
         }
     }
 	row--;
@@ -287,7 +263,7 @@ void Terminal::shift()
 	render_buffer();
 }
 
-void Terminal::put_char(char c, uint8_t color)
+void terminal::put_char(char c, uint8_t color)
 {
 	if (c == 0)
 		return;
@@ -322,10 +298,12 @@ void Terminal::put_char(char c, uint8_t color)
 	}
 }
 
-void Terminal::write(const char *data, size_t size)
+void terminal::write(const char *data, size_t size)
 {
 	uint8_t color = VGA_COLOR_LIGHT_GREY;
 	char colorCode[15];
+
+	size = util::strlen(data);
 
 	for (; *data != '\0'; data++)
 	{
@@ -348,52 +326,52 @@ void Terminal::write(const char *data, size_t size)
 				}
 			}
 			colorCode[iter + 1] = 0;
-			CHECK_COLOR(BLACK)
-			CHECK_COLOR(BLUE)
-			CHECK_COLOR(GREEN)
-			CHECK_COLOR(CYAN)
-			CHECK_COLOR(RED)
-			CHECK_COLOR(MAGENTA)
-			CHECK_COLOR(BROWN)
-			CHECK_COLOR(LIGHT_GREY)
-			CHECK_COLOR(DARK_GREY)
-			CHECK_COLOR(LIGHT_BLUE)
-			CHECK_COLOR(LIGHT_GREEN)
-			CHECK_COLOR(LIGHT_CYAN)
-			CHECK_COLOR(LIGHT_RED)
-			CHECK_COLOR(LIGHT_MAGENTA)
-			CHECK_COLOR(LIGHT_BROWN)
-			CHECK_COLOR(WHITE)
+			check_vga_color(BLACK)
+			check_vga_color(BLUE)
+			check_vga_color(GREEN)
+			check_vga_color(CYAN)
+			check_vga_color(RED)
+			check_vga_color(MAGENTA)
+			check_vga_color(BROWN)
+			check_vga_color(LIGHT_GREY)
+			check_vga_color(DARK_GREY)
+			check_vga_color(LIGHT_BLUE)
+			check_vga_color(LIGHT_GREEN)
+			check_vga_color(LIGHT_CYAN)
+			check_vga_color(LIGHT_RED)
+			check_vga_color(LIGHT_MAGENTA)
+			check_vga_color(LIGHT_BROWN)
+			check_vga_color(WHITE)
 		}
 		put_char(*data, color);
 	}
 }
-void Terminal::write(const char *data)
+void terminal::write(const char *data)
 {
-	if (strcomp(data, terminal_line))
+	if (util::strcomp(data, terminal_line))
 	{
 		put_char('\n', 0x000000);
-		for (int i = 1; i <= VGA_WIDTH; i++)
+		for (size_t i = 1; i <= VGA_WIDTH; i++)
 		{
 			if (i % 2 == 0)
-				put_char('=', 0xFFFFFF);
+				put_char('=', 15);
 			else
-				put_char('-', 0xFFFFFF);
+				put_char('-', 15);
 		}
 		put_char('\n', 0x000000);
 		return;
 	}
 
-	write(data, strlen(data));
+	write(data, util::strlen(data));
 }
 
-void Terminal::setCursor(size_t columnc, size_t rowc)
+void terminal::setCursor(size_t columnc, size_t rowc)
 {
 	column = columnc;
 	row = rowc;
 }
 
-void Terminal::write(int data)
+void terminal::write(int data)
 {
 	auto convert = [](unsigned int num)
 	{
@@ -417,20 +395,20 @@ void Terminal::write(int data)
 	}
 	write(convert(data));
 }
-void Terminal::println(const char *data)
+void terminal::println(const char *data)
 {
 	write(data);
 	write("\n");
 }
 
-Terminal& Terminal::instance()
+terminal& terminal::instance()
 {
-	static Terminal instance;
+	static terminal instance;
 	return instance;
 }
 
-dimensions Terminal::get_optimal_size(dimensions screen_res) {
-	dimensions term_size;
+gfx::shapes::dimensions terminal::get_optimal_size(gfx::shapes::dimensions screen_res) {
+	gfx::shapes::dimensions term_size;
 
 	term_size.w = (screen_res.w / 16);
 	term_size.h = (screen_res.h / 25);
@@ -444,7 +422,7 @@ extern "C" void puts(char* data)
 }
 
 static bool print(const char* data, size_t length) {
-	Terminal::instance().write(data, length);
+	terminal::instance().write(data, length);
 	return true;
 }
 
@@ -489,7 +467,7 @@ int printf(const char* __restrict format, ...) {
 		} else if (*format == 's') {
 			format++;
 			const char* str = va_arg(parameters, const char*);
-			size_t len = strlen(str);
+			size_t len = util::strlen(str);
 			if (maxrem < len) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
@@ -499,8 +477,8 @@ int printf(const char* __restrict format, ...) {
 			written += len;
 		} else if (*format == 'd') {
 			format++;
-			const char* str = itoa(va_arg(parameters, int), 10);
-			size_t len = strlen(str);
+			const char* str = util::itoa(va_arg(parameters, int), 10);
+			size_t len = util::strlen(str);
 			if (maxrem < len) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
@@ -510,7 +488,7 @@ int printf(const char* __restrict format, ...) {
 			written += len;
 		} else {
 			format = format_begun_at;
-			size_t len = strlen(format);
+			size_t len = util::strlen(format);
 			if (maxrem < len) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;

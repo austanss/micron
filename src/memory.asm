@@ -1,18 +1,8 @@
-;global memset
-global setup_paging
+global setup_paging_s
 
-;;;;;;;;;;;;;;;;;;;;;;;;; broken
-;memset:
-;	mov qword rdi, r9
-;	mov byte sil, al
-;	mov qword rdx, rcx
-;	rep stosb
-;	mov qword r9, rax
-;	ret
-
-setup_paging:
+setup_paging_s:
    	; Fetch the pointer to the paging directory
-   	mov rax, [rsp + 4]
+   	mov rax, rdi
    	mov cr3, rax
 
    	; Enable the page size extension

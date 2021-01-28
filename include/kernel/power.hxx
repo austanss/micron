@@ -7,9 +7,13 @@
 
 extern "C"
 {
-void shutdown();
-void restart_cold();
-void restart_warm();
+namespace cpu {    
+    namespace power {
+        void shutdown();
+        void restart_cold();
+        void restart_warm();
+    }
+}
 };
 
 #endif //MICRONET_POWER_HXX

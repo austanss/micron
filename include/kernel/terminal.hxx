@@ -10,7 +10,7 @@
     #define status_eol "\n\0"
 	#define terminal_line "$TERM_LINE!\0"
 
-class Terminal
+class terminal
 {
 
 public:
@@ -18,9 +18,28 @@ public:
     {
     	return (uint16_t)uc | (uint16_t)color << 8;
     }
+    enum vga_color
+    {
+        VGA_COLOR_BLACK = 0,
+        VGA_COLOR_BLUE = 1,
+        VGA_COLOR_GREEN = 2,
+        VGA_COLOR_CYAN = 3,
+        VGA_COLOR_RED = 4,
+        VGA_COLOR_MAGENTA = 5,
+        VGA_COLOR_BROWN = 6,
+        VGA_COLOR_LIGHT_GREY = 7,
+        VGA_COLOR_DARK_GREY = 8,
+        VGA_COLOR_LIGHT_BLUE = 9,
+        VGA_COLOR_LIGHT_GREEN = 10,
+        VGA_COLOR_LIGHT_CYAN = 11,
+        VGA_COLOR_LIGHT_RED = 12,
+        VGA_COLOR_LIGHT_MAGENTA = 13,
+        VGA_COLOR_LIGHT_BROWN = 14,
+        VGA_COLOR_WHITE = 15
+    };
 	size_t row;
 	size_t column;
-    static Terminal &instance();
+    static terminal &instance();
     void put_entry_at(char c, uint8_t vga_color, size_t x, size_t y);
     void put_char(char c, uint8_t color);
     void write(const char* data, size_t size);
@@ -31,18 +50,19 @@ public:
 	void clear();
     uint32_t convert_vga_to_pix(uint8_t vga_color);
 	void setCursor(size_t columnc, size_t rowc);
-	static dimensions get_optimal_size(dimensions screen_res);
+	static gfx::shapes::dimensions get_optimal_size(gfx::shapes::dimensions screen_res);
 	bool staticLogo = false;
     void render_buffer();
     void render_entry_at(uint16_t xpos, uint16_t ypos);
     void render_entry_at_buffer(uint16_t xpos, uint16_t ypos);
+    static uint16_t* text_buffer;
 
 private:
-	Terminal();
-	Terminal(Terminal const&);
+	terminal();
+	terminal(terminal const&);
 	size_t VGA_WIDTH = 64;
 	size_t VGA_HEIGHT = 30;
-	void operator=(Terminal const&);
+	void operator=(terminal const&);
 };
 
 extern "C" void puts(char* data);

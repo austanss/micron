@@ -1,17 +1,13 @@
+#include <cstdint>
 #include "kernel/kutil.hxx"
 #include "kernel/terminal.hxx"
 #include "kernel/memory.hxx"
-#include "kernel/logo.hxx"
-#include "kernel/macros.hxx"
 #include "kernel/kbd.hxx"
-#include "kernel/font.hxx"
 #include "kernel/io.hxx"
-#include "kernel/bootinfo.hxx"
-#include "kernel/uart.hxx"
+#include "kernel/boot.hxx"
 #include "kernel/idt.hxx"
 #include "kernel/gfx.hxx"
 #include "kernel/power.hxx"
-#include <cstdint>
 
 #define __hang__ while (true);
 
@@ -28,38 +24,37 @@ void ctor_global
 (/* none atm */)
 // constructors called
 {
-	uart_initialize();
-	serial_msg("GLOBAL CONSTRUCTORS CALLED\n");
+	io::serial::serial_msg("GLOBAL CONSTRUCTORS CALLED\n");
 }
 
-void kernel_main(Boot_Info *bootloader_info)
+void kernel_main(boot::boot_info *bootloader_info)
 {
-	UEFI = bootloader_info->runtime_services;
+	boot::uefi = bootloader_info->runtime_services;
 
-	serial_msg("\nBOOTINFO ADDRESS: ");
+	io::serial::serial_msg("\nBOOTINFO ADDRESS: ");
 
-	int2serial_hex((uintptr_t)bootloader_info);
+	io::serial::serial_msg(util::itoa((uintptr_t)bootloader_info, 16));
 
-	serial_msg("\nBOOTINFO CHECKSUM: ");
+	io::serial::serial_msg("\nBOOTINFO CHECKSUM: ");
 
-	int2serial_hex(bootloader_info->verification);
+	io::serial::serial_msg(util::itoa(bootloader_info->verification, 16));
 
-	serial_msg("\nFRAMEBUFFER ADDRESS: ");
+	io::serial::serial_msg("\nFRAMEBUFFER ADDRESS: ");
 
-	int2serial_hex(bootloader_info->vbe_framebuffer->framebuffer_base_addr);
-	serial_msg("\n\n");
+	io::serial::serial_msg(util::itoa((uint64_t)bootloader_info->vbe_framebuffer->framebuffer_base, 10));
+	io::serial::serial_msg("\n\n");
 
-	map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
+	memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
 
-	start_memory_manager();
+	memory::allocation::start_malloc();
 
-	gop = *(bootloader_info->vbe_framebuffer);
+	gfx::gop = *(bootloader_info->vbe_framebuffer);
 
-	buffer = (uint32_t *)kmalloc(gop.framebuffer_size + 3) + 3;
+	gfx::buffer = (uint32_t *)memory::allocation::kmalloc(gfx::gop.framebuffer_size + 3) + 3;
 
-	*((uint8_t *)buffer - 3) = 'D';
-	*((uint8_t *)buffer - 2) = 'F';
-	*((uint8_t *)buffer - 1) = 'B';
+	*((uint8_t *)gfx::buffer - 3) = 'D';
+	*((uint8_t *)gfx::buffer - 2) = 'F';
+	*((uint8_t *)gfx::buffer - 1) = 'B';
 
 	printf("%s", "Booting...\n");
 
@@ -70,13 +65,13 @@ void kernel_main(Boot_Info *bootloader_info)
 	printf("[$GREEN!kernel-startup$WHITE!] configuring terminal\n");
 
 	printf("[$GREEN!kernel-startup$WHITE!] starting keyboard\n");
-	Keyboard::Initialize();
+	io::keyboard::init();
 
-	serial_msg("\n\nKernel configured.");
+	io::serial::serial_msg("\n\nKernel configured.");
 
-	dimensions term_size = Terminal::get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
+	gfx::shapes::dimensions term_size = terminal::get_optimal_size(gfx::shapes::dims(gfx::gop.x_resolution, gfx::gop.y_resolution));
 
-	printf("[$GREEN!kernel-startup$WHITE!] res=%dx%d term=%dx%d\n", gop.x_resolution, gop.y_resolution, term_size.w, term_size.h);
+	printf("[$GREEN!kernel-startup$WHITE!] res=%dx%d term=%dx%d\n", gfx::gop.x_resolution, gfx::gop.y_resolution, term_size.w, term_size.h);
 
 	printf("[$GREEN!kernel-startup$WHITE!] boot success\n");
 
@@ -84,9 +79,9 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	printf("in: %d", 25);
 
-	int* tf25 = (int *)kmalloc(4);
+	int* tf25 = (int *)memory::allocation::kmalloc(4);
 
-	memset(tf25, 25, 1);
+	memory::operations::memset(tf25, 25, 1);
 
 	printf("out: %d\n", *tf25);
 

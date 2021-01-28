@@ -9,44 +9,46 @@
 #include "kernel/io.hxx"
 #include "kernel/gfx.hxx"
 
-void FnHandlerF1  ()  {
-	memset(buffer, 0xFF, gop.framebuffer_size);
-	buff();
+void fn_handler_f1  ()  {
+	memory::operations::memset(gfx::buffer, 0xFF, gfx::gop.framebuffer_size);
+	gfx::screen::buff();
 }
-void FnHandlerF2  ()  { 
-	restart_warm();
+void fn_handler_f2  ()  { 
+	cpu::power::restart_warm();
 }
 
-void FnHandlerF3  ()  { 
-	buff();
+void fn_handler_f3  ()  { 
+	gfx::screen::buff();
 }
 
 bool main_screen = true;
 
-void FnHandlerF4  ()  { 
+void fn_handler_f4  ()  { 
 	if (main_screen)
 	{
-		save_screen();
-		Terminal::instance().clear();
+		gfx::screen::save_screen();
+		terminal::instance().clear();
 	}
 	else 
-		restore_screen();
-		save_screen();
-
+	{
+		gfx::screen::restore_screen();
+		gfx::screen::save_screen();
+	}
+	
 	main_screen = !main_screen;	
 }
-void FnHandlerF5  ()  { }
-void FnHandlerF6  ()  { }
-void FnHandlerF7  ()  { }
-void FnHandlerF8  ()  { }
-void FnHandlerF9  ()  { }
-void FnHandlerF10 ()  { }
-void FnHandlerF11 ()  { }
-void FnHandlerF12 ()  { }
+void fn_handler_f5  ()  { }
+void fn_handler_f6  ()  { }
+void fn_handler_f7  ()  { }
+void fn_handler_f8  ()  { }
+void fn_handler_f9  ()  { }
+void fn_handler_f10 ()  { }
+void fn_handler_f11 ()  { }
+void fn_handler_f12 ()  { }
 
-char getChar(uint8_t keycode)
+char io::keyboard::scan_code_to_char(uint8_t keycode)
 {
-	if (Keyboard::caps_lock && Keyboard::shifted)
+	if (io::keyboard::caps_lock && io::keyboard::shifted)
 	{
 		switch (keycode)
 		{
@@ -77,7 +79,7 @@ char getChar(uint8_t keycode)
 			case 0x1A: return '{';
 			case 0x1B: return '}';
 			case 0x1C: return '\n';
-			case 0x1D: Keyboard::ctrl_down = true; return 0;
+			case 0x1D: io::keyboard::ctrl_down = true; return 0;
 			case 0x1E: return 'a';
 			case 0x1F: return 's';
 			case 0x20: return 'd';
@@ -90,7 +92,7 @@ char getChar(uint8_t keycode)
 			case 0x27: return ':';
 			case 0x28: return '"';
 			case 0x29: return '~';
-			case 0x2A: Keyboard::shifted = true; return 0;
+			case 0x2A: io::keyboard::shifted = true; return 0;
 			case 0x2B: return '|';
 			case 0x2C: return 'z';
 			case 0x2D: return 'x';
@@ -102,23 +104,23 @@ char getChar(uint8_t keycode)
 			case 0x33: return '<';
 			case 0x34: return '>';
 			case 0x35: return '?';
-			case 0x36: Keyboard::shifted = true; return 0;
+			case 0x36: io::keyboard::shifted = true; return 0;
 			case 0x37: return '*';
-			case 0x38: Keyboard::alt_down = true; return 0;
+			case 0x38: io::keyboard::alt_down = true; return 0;
 			case 0x39: return ' ';
-			case 0x3A: Keyboard::caps_lock = !Keyboard::alt_down; return 0;
-			case 0x3B: FnHandlerF1();  return 0;
-			case 0x3C: FnHandlerF2();  return 0;
-			case 0x3D: FnHandlerF3();  return 0;
-			case 0x3E: FnHandlerF4();  return 0;
-			case 0x3F: FnHandlerF5();  return 0;
-			case 0x40: FnHandlerF6();  return 0;
-			case 0x41: FnHandlerF7();  return 0;
-			case 0x42: FnHandlerF8();  return 0;
-			case 0x43: FnHandlerF9();  return 0;
-			case 0x44: FnHandlerF10(); return 0;
-			case 0x45: Keyboard::num_lock = !Keyboard::num_lock; return 0;
-			case 0x46: Keyboard::scroll_lock = !Keyboard::scroll_lock; return 0;
+			case 0x3A: io::keyboard::caps_lock = !io::keyboard::alt_down; return 0;
+			case 0x3B: fn_handler_f1();  return 0;
+			case 0x3C: fn_handler_f2();  return 0;
+			case 0x3D: fn_handler_f3();  return 0;
+			case 0x3E: fn_handler_f4();  return 0;
+			case 0x3F: fn_handler_f5();  return 0;
+			case 0x40: fn_handler_f6();  return 0;
+			case 0x41: fn_handler_f7();  return 0;
+			case 0x42: fn_handler_f8();  return 0;
+			case 0x43: fn_handler_f9();  return 0;
+			case 0x44: fn_handler_f10(); return 0;
+			case 0x45: io::keyboard::num_lock = !io::keyboard::num_lock; return 0;
+			case 0x46: io::keyboard::scroll_lock = !io::keyboard::scroll_lock; return 0;
 			case 0x47: return '7';
 			case 0x48: return '8';
 			case 0x49: return '9';
@@ -132,17 +134,17 @@ char getChar(uint8_t keycode)
 			case 0x51: return '3';
 			case 0x52: return '0';
 			case 0x53: return '.';
-			case 0x57: FnHandlerF11(); return 0;
-			case 0x58: FnHandlerF12(); return 0;
-			case 0x9D: Keyboard::ctrl_down = false;
-			case 0xAA: Keyboard::shifted = false;
-			case 0xB6: Keyboard::shifted = false;
-			case 0xB8: Keyboard::alt_down = false;
+			case 0x57: fn_handler_f1(); return 0;
+			case 0x58: fn_handler_f2(); return 0;
+			case 0x9D: io::keyboard::ctrl_down = false;
+			case 0xAA: io::keyboard::shifted = false;
+			case 0xB6: io::keyboard::shifted = false;
+			case 0xB8: io::keyboard::alt_down = false;
 
 			default: return 0;
 		}
 	}
-	else if (Keyboard::caps_lock && !Keyboard::shifted)
+	else if (io::keyboard::caps_lock && !io::keyboard::shifted)
 	{
 		switch (keycode)
 		{
@@ -173,7 +175,7 @@ char getChar(uint8_t keycode)
 			case 0x1A: return '[';
 			case 0x1B: return ']';
 			case 0x1C: return '\n';
-			case 0x1D: Keyboard::ctrl_down = true; return 0;
+			case 0x1D: io::keyboard::ctrl_down = true; return 0;
 			case 0x1E: return 'A';
 			case 0x1F: return 'S';
 			case 0x20: return 'D';
@@ -186,7 +188,7 @@ char getChar(uint8_t keycode)
 			case 0x27: return ';';
 			case 0x28: return '\'';
 			case 0x29: return '`';
-			case 0x2A: Keyboard::shifted = true; return 0;
+			case 0x2A: io::keyboard::shifted = true; return 0;
 			case 0x2B: return '\\';
 			case 0x2C: return 'Z';
 			case 0x2D: return 'X';
@@ -198,23 +200,23 @@ char getChar(uint8_t keycode)
 			case 0x33: return ',';
 			case 0x34: return '.';
 			case 0x35: return '/';
-			case 0x36: Keyboard::shifted = true; return 0;
+			case 0x36: io::keyboard::shifted = true; return 0;
 			case 0x37: return '*';
-			case 0x38: Keyboard::alt_down = true; return 0;
+			case 0x38: io::keyboard::alt_down = true; return 0;
 			case 0x39: return ' ';
-			case 0x3A: Keyboard::caps_lock = !Keyboard::alt_down; return 0;
-			case 0x3B: FnHandlerF1();  return 0;
-			case 0x3C: FnHandlerF2();  return 0;
-			case 0x3D: FnHandlerF3();  return 0;
-			case 0x3E: FnHandlerF4();  return 0;
-			case 0x3F: FnHandlerF5();  return 0;
-			case 0x40: FnHandlerF6();  return 0;
-			case 0x41: FnHandlerF7();  return 0;
-			case 0x42: FnHandlerF8();  return 0;
-			case 0x43: FnHandlerF9();  return 0;
-			case 0x44: FnHandlerF10(); return 0;
-			case 0x45: Keyboard::num_lock = !Keyboard::num_lock; return 0;
-			case 0x46: Keyboard::scroll_lock = !Keyboard::scroll_lock; return 0;
+			case 0x3A: io::keyboard::caps_lock = !io::keyboard::alt_down; return 0;
+			case 0x3B: fn_handler_f1();  return 0;
+			case 0x3C: fn_handler_f2();  return 0;
+			case 0x3D: fn_handler_f3();  return 0;
+			case 0x3E: fn_handler_f4();  return 0;
+			case 0x3F: fn_handler_f5();  return 0;
+			case 0x40: fn_handler_f6();  return 0;
+			case 0x41: fn_handler_f7();  return 0;
+			case 0x42: fn_handler_f8();  return 0;
+			case 0x43: fn_handler_f9();  return 0;
+			case 0x44: fn_handler_f10(); return 0;
+			case 0x45: io::keyboard::num_lock = !io::keyboard::num_lock; return 0;
+			case 0x46: io::keyboard::scroll_lock = !io::keyboard::scroll_lock; return 0;
 			case 0x47: return '7';
 			case 0x48: return '8';
 			case 0x49: return '9';
@@ -228,17 +230,17 @@ char getChar(uint8_t keycode)
 			case 0x51: return '3';
 			case 0x52: return '0';
 			case 0x53: return '.';
-			case 0x57: FnHandlerF11(); return 0;
-			case 0x58: FnHandlerF12(); return 0;
-			case 0x9D: Keyboard::ctrl_down = false;
-			case 0xAA: Keyboard::shifted = false;
-			case 0xB6: Keyboard::shifted = false;
-			case 0xB8: Keyboard::alt_down = false;
+			case 0x57: fn_handler_f1(); return 0;
+			case 0x58: fn_handler_f2(); return 0;
+			case 0x9D: io::keyboard::ctrl_down = false;
+			case 0xAA: io::keyboard::shifted = false;
+			case 0xB6: io::keyboard::shifted = false;
+			case 0xB8: io::keyboard::alt_down = false;
 
 			default: return 0;
 		}
 	}
-	else if (Keyboard::shifted && !Keyboard::caps_lock)
+	else if (io::keyboard::shifted && !io::keyboard::caps_lock)
 	{
 		switch (keycode)
 		{
@@ -269,7 +271,7 @@ char getChar(uint8_t keycode)
 			case 0x1A: return '{';
 			case 0x1B: return '}';
 			case 0x1C: return '\n';
-			case 0x1D: Keyboard::ctrl_down = true; return 0;
+			case 0x1D: io::keyboard::ctrl_down = true; return 0;
 			case 0x1E: return 'A';
 			case 0x1F: return 'S';
 			case 0x20: return 'D';
@@ -282,7 +284,7 @@ char getChar(uint8_t keycode)
 			case 0x27: return ':';
 			case 0x28: return '"';
 			case 0x29: return '~';
-			case 0x2A: Keyboard::shifted = true; return 0;
+			case 0x2A: io::keyboard::shifted = true; return 0;
 			case 0x2B: return '|';
 			case 0x2C: return 'Z';
 			case 0x2D: return 'X';
@@ -294,23 +296,23 @@ char getChar(uint8_t keycode)
 			case 0x33: return '<';
 			case 0x34: return '>';
 			case 0x35: return '?';
-			case 0x36: Keyboard::shifted = true; return 0;
+			case 0x36: io::keyboard::shifted = true; return 0;
 			case 0x37: return '*';
-			case 0x38: Keyboard::alt_down = true; return 0;
+			case 0x38: io::keyboard::alt_down = true; return 0;
 			case 0x39: return ' ';
-			case 0x3A: Keyboard::caps_lock = !Keyboard::alt_down; return 0;
-			case 0x3B: FnHandlerF1();  return 0;
-			case 0x3C: FnHandlerF2();  return 0;
-			case 0x3D: FnHandlerF3();  return 0;
-			case 0x3E: FnHandlerF4();  return 0;
-			case 0x3F: FnHandlerF5();  return 0;
-			case 0x40: FnHandlerF6();  return 0;
-			case 0x41: FnHandlerF7();  return 0;
-			case 0x42: FnHandlerF8();  return 0;
-			case 0x43: FnHandlerF9();  return 0;
-			case 0x44: FnHandlerF10(); return 0;
-			case 0x45: Keyboard::num_lock = !Keyboard::num_lock; return 0;
-			case 0x46: Keyboard::scroll_lock = !Keyboard::scroll_lock; return 0;
+			case 0x3A: io::keyboard::caps_lock = !io::keyboard::alt_down; return 0;
+			case 0x3B: fn_handler_f1();  return 0;
+			case 0x3C: fn_handler_f2();  return 0;
+			case 0x3D: fn_handler_f3();  return 0;
+			case 0x3E: fn_handler_f4();  return 0;
+			case 0x3F: fn_handler_f5();  return 0;
+			case 0x40: fn_handler_f6();  return 0;
+			case 0x41: fn_handler_f7();  return 0;
+			case 0x42: fn_handler_f8();  return 0;
+			case 0x43: fn_handler_f9();  return 0;
+			case 0x44: fn_handler_f10(); return 0;
+			case 0x45: io::keyboard::num_lock = !io::keyboard::num_lock; return 0;
+			case 0x46: io::keyboard::scroll_lock = !io::keyboard::scroll_lock; return 0;
 			case 0x47: return '7';
 			case 0x48: return '8';
 			case 0x49: return '9';
@@ -324,12 +326,12 @@ char getChar(uint8_t keycode)
 			case 0x51: return '3';
 			case 0x52: return '0';
 			case 0x53: return '.';
-			case 0x57: FnHandlerF11(); return 0;
-			case 0x58: FnHandlerF12(); return 0;
-			case 0x9D: Keyboard::ctrl_down = false;
-			case 0xAA: Keyboard::shifted = false;
-			case 0xB6: Keyboard::shifted = false;
-			case 0xB8: Keyboard::alt_down = false;
+			case 0x57: fn_handler_f1(); return 0;
+			case 0x58: fn_handler_f2(); return 0;
+			case 0x9D: io::keyboard::ctrl_down = false;
+			case 0xAA: io::keyboard::shifted = false;
+			case 0xB6: io::keyboard::shifted = false;
+			case 0xB8: io::keyboard::alt_down = false;
 
 			default: return 0;
 		}
@@ -365,7 +367,7 @@ char getChar(uint8_t keycode)
 			case 0x1A: return '[';
 			case 0x1B: return ']';
 			case 0x1C: return '\n';
-			case 0x1D: Keyboard::ctrl_down = true; return 0;
+			case 0x1D: io::keyboard::ctrl_down = true; return 0;
 			case 0x1E: return 'a';
 			case 0x1F: return 's';
 			case 0x20: return 'd';
@@ -378,7 +380,7 @@ char getChar(uint8_t keycode)
 			case 0x27: return ';';
 			case 0x28: return '\'';
 			case 0x29: return '`';
-			case 0x2A: Keyboard::shifted = true; return 0;
+			case 0x2A: io::keyboard::shifted = true; return 0;
 			case 0x2B: return '\\';
 			case 0x2C: return 'z';
 			case 0x2D: return 'x';
@@ -390,23 +392,23 @@ char getChar(uint8_t keycode)
 			case 0x33: return ',';
 			case 0x34: return '.';
 			case 0x35: return '/';
-			case 0x36: Keyboard::shifted = true; return 0;
+			case 0x36: io::keyboard::shifted = true; return 0;
 			case 0x37: return '*';
-			case 0x38: Keyboard::alt_down = true; return 0;
+			case 0x38: io::keyboard::alt_down = true; return 0;
 			case 0x39: return ' ';
-			case 0x3A: Keyboard::caps_lock = !Keyboard::alt_down; return 0;
-			case 0x3B: FnHandlerF1();  return 0;
-			case 0x3C: FnHandlerF2();  return 0;
-			case 0x3D: FnHandlerF3();  return 0;
-			case 0x3E: FnHandlerF4();  return 0;
-			case 0x3F: FnHandlerF5();  return 0;
-			case 0x40: FnHandlerF6();  return 0;
-			case 0x41: FnHandlerF7();  return 0;
-			case 0x42: FnHandlerF8();  return 0;
-			case 0x43: FnHandlerF9();  return 0;
-			case 0x44: FnHandlerF10(); return 0;
-			case 0x45: Keyboard::num_lock = !Keyboard::num_lock; return 0;
-			case 0x46: Keyboard::scroll_lock = !Keyboard::scroll_lock; return 0;
+			case 0x3A: io::keyboard::caps_lock = !io::keyboard::alt_down; return 0;
+			case 0x3B: fn_handler_f1();  return 0;
+			case 0x3C: fn_handler_f2();  return 0;
+			case 0x3D: fn_handler_f3();  return 0;
+			case 0x3E: fn_handler_f4();  return 0;
+			case 0x3F: fn_handler_f5();  return 0;
+			case 0x40: fn_handler_f6();  return 0;
+			case 0x41: fn_handler_f7();  return 0;
+			case 0x42: fn_handler_f8();  return 0;
+			case 0x43: fn_handler_f9();  return 0;
+			case 0x44: fn_handler_f10(); return 0;
+			case 0x45: io::keyboard::num_lock = !io::keyboard::num_lock; return 0;
+			case 0x46: io::keyboard::scroll_lock = !io::keyboard::scroll_lock; return 0;
 			case 0x47: return '7';
 			case 0x48: return '8';
 			case 0x49: return '9';
@@ -420,33 +422,33 @@ char getChar(uint8_t keycode)
 			case 0x51: return '3';
 			case 0x52: return '0';
 			case 0x53: return '.';
-			case 0x57: FnHandlerF11(); return 0;
-			case 0x58: FnHandlerF12(); return 0;
-			case 0x9D: Keyboard::ctrl_down = false;
-			case 0xAA: Keyboard::shifted = false;
-			case 0xB6: Keyboard::shifted = false;
-			case 0xB8: Keyboard::alt_down = false;
+			case 0x57: fn_handler_f1(); return 0;
+			case 0x58: fn_handler_f2(); return 0;
+			case 0x9D: io::keyboard::ctrl_down = false;
+			case 0xAA: io::keyboard::shifted = false;
+			case 0xB6: io::keyboard::shifted = false;
+			case 0xB8: io::keyboard::alt_down = false;
 
 			default: return 0;
 		}
 	}
 }
 
-bool Keyboard::shifted;
-bool Keyboard::ctrl_down;
-bool Keyboard::alt_down;
-bool Keyboard::fn_down;
-bool Keyboard::caps_lock;
-bool Keyboard::scroll_lock;
-bool Keyboard::num_lock;
+bool io::keyboard::shifted;
+bool io::keyboard::ctrl_down;
+bool io::keyboard::alt_down;
+bool io::keyboard::fn_down;
+bool io::keyboard::caps_lock;
+bool io::keyboard::scroll_lock;
+bool io::keyboard::num_lock;
 
-void Keyboard::Initialize()
+void io::keyboard::init()
 {
-	Keyboard::num_lock = false;
-	Keyboard::caps_lock = false;
-	Keyboard::scroll_lock = false;
-	Keyboard::alt_down = false;
-	Keyboard::ctrl_down = false;
-	Keyboard::fn_down = false;
-	irq_unmask(1);
+	io::keyboard::num_lock = false;
+	io::keyboard::caps_lock = false;
+	io::keyboard::scroll_lock = false;
+	io::keyboard::alt_down = false;
+	io::keyboard::ctrl_down = false;
+	io::keyboard::fn_down = false;
+	io::pic::irq_unmask(1);
 }

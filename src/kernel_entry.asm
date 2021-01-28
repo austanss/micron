@@ -2,12 +2,12 @@ global kernel_entry
 
 extern kernel_main
 extern ctor_global
-extern loadIDT
-extern loadGDT64
+extern load_idt
+extern load_gdt
 extern restart_cold
 extern puts
 extern serial_msg
-extern configurePIC
+extern configure_pic
 
 kernel_entry:
 
@@ -43,18 +43,18 @@ kernel_entry:
 	cli								;	clear the interrupt flag
 
 	; gdt
-	call loadGDT64
+	call load_gdt
 
 	mov edi, 0x0000FF00
 	call set_status_color
 
 	; idt
-	call loadIDT
+	call load_idt
 
 	mov edi, 0xFF00FF00
 	call set_status_color
 
-	call configurePIC
+	call configure_pic
 
 	; interrupts
 	sti								;	set the interrupt flag

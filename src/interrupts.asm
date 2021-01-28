@@ -1,6 +1,6 @@
 ; Defined in GDT.cpp
-[extern ISRHandler]
-[extern IRQHandler]
+[extern isr_handler]
+[extern irq_handler]
 
 %macro pusha 0
     push rax
@@ -43,7 +43,7 @@ isr_common_stub:
 
   ; 2. Call C handler
    cld
-   call ISRHandler
+   call isr_handler
 
   ; 3. Restore state
    pop rbx
@@ -77,7 +77,7 @@ irq_common_stub:
 
   ; 2. Call C handler
    cld
-   call IRQHandler
+   call irq_handler
 
   ; 3. Restore state
    pop rax

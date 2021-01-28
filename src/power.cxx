@@ -3,20 +3,20 @@
 //
 
 #include "kernel/power.hxx"
-#include "kernel/bootinfo.hxx"
+#include "kernel/boot.hxx"
 
 // extern as C so can be called from ASM
 extern "C"
 {
-void shutdown() {
-	UEFI->ResetSystem(EfiResetShutdown, 0, 0, nullptr);
+void cpu::power::shutdown() {
+	boot::uefi->reset_system(boot::efi_reset_shutdown, 0, 0, nullptr);
 }
 
-void restart_warm() {
-	UEFI->ResetSystem(EfiResetWarm, 0, 0, nullptr);
+void cpu::power::restart_warm() {
+	boot::uefi->reset_system(boot::efi_reset_warm, 0, 0, nullptr);
 }
 
-void restart_cold() {
-	UEFI->ResetSystem(EfiResetCold, 0, 0, nullptr);
+void cpu::power::restart_cold() {
+	boot::uefi->reset_system(boot::efi_reset_cold, 0, 0, nullptr);
 }
 }

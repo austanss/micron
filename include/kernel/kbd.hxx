@@ -6,19 +6,21 @@
 #define MICROCORE_KBD_HXX
 #include <stdint.h>
 
-char getChar(uint8_t keycode);
 
-class Keyboard {
+namespace io {
 
-public:
-	static void Initialize();
-	static bool shifted;
-	static bool ctrl_down;
-	static bool alt_down;
-	static bool fn_down;
-	static bool caps_lock;
-	static bool scroll_lock;
-	static bool num_lock;
+	namespace keyboard {
+		void 		init();
+		char 		scan_code_to_char(uint8_t keycode);
+		extern bool shifted;
+		extern bool ctrl_down;
+		extern bool alt_down;
+		extern bool fn_down;
+		extern bool caps_lock;
+		extern bool scroll_lock;
+		extern bool num_lock;
+	}
+	
 };
 
 #endif // MICROCORE_KBD_HXX
