@@ -54,12 +54,12 @@ void gfx::screen::restore_screen()
 
 void gfx::screen::plot_pixel(gfx::shapes::positional_point posi, uint32_t pixel)
 {
-	*(uint32_t *)(gop.framebuffer_base + 4 * gop.pixels_per_scan_line * posi.y + 4 * posi.x) = pixel;
+	gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
 }
 
 void gfx::screen::plot_pixel_buffer(gfx::shapes::positional_point posi, uint32_t pixel)
 {
-	*(buffer + 4 * gop.pixels_per_scan_line * posi.y + 4 * posi.x) = pixel;
+	buffer[gop.x_resolution * posi.y + posi.x] = pixel;
 }
 
 gfx::shapes::positional_point gfx::shapes::rect_center(gfx::shapes::positional_point posTL, gfx::shapes::positional_point posBR)

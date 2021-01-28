@@ -155,7 +155,7 @@ void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
     uint8_t bits[64];
 
 	for (uint8_t i = 1; i <= 64; i++) {
-		bits[i] = util::get_bit(font_selector, i);
+		bits[i - 1] = util::get_bit(font_selector, i);
 	}
 
 		//	for (int i = 63; i >= 0; i--)
@@ -202,7 +202,7 @@ void terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
     uint8_t bits[64];
 
 	for (uint8_t i = 1; i <= 64; i++) {
-		bits[i] = util::get_bit(font_selector, i);
+		bits[i - 1] = util::get_bit(font_selector, i);
 	}
 
 		//	for (int i = 63; i >= 0; i--)
