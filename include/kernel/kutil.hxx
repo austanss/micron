@@ -5,7 +5,7 @@ char getChar(uint8_t keycode);
 void writeHex(uint32_t num);
 extern "C" void int2serial_hex(uint64_t num);
 extern "C" void int2serial_any(int64_t value, int base);
-char* itoa(int val, int base);
+char* itoa(long int val, int base);
 
 typedef union uint64_bytearr
 {

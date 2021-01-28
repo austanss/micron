@@ -46,14 +46,14 @@ void int2serial_any(int64_t value, int base)
 	{
 		int2serial_any( value / base, base );
 	}
-	serial_msg( digits[ value % base ] );
+	serial_byte( digits[ value % base ] );
 }
 
-char* itoa(int val, int base)
+char* itoa(long int val, int base)
 {
-	static char buf[32] = {0};
+	static char buf[64] = {0};
 
-	int i = 30;
+	int i = 60;
 
 	for(; val && i ; --i, val /= base)
 

@@ -1,4 +1,5 @@
 #include "kernel/memory.hxx"
+#include <cstdint>
 #include <kernel/gfx.hxx>
 
 uint32_t *buffer;
@@ -43,9 +44,19 @@ void rect(positional_point posi, dimensions dimens, uint32_t color) {
 	buff();
 }
 
-void buff() {
+void buff() 
+{
+	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.x_resolution * gop.y_resolution * 4);
+}
 
-	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.framebuffer_size);
+void save_screen()
+{
+	memcpy(buffer, (void *)gop.framebuffer_base_addr, gop.x_resolution * gop.y_resolution * 4);
+}
+
+void restore_screen()
+{
+	memcpy((void *)gop.framebuffer_base_addr, buffer, gop.x_resolution * gop.y_resolution * 4);
 }
 
 void plot_pixel(positional_point posi, uint32_t pixel)
@@ -55,7 +66,7 @@ void plot_pixel(positional_point posi, uint32_t pixel)
 
 void plot_pixel_buffer(positional_point posi, uint32_t pixel)
 {
-	*(buffer + 4 * gop.pixels_per_scan_line * posi.y + 4 * posi.x) = pixel;
+	*((uint32_t*)(buffer + 4 * (posi.y * gop.pixels_per_scan_line + posi.x))) = pixel;
 }
 
 positional_point rect_center(positional_point posTL, positional_point posBR)

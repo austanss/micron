@@ -55,33 +55,42 @@ void kernel_main(Boot_Info *bootloader_info)
 
 	gop = *(bootloader_info->vbe_framebuffer);
 
-	buffer = (uint32_t *)kmalloc(gop.x_resolution * gop.y_resolution * 4);
+	buffer = (uint32_t *)kmalloc(gop.framebuffer_size + 3) + 3;
 
-	Terminal& terminal = Terminal::instance();
+	*((uint8_t *)buffer - 3) = 'D';
+	*((uint8_t *)buffer - 2) = 'F';
+	*((uint8_t *)buffer - 1) = 'B';
 
-	terminal.setCursor(0, 0);
-	terminal << "\n  microNET  \n";
-	terminal <<   "-----------+\n\n";
+	printf("%s", "Booting...\n");
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] mapping memory" << status_eol;
+	printf("[$GREEN!kernel-startup$WHITE!] mapping memory\n");
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] starting malloc" << status_eol;
+	printf("[$GREEN!kernel-startup$WHITE!] starting malloc\n");
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] configuring terminal";
-	terminal << status_eol;
+	printf("[$GREEN!kernel-startup$WHITE!] configuring terminal\n");
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] starting keyboard" << status_eol;
+	printf("[$GREEN!kernel-startup$WHITE!] starting keyboard\n");
 	Keyboard::Initialize();
 
 	serial_msg("\n\nKernel configured.");
 
 	dimensions term_size = Terminal::get_optimal_size(dims(gop.x_resolution, gop.y_resolution));
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] res=" << gop.x_resolution << "x" << gop.y_resolution << " term=" << term_size.w << "x" << term_size.h << "\n";
+	printf("[$GREEN!kernel-startup$WHITE!] res=%dx%d term=%dx%d\n", gop.x_resolution, gop.y_resolution, term_size.w, term_size.h);
 
-	terminal << "[$GREEN!kernel-startup$WHITE!] boot success" << status_eol;
-	terminal << "-=-" << status_eol;
+	printf("[$GREEN!kernel-startup$WHITE!] boot success\n");
 
+	printf("[$GREEN!kernel-checkup$WHITE!] testing memset: ");
+
+	printf("in: %d", 25);
+
+	int* tf25 = (int *)kmalloc(4);
+
+	memset(tf25, 25, 1);
+
+	printf("out: %d\n", *tf25);
+
+//	rect(pos(200, 400), dims(25, 25), 0xFFFFFFFF);
 }
 
 }

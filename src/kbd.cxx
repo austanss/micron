@@ -3,13 +3,38 @@
 //
 
 #include "kernel/kbd.hxx"
+#include "kernel/memory.hxx"
+#include "kernel/power.hxx"
 #include "kernel/terminal.hxx"
 #include "kernel/io.hxx"
+#include "kernel/gfx.hxx"
 
-void FnHandlerF1  ()  { }
-void FnHandlerF2  ()  { }
-void FnHandlerF3  ()  { }
-void FnHandlerF4  ()  { }
+void FnHandlerF1  ()  {
+	memset(buffer, 0xFF, gop.framebuffer_size);
+	buff();
+}
+void FnHandlerF2  ()  { 
+	restart_warm();
+}
+
+void FnHandlerF3  ()  { 
+	buff();
+}
+
+bool main_screen = true;
+
+void FnHandlerF4  ()  { 
+	if (main_screen)
+	{
+		save_screen();
+		Terminal::instance().clear();
+	}
+	else 
+		restore_screen();
+		save_screen();
+
+	main_screen = !main_screen;	
+}
 void FnHandlerF5  ()  { }
 void FnHandlerF6  ()  { }
 void FnHandlerF7  ()  { }

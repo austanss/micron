@@ -138,6 +138,7 @@ void map_memory(Memory_Map_Descriptor* memmap, uint64_t map_size, uint64_t desc_
 	serial_msg("Kernel heap: ");
 	int2serial_hex((uint64_t)meminfo->kernel_heap);
 	serial_msg(", ");
+
 	serial_msg(itoa((int64_t)meminfo->kernel_heap_size / 1024, 10));
 	serial_msg(" kilobytes.\nUser heap: ");
 	int2serial_hex((uint64_t)meminfo->user_heap);
@@ -240,15 +241,17 @@ void begin_paging() {
 // memops
 //////////////////////////////////////////
 
-void *memcpy(void *__restrict dst, const void *__restrict src, size_t count)
-{
-	serial_msg("memcpy from ");
-	serial_msg(itoa((uint64_t)src, 16));
-	serial_msg(" to ");
-	serial_msg(itoa((uint64_t)dst, 16));
-	serial_msg(" for ");
-	serial_msg(itoa((uint64_t)count, 10));
-	serial_msg(" bytes\n");
-	asm volatile ("cld; rep movsb" : "+c" (count), "+S" (src), "+D" (dst) :: "memory");
-	return dst;
+void* memcpy(void* __restrict dstptr, const void* __restrict srcptr, size_t size) {
+	unsigned char* dst = (unsigned char*) dstptr;
+	const unsigned char* src = (const unsigned char*) srcptr;
+	for (size_t i = 0; i < size; i++)
+		dst[i] = src[i];
+	return dstptr;
+}
+
+void* memset(void* bufptr, int value, size_t size) {
+	unsigned char* buf = (unsigned char*) bufptr;
+	for (size_t i = 0; i < size; i++)
+		buf[i] = (unsigned char) value;
+	return bufptr;
 }

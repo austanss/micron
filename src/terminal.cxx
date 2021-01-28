@@ -7,7 +7,9 @@
 #include "kernel/kutil.hxx"
 #include "kernel/gfx.hxx"
 #include "kernel/macros.hxx"
-#include <cstdint>
+#include <stdint.h>
+#include <stdarg.h>
+#include <limits.h>
 
 // This terminal emulates a dynamically-sized text mode
 
@@ -85,6 +87,7 @@ void Terminal::put_entry_at(char c, uint8_t vga_color, size_t xpos, size_t ypos)
 	text_buffer[(ypos * VGA_WIDTH + xpos)] = vga_entry(c, vga_color);
 
 	render_entry_at(xpos, ypos);
+	render_entry_at_buffer(xpos, ypos);
 }
 
 uint32_t Terminal::convert_vga_to_pix(uint8_t vga_color)
@@ -207,57 +210,63 @@ void Terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 	}
 }
 
+void Terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
+{
+  	uint32_t color;
+
+	uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
+
+	uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
+	char c = entry ^ 0b1111111100000000;
+
+	color = convert_vga_to_pix(vga_color);
+
+    uint64_t font_selector = FONT[c];
+
+    uint8_t bits[64];
+
+	for (uint8_t i = 1; i <= 64; i++) {
+		bits[i] = get_bit(font_selector, i);
+	}
+
+		//	for (int i = 63; i >= 0; i--)
+		//	{
+		//		if ((i + 1) % 8 == 0)
+		//			serial_msg('\n');
+		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
+		//	}
+
+	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
+		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
+			if (bits[(8 * y) + x]) {
+				plot_pixel_buffer(pos(xx, yy), color);
+				plot_pixel_buffer(pos(xx + 1, yy), color);
+				plot_pixel_buffer(pos(xx, yy + 1), color);
+				plot_pixel_buffer(pos(xx + 1, yy + 1), color);
+				plot_pixel_buffer(pos(xx, yy + 2), color);
+				plot_pixel_buffer(pos(xx + 1, yy + 2), color);
+			} else {
+				plot_pixel_buffer(pos(xx, yy), 0x00000000);
+				plot_pixel_buffer(pos(xx + 1, yy), 0x00000000);
+				plot_pixel_buffer(pos(xx, yy + 1), 0x00000000);
+				plot_pixel_buffer(pos(xx + 1, yy + 1), 0x00000000);
+				plot_pixel_buffer(pos(xx, yy + 2), 0x00000000);
+				plot_pixel_buffer(pos(xx + 1, yy + 2), 0x00000000);
+			}
+		}
+	}
+}
+
 void Terminal::render_buffer()
 {
 	for (uint16_t ypos = 0; ypos < VGA_HEIGHT; ypos++)
 	{
 		for (uint16_t xpos = 0; xpos < VGA_WIDTH; xpos++)
 		{
-			uint32_t color;
-
-			uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
-
-			uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
-			char c = entry ^ 0b1111111100000000;
-
-			color = convert_vga_to_pix(vga_color);
-
-			uint64_t font_selector = FONT[c];
-
-			uint8_t bits[64];
-
-			for (uint8_t i = 1; i <= 64; i++) {
-				bits[i] = get_bit(font_selector, i);
-			}
-
-				//	for (int i = 63; i >= 0; i--)
-				//	{
-				//		if ((i + 1) % 8 == 0)
-				//			serial_msg('\n');
-				//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
-				//	}
-
-			for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
-				for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
-					if (bits[(8 * y) + x]) {
-						plot_pixel(pos(xx, yy), color);
-						plot_pixel(pos(xx + 1, yy), color);
-						plot_pixel(pos(xx, yy + 1), color);
-						plot_pixel(pos(xx + 1, yy + 1), color);
-						plot_pixel(pos(xx, yy + 2), color);
-						plot_pixel(pos(xx + 1, yy + 2), color);
-					} else {
-						plot_pixel(pos(xx, yy), 0x00000000);
-						plot_pixel(pos(xx + 1, yy), 0x00000000);
-						plot_pixel(pos(xx, yy + 1), 0x00000000);
-						plot_pixel(pos(xx + 1, yy + 1), 0x00000000);
-						plot_pixel(pos(xx, yy + 2), 0x00000000);
-						plot_pixel(pos(xx + 1, yy + 2), 0x00000000);
-					}
-				}
-			}
+			render_entry_at_buffer(xpos, ypos);
 		}
 	}
+	buff();
 }
 
 void Terminal::shift()
@@ -431,5 +440,88 @@ dimensions Terminal::get_optimal_size(dimensions screen_res) {
 
 extern "C" void puts(char* data)
 {
-	Terminal::instance().write(data);
+	printf("%s\n", data);
+}
+
+static bool print(const char* data, size_t length) {
+	Terminal::instance().write(data, length);
+	return true;
+}
+
+int printf(const char* __restrict format, ...) {
+	va_list parameters;
+	va_start(parameters, format);
+ 
+	int written = 0;
+ 
+	while (*format != '\0') {
+		size_t maxrem = INT_MAX - written;
+ 
+		if (format[0] != '%' || format[1] == '%') {
+			if (format[0] == '%')
+				format++;
+			size_t amount = 1;
+			while (format[amount] && format[amount] != '%')
+				amount++;
+			if (maxrem < amount) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(format, amount))
+				return -1;
+			format += amount;
+			written += amount;
+			continue;
+		}
+ 
+		const char* format_begun_at = format++;
+ 
+		if (*format == 'c') {
+			format++;
+			char c = (char) va_arg(parameters, int /* char promotes to int */);
+			if (!maxrem) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(&c, sizeof(c)))
+				return -1;
+			written++;
+		} else if (*format == 's') {
+			format++;
+			const char* str = va_arg(parameters, const char*);
+			size_t len = strlen(str);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(str, len))
+				return -1;
+			written += len;
+		} else if (*format == 'd') {
+			format++;
+			const char* str = itoa(va_arg(parameters, int), 10);
+			size_t len = strlen(str);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(str, len))
+				return -1;
+			written += len;
+		} else {
+			format = format_begun_at;
+			size_t len = strlen(format);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(format, len))
+				return -1;
+			written += len;
+			format += len;
+		}
+	}
+ 
+	va_end(parameters);
+	return written;
 }

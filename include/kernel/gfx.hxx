@@ -286,6 +286,9 @@
 	dimensions dims(uint32_t w, uint32_t h);
 	void rect(positional_point posi, dimensions dimens, uint32_t color);
 	void buff();
+	void initialize_dfb();
+	void save_screen();
+	void restore_screen();
 	positional_point rect_center(positional_point posTL, positional_point posBR);
 
 #endif //MICROCORE_GFX_HXX

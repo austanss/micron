@@ -87,10 +87,10 @@ void ExceptionHandler(Registers& registers)
 	Terminal& terminal = Terminal::instance();
 	terminal.clear();
 
-	terminal << "$RED!FATAL ERROR: $WHITE!The CPU has thrown a fatal exception and the system must terminate.\n"
-			 << "A register dump has been printed to serial output.\n"
-			 << "\n"
-			 << "The system will restart momentarily...";
+	puts("$RED!FATAL ERROR: $WHITE!The CPU has thrown a fatal exception and the system must terminate.\n");
+	puts("A register dump has been printed to serial output.\n");
+	puts("\n");
+	puts("The system will restart momentarily...");
 	serial_msg("\n\nFATAL ERROR: CPU EXCEPTION ");
 	int2serial_hex(registers.interruptNumber);
 	serial_msg(" -/- ERROR CODE ");

@@ -1,15 +1,14 @@
-global memset
+;global memset
 global setup_paging
 
-memset:
-	push rbp
-	mov rbp,rsp
-	mov rdi, [rdi]                    ; dest
-	movzx rax,byte [rsi]              ; ch
-	mov rcx, [rdx]                    ; count
-	rep stosb
-	pop rbp
-	ret
+;;;;;;;;;;;;;;;;;;;;;;;;; broken
+;memset:
+;	mov qword rdi, r9
+;	mov byte sil, al
+;	mov qword rdx, rcx
+;	rep stosb
+;	mov qword r9, rax
+;	ret
 
 setup_paging:
    	; Fetch the pointer to the paging directory

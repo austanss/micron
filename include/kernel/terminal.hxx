@@ -35,6 +35,7 @@ public:
 	bool staticLogo = false;
     void render_buffer();
     void render_entry_at(uint16_t xpos, uint16_t ypos);
+    void render_entry_at_buffer(uint16_t xpos, uint16_t ypos);
 
 private:
 	Terminal();
@@ -44,18 +45,5 @@ private:
 	void operator=(Terminal const&);
 };
 
-template<typename T>
-Terminal& operator<<(Terminal& term, T data)
-{
-        term.write(data);
-        return term;
-}
-
-template<typename T>
-Terminal* operator<<(Terminal* term, T data)
-{
-        term->write(data);
-        return term;
-}
-
 extern "C" void puts(char* data);
+extern "C" int printf(const char* __restrict format, ...);
