@@ -41,16 +41,14 @@ void kernel_main(boot::boot_info *bootloader_info)
 
 	io::serial::serial_msg("\nFRAMEBUFFER ADDRESS: ");
 
-	io::serial::serial_msg(util::itoa((uint64_t)bootloader_info->vbe_framebuffer->framebuffer_base, 10));
+	io::serial::serial_msg(util::itoa((uint64_t)bootloader_info->vbe_framebuffer->framebuffer_base, 16));
 	io::serial::serial_msg("\n\n");
 
-	memory::paging::begin_paging();
+//	memory::paging::begin_paging();
 
 	memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
 
 	memory::allocation::start_malloc();
-
-	terminal::instance();
 
 	gfx::gop = *(bootloader_info->vbe_framebuffer);
 
@@ -60,6 +58,8 @@ void kernel_main(boot::boot_info *bootloader_info)
 	*((uint8_t *)gfx::buffer - 2) = 'F';
 	*((uint8_t *)gfx::buffer - 1) = 'B';
 
+	terminal::instance();
+	
 	printf("%s", "Booting...\n");
 
 	printf("[$GREEN!kernel-startup$WHITE!] configuring paging\n");

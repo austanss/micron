@@ -15,8 +15,8 @@
 size_t memory::memory_size;
 memory::allocation::conventional_memory_chunk user_heap;
 memory::allocation::conventional_memory_chunk kernel_heap;
-void* kernel_heap_allocator_ptr;
-void* user_heap_allocator_ptr;
+char* kernel_heap_allocator_ptr;
+char* user_heap_allocator_ptr;
 memory::allocation::memory_info* meminfo;
 
 bool allocator_on = false;
@@ -157,8 +157,8 @@ void memory::allocation::start_malloc()
 	user_heap.start = meminfo->user_heap;
 	user_heap.pages = meminfo->user_heap_size / 0x1000;
 
-	user_heap_allocator_ptr = user_heap.start;
-	kernel_heap_allocator_ptr = kernel_heap.start;
+	user_heap_allocator_ptr = (char *)user_heap.start;
+	kernel_heap_allocator_ptr = (char *)kernel_heap.start;
 
 	io::serial::serial_msg("User heap allocator pointer is at ");
 	io::serial::serial_msg(util::itoa((uint64_t)meminfo->user_heap, 16));
@@ -178,7 +178,10 @@ void* memory::allocation::malloc(size_t bytes)
 	io::serial::serial_msg(util::itoa(bytes, 10));
 	io::serial::serial_msg(" byte(s) on user heap, at");	
 
-	void* return_address = user_heap_allocator_ptr;
+	if ((uint64_t)user_heap_allocator_ptr % 2 != 0)
+		user_heap_allocator_ptr++;
+
+	char* return_address = user_heap_allocator_ptr;
 
 	io::serial::serial_msg(util::itoa((uint64_t)return_address, 16));
 	io::serial::serial_msg("\n");
@@ -205,12 +208,18 @@ void* memory::allocation::kmalloc(size_t bytes)
 	io::serial::serial_msg(util::itoa(bytes, 10));
 	io::serial::serial_msg(" byte(s) on kernel heap, at ");
 
-	void* return_address = kernel_heap_allocator_ptr;
+	if ((uint64_t)kernel_heap_allocator_ptr % 2 != 0)
+		kernel_heap_allocator_ptr++;
+
+	char* return_address = kernel_heap_allocator_ptr;
 
 	io::serial::serial_msg(util::itoa((uint64_t)return_address, 16));
 	io::serial::serial_msg("\n");
 
 	kernel_heap_allocator_ptr = static_cast<char *>(kernel_heap_allocator_ptr) + bytes;	
+
+	if ((uint64_t)return_address % 2 != 0)
+		return_address++;
 
 	return return_address;
 }
@@ -227,20 +236,24 @@ void memory::allocation::kfree(void* data)
 // paging
 //////////////////////////////////////////
 
-volatile uint64_t pageDirectory[1024] __attribute__ ((aligned (4096)));
-volatile uint64_t firstPageTable[1024] __attribute__ ((aligned (4096)));
+volatile uint64_t page_directory[1024] __attribute__ ((aligned (4096)));
+volatile uint64_t first_page_table[1024] __attribute__ ((aligned (4096)));
 
 extern "C" void setup_paging_s(void*);
 
-void memory::paging::setup_paging(void *pageDirectory)
-{ setup_paging_s(pageDirectory); }
+void memory::paging::setup_paging(void *page_directory)
+{ setup_paging_s(page_directory); }
 
 void memory::paging::begin_paging() {
-	for (auto i = 0; i < 1024; i++) {
-		firstPageTable[i] = (i * 0x1000) | 3;
-	}
-	pageDirectory[0] = ((uint64_t)firstPageTable) | 3;
-	memory::paging::setup_paging((void*)&pageDirectory);
+	for (auto i = 0; i < 1024; i++)
+		page_directory[i] = 0x00000002;
+
+	for (auto i = 0; i < 1024; i++)
+		first_page_table[i] = (i * 0x1000) | 3;
+
+	page_directory[0] = (uint64_t)first_page_table | 3;	
+
+	memory::paging::setup_paging((void*)&page_directory);
 }
 
 //////////////////////////////////////////

@@ -29,7 +29,7 @@ terminal::terminal() : row(0), column(0)
 
 	gfx::screen::buff();
 
-	text_buffer = (uint16_t *)memory::allocation::kmalloc((size.h * size.w) * 2 + 8);
+	text_buffer = ((uint16_t *)memory::allocation::kmalloc((size.h * size.w) * 2 + 9)) + 1;
 
 	uint8_t* text = (uint8_t *)text_buffer;
 	text[0] = 'T';
@@ -42,6 +42,9 @@ terminal::terminal() : row(0), column(0)
 	text[7] = 'F';
 
 	text_buffer += 8;
+
+	io::serial::serial_msg("text buffer at ");	
+	io::serial::serial_msg(util::itoa((uint64_t)text_buffer, 16));
 }
 
 void terminal::clear()
@@ -242,6 +245,7 @@ void terminal::render_buffer()
 			render_entry_at_buffer(xpos, ypos);
 		}
 	}
+
 	gfx::screen::buff();
 }
 
