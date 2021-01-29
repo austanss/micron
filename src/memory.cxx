@@ -1,23 +1,31 @@
 //
 // Created by rizet on 1/26/21.
 //
-
+#include <cstddef>
+#include <stdint.h>
 #include "kernel/memory.hxx"
 #include "kernel/boot.hxx"
 #include "kernel/io.hxx"
 #include "kernel/kutil.hxx"
-#include <cstdint>
+#include "kernel/bitmap.hxx"
 
 //////////////////////////////////////////
 // variables
 //////////////////////////////////////////
 
-size_t memory::memory_size;
+size_t memory::free_memory_size;
+size_t memory::used_memory_size;
+size_t memory::total_memory_size;
+size_t memory::reserved_memory_size;
 memory::allocation::conventional_memory_chunk user_heap;
 memory::allocation::conventional_memory_chunk kernel_heap;
+memory::allocation::conventional_memory_chunk page_bitmap;
+util::bitmap page_bitmap_map;
 char* kernel_heap_allocator_ptr;
 char* user_heap_allocator_ptr;
-memory::allocation::memory_info* meminfo;
+bool initialized = false;
+memory::allocation::memory_info* mem_info;
+memory::paging::page_table* memory::paging::pml_4;
 
 bool allocator_on = false;
 
@@ -43,127 +51,84 @@ const char *memory_types[] =
 // malloc
 //////////////////////////////////////////
 
-
-void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size)
+/*private*/ void init_bitmap(size_t bitmap_size, void* address)
 {
-	memory::allocation::conventional_memory_chunk conventional_chunks[map_size / desc_size];
-	uint8_t c_c_index = 0;
+	page_bitmap_map.size = bitmap_size;
+    page_bitmap_map.buffer = (uint8_t*)address;
+    for (size_t i = 0; i < bitmap_size; i++)
+        *(uint8_t*)(page_bitmap_map.buffer + i) = 0;
+}
 
-	uint8_t *startOfMemoryMap = (uint8_t *)memory_map;
-	uint8_t *endOfMemoryMap = startOfMemoryMap + map_size;
+uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size)
+{
+    static uint64_t memory_size_bytes = 0;
+    if (memory_size_bytes > 0) 
+		return memory_size_bytes;
 
-	uint8_t *offset = startOfMemoryMap;
+    for (uint64_t i = 0; i < map_size / desc_size; i++){
+        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
+        memory_size_bytes += desc->count * 4096;
+    }
 
-	uint64_t pages = 0;
+    return memory_size_bytes;
 
-	uint32_t counter = 0;
+}
 
-	for (unsigned int i = 0; i < (map_size / desc_size - 1); i++)
-	{
-		conventional_chunks[i].pages = 0;
-		conventional_chunks[i].start = 0;
-	}
+void reserve_pages(void* address, uint64_t pageCount);
 
-	io::serial::serial_msg("\n\nMEMORY MAP:\n-=-=-=-=-=-\n");
+void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, const uint64_t map_size, const uint64_t desc_size)
+{
+    if (initialized) return;
 
-	while (offset < endOfMemoryMap)
-	{
-		boot::memory_map_descriptor *desc = (boot::memory_map_descriptor *)offset;
+    initialized = true;
 
-		if   	(desc->type == 0x07
-			  || desc->type == 0x01 || desc->type == 0x02
-			  || desc->type == 0x04 || desc->type == 0x05)
-					pages += desc->count;
+    uint64_t map_entries = map_size / desc_size;
 
-		if (desc->type == 0x07 && desc->physical_start != 0x100000)
-		{
-			memory::allocation::conventional_memory_chunk cmchunk;
-			cmchunk.start = (void *)desc->physical_start;
-			cmchunk.pages = desc->count;
-			conventional_chunks[c_c_index] = cmchunk;
-			c_c_index++;
-		}
+    void* largest_free_memory_segment = NULL;
+    size_t largest_free_memory_segment_size = 0;
 
-		io::serial::serial_msg(util::itoa(desc->physical_start, 16));
-		io::serial::serial_msg(": ");
-		io::serial::serial_msg(memory_types[desc->type]);
-		io::serial::serial_msg(", ");
-		io::serial::serial_msg(util::itoa(desc->count, 10));
-		io::serial::serial_msg(" pages");
-		io::serial::serial_msg("\n");
+    for (uint64_t i = 0; i < map_entries; i++){
+        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
+        if (desc->type == 7){ // type = EfiConventionalMemory
+            if (desc->count * 4096 > largest_free_memory_segment_size)
+            {
+                largest_free_memory_segment = (void *)desc->physical_start;
+                largest_free_memory_segment_size = desc->count * 4096;
+            }
+        }
+    }
 
-		offset += desc_size;
+    uint64_t memory_size = get_total_memory_size(memory_map, map_entries, desc_size);
+    free_memory_size = memory_size;
+    uint64_t bitmap_size = memory_size / 4096 / 8 + 1;
 
-		counter++;
-	}
+    init_bitmap(bitmap_size, largest_free_memory_segment);
 
-	for (memory::allocation::conventional_memory_chunk i : conventional_chunks)
-	{
-		if (i.start == nullptr)
-			break;
+    memory::paging::allocation::lock_pages(&page_bitmap_map, page_bitmap_map.size / 4096 + 1);
 
-		io::serial::serial_msg("chunk at ");
-		io::serial::serial_msg(util::itoa((uint64_t)i.start, 16));
-		io::serial::serial_msg(": ");
-		io::serial::serial_msg(util::itoa(i.pages * 0x1000 / 1024, 10));
-		io::serial::serial_msg(" kilobytes\n");
-	}
-
-	memory::allocation::conventional_memory_chunk* largest_memory_chunk;
-
-	largest_memory_chunk->pages = 0;
-	largest_memory_chunk->start = 0;
-
-	for (int i = 0; conventional_chunks[i].start != nullptr; i++)
-	{
-		if (conventional_chunks[i].pages > largest_memory_chunk->pages)
-			largest_memory_chunk = &conventional_chunks[i];
-	}
-
-	meminfo->user_heap = largest_memory_chunk->start;
-	meminfo->user_heap_size = largest_memory_chunk->pages * 0x1000;
-
-	largest_memory_chunk->pages = 0;
-
-	for (int i = 0; conventional_chunks[i].start != nullptr; i++)
-	{
-		if (conventional_chunks[i].pages > largest_memory_chunk->pages)
-			largest_memory_chunk = &conventional_chunks[i];
-	}
-
-	meminfo->kernel_heap = largest_memory_chunk->start;
-	meminfo->kernel_heap_size = largest_memory_chunk->pages * 0x1000;
-
-	meminfo->memory_size = pages * 0x1000;
-
-	io::serial::serial_msg("Kernel heap: ");
-	io::serial::serial_msg(util::itoa((uint64_t)meminfo->kernel_heap, 16));
-	io::serial::serial_msg(", ");
-
-	io::serial::serial_msg(util::itoa((int64_t)meminfo->kernel_heap_size / 1024, 10));
-	io::serial::serial_msg(" kilobytes.\nUser heap: ");
-	io::serial::serial_msg(util::itoa((uint64_t)meminfo->user_heap, 16));
-	io::serial::serial_msg(", ");
-	io::serial::serial_msg(util::itoa((int64_t)meminfo->user_heap_size / 1024, 10));
-	io::serial::serial_msg(" kilobytes.\n");
+    for (uint64_t i = 0; i < map_entries; i++){
+        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
+        if (desc->type != 7){ // not efiConventionalMemory
+            reserve_pages((void *)desc->physical_start, desc->count);
+        }
+    }
 }
 
 void memory::allocation::start_malloc()
 {
-	memory_size = meminfo->memory_size;
 
-	kernel_heap.start = meminfo->kernel_heap;
-	kernel_heap.pages = meminfo->kernel_heap_size / 0x1000;
-	user_heap.start = meminfo->user_heap;
-	user_heap.pages = meminfo->user_heap_size / 0x1000;
+	kernel_heap.start = mem_info->kernel_heap;
+	kernel_heap.pages = mem_info->kernel_heap_size / 0x1000;
+	user_heap.start = mem_info->user_heap;
+	user_heap.pages = mem_info->user_heap_size / 0x1000;
 
 	user_heap_allocator_ptr = (char *)user_heap.start;
 	kernel_heap_allocator_ptr = (char *)kernel_heap.start;
 
 	io::serial::serial_msg("User heap allocator pointer is at ");
-	io::serial::serial_msg(util::itoa((uint64_t)meminfo->user_heap, 16));
+	io::serial::serial_msg(util::itoa((uint64_t)mem_info->user_heap, 16));
 	io::serial::serial_msg("\nKernel heap allocator pointer is at ");
-	io::serial::serial_msg(util::itoa((uint64_t)meminfo->kernel_heap, 16));
+	io::serial::serial_msg(util::itoa((uint64_t)mem_info->kernel_heap, 16));
 	io::serial::serial_msg("\n");
 
 	allocator_on = true;	
@@ -235,25 +200,153 @@ void memory::allocation::kfree(void* data)
 //////////////////////////////////////////
 // paging
 //////////////////////////////////////////
+void unreserve_page(void* address) {
 
-volatile uint64_t page_directory[1024] __attribute__ ((aligned (4096)));
-volatile uint64_t first_page_table[1024] __attribute__ ((aligned (4096)));
+    uint64_t index = (uint64_t)address / 4096;
 
-extern "C" void setup_paging_s(void*);
+    if (page_bitmap_map[index] == false) 
+		return;
 
-void memory::paging::setup_paging(void *page_directory)
-{ setup_paging_s(page_directory); }
+    page_bitmap_map.set(index, false);
+    memory::free_memory_size += 4096;
+    memory::reserved_memory_size -= 4096;
+}
 
-void memory::paging::begin_paging() {
-	for (auto i = 0; i < 1024; i++)
-		page_directory[i] = 0x00000002;
+void unreserve_pages(void* address, uint64_t pageCount) {
 
-	for (auto i = 0; i < 1024; i++)
-		first_page_table[i] = (i * 0x1000) | 3;
+    for (size_t t = 0; t < pageCount; t++)
+        unreserve_page((void*)((uint64_t)address + (t * 4096)));
+}
 
-	page_directory[0] = (uint64_t)first_page_table | 3;	
+void reserve_page(void* address){
+    uint64_t index = (uint64_t)address / 4096;
 
-	memory::paging::setup_paging((void*)&page_directory);
+    if (page_bitmap_map[index] == true) 
+		return;
+
+    page_bitmap_map.set(index, true);
+    memory::free_memory_size -= 4096;
+    memory::reserved_memory_size += 4096;
+}
+
+void reserve_pages(void* address, uint64_t pageCount) {
+
+    for (size_t t = 0; t < pageCount; t++)
+        reserve_page((void*)((uint64_t)address + (t * 4096)));
+}
+
+void* memory::paging::allocation::request_page() {
+
+    for (uint64_t index = 0; index < page_bitmap_map.size * 8; index++) {
+
+        if (page_bitmap_map[index] == true) 
+			continue;
+
+        memory::paging::allocation::lock_page((void*)(index * 4096));
+
+        return (void*)(index * 4096);
+    }
+
+    return nullptr;
+}
+
+void memory::paging::allocation::free_page(void* address) {
+
+    uint64_t index = (uint64_t)address / 4096;
+    if (page_bitmap_map[index] == false) return;
+    page_bitmap_map.set(index, false);
+    free_memory_size += 4096;
+    used_memory_size -= 4096;
+}
+
+void memory::paging::allocation::free_pages(void* address, uint64_t page_count) {
+ 
+    for (size_t t = 0; t < page_count; t++)
+        memory::paging::allocation::free_page((void*)((uint64_t)address + (t * 4096)));
+}
+
+void memory::paging::allocation::lock_page(void* address){
+    uint64_t index = (uint64_t)address / 4096;
+    if (page_bitmap_map[index] == true) return;
+    page_bitmap_map.set(index, true);
+    free_memory_size -= 4096;
+    used_memory_size += 4096;
+}
+
+void memory::paging::allocation::lock_pages(void* address, uint64_t page_count) {
+
+    for (size_t t = 0; t < page_count; t++)
+        memory::paging::allocation::lock_page((void*)((uint64_t)address + (t * 4096)));
+}
+
+memory::paging::page_map_indexer::page_map_indexer(uint64_t virtual_address) {
+
+    virtual_address >>= 12;
+    p_i = virtual_address & 0x1ff;
+    virtual_address >>= 9;
+    pt_i = virtual_address & 0x1ff;
+    virtual_address >>= 9;
+    pd_i = virtual_address & 0x1ff;
+    virtual_address >>= 9;
+    pdp_i = virtual_address & 0x1ff;
+}
+
+void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
+{
+    page_map_indexer indexer = page_map_indexer((uint64_t)virtual_memory);
+    page_directory_entry pde;
+
+    pde = pml_4->entries[indexer.pdp_i];
+    page_table* pdp;
+    if (!pde.present) {
+
+        pdp = (page_table*)allocation::request_page();
+        memory::operations::memset(pdp, 0, 0x1000);
+        pde.address = (uint64_t)pdp >> 12;
+        pde.present = true;
+        pde.read_write = true;
+        pml_4->entries[indexer.pdp_i] = pde;
+    }
+    else
+        pdp = (page_table*)((uint64_t)pde.address << 12);
+    
+    
+    
+    pde = pdp->entries[indexer.pd_i];
+    page_table* pd;
+    if (!pde.present) {
+
+        pd = (page_table*)allocation::request_page();
+        memory::operations::memset(pd, 0, 0x1000);
+        pde.address = (uint64_t)pd >> 12;
+        pde.present = true;
+        pde.read_write = true;
+        pdp->entries[indexer.pd_i] = pde;
+    }
+    else
+        pd = (page_table*)((uint64_t)pde.address << 12);
+    
+
+    pde = pd->entries[indexer.pt_i];
+    page_table* pt;
+    if (!pde.present) {
+
+        pt = (page_table*)allocation::request_page();
+        memory::operations::memset(pt, 0, 0x1000);
+        pde.address = (uint64_t)pt >> 12;
+        pde.present = true;
+        pde.read_write = true;
+        pd->entries[indexer.pt_i] = pde;
+    }
+    else
+        pt = (page_table*)((uint64_t)pde.address << 12);
+    
+
+    pde = pt->entries[indexer.p_i];
+    pde.address = (uint64_t)physical_memory >> 12;
+    pde.present = true;
+    pde.read_write = true;
+    pt->entries[indexer.p_i] = pde;
 }
 
 //////////////////////////////////////////

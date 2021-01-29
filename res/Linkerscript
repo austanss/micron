@@ -4,6 +4,7 @@ SECTIONS
 {
 	. = 1M;
 
+	_kernel_start = .;
 	.text :
 	{
 		*(.text .text.*)
@@ -33,4 +34,5 @@ SECTIONS
 		*(.bss .bss.*);
 		. = ALIGN(4K);
 	}
+	_kernel_end = .;
 }

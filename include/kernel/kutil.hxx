@@ -11,4 +11,7 @@ namespace util
 	}
 	size_t strlen(const char* str);
 	bool strcomp(const char* lhs, const char *rhs);
+	char * strcpy(char * __restrict dst, const char * __restrict src);
+	char * strcat(char *dest, const char *src);
+	int isdigit(int c);
 }

@@ -36,3 +36,30 @@ size_t util::strlen(const char* str)
 		len++;
 	return len;
 }
+
+char* util::strcat(char *dest, const char *src) {
+
+	char * end = dest;
+	while (*end != '\0') {
+		++end;
+	}
+	while (*src) {
+		*end = *src;
+		end++;
+		src++;
+	}
+	*end = '\0';
+	return dest;
+}
+
+char* util::strcpy(char * __restrict dst, const char * __restrict src) {
+	
+	char * out = dst;
+	for (; (*dst=*src); src++, dst++);
+	return out;
+}
+
+int util::isdigit(int c) {
+	
+	return (c >= '0' && c <= '9');
+}
