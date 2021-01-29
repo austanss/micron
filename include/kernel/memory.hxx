@@ -51,8 +51,6 @@ namespace memory {
     		void	lock_pages(void* address, uint64_t page_count);
    			void* 	request_page();
 		}
-	 	void 		begin_paging();
-		void 		setup_paging(void* page_directory);
 	};
 
 	namespace allocation {
