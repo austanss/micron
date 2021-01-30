@@ -1,20 +1,15 @@
 global kernel_entry
 
 extern kernel_main
-extern ctor_global
 extern load_idt
 extern load_gdt
 extern restart_cold
 extern puts
-extern serial_msg
 extern configure_pic
 
 kernel_entry:
 
 	mov r15, rdi					;	preserve parameters]
-
-	mov rdi, kernel_taken_over
-	call serial_msg
 
 	mov rcx, [r15+8]
 	mov qword rdx, [rcx]
@@ -59,8 +54,6 @@ kernel_entry:
 	; interrupts
 	sti								;	set the interrupt flag
 
-	call ctor_global				;	call global constructors
-
 	mov edi, 0x00FFFF00
 	call set_status_color
 
@@ -100,6 +93,3 @@ asm_framebuffer_x_res:
 
 asm_framebuffer_y_res:
 	resb 8
-
-kernel_taken_over:
-	db "KERNEL TAKEN OVER",0x0A,0

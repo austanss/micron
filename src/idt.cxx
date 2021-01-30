@@ -5,6 +5,7 @@
 #include "kernel/kutil.hxx"
 #include "kernel/kbd.hxx"
 #include "kernel/power.hxx"
+#include "kernel/serialcon.hxx"
 
 uint8_t prevKeyCode = 156;
 
@@ -136,9 +137,9 @@ void isr_handler(registers& registers)
 
 void irq_handler(registers& registers)
 {
-	if (registers.interruptNumber == 33)
+	if (registers.interruptNumber == 33) // keyboard
 	{
-		uint8_t keycode = io::inb(0x60);;
+		uint8_t keycode = io::inb(0x60);
 
 		char* char_buffer = (char *)"$WHITE! \0";
 		char_buffer[7] = io::keyboard::scan_code_to_char(keycode);
@@ -147,6 +148,9 @@ void irq_handler(registers& registers)
 
 		prevKeyCode = keycode;
 	}
+
+	if (registers.interruptNumber == 36) // com port
+		io::serial::console::read_character();
 
     if (registers.interruptNumber >= 40)
         io::outb(0xA0, 0x20); /* slave */

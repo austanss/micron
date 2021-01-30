@@ -74,7 +74,7 @@ uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* 
 
 }
 
-void reserve_pages(void* address, uint64_t pageCount);
+void reserve_pages(void* address, uint64_t page_count);
 
 void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, const uint64_t map_size, const uint64_t desc_size)
 {
@@ -98,7 +98,7 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
         }
     }
 
-    uint64_t memory_size = get_total_memory_size(memory_map, map_entries, desc_size);
+    uint64_t memory_size = get_total_memory_size(memory_map, map_size, desc_size);
     free_memory_size = memory_size;
     uint64_t bitmap_size = memory_size / 4096 / 8 + 1;
 
@@ -112,6 +112,8 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
             reserve_pages((void *)desc->physical_start, desc->count);
         }
     }
+
+    reserve_pages((void *)0x0, 0x10000 / 0x1000);
 }
 
 void memory::allocation::start_malloc()
@@ -125,12 +127,6 @@ void memory::allocation::start_malloc()
 	user_heap_allocator_ptr = (char *)user_heap.start;
 	kernel_heap_allocator_ptr = (char *)kernel_heap.start;
 
-	io::serial::serial_msg("User heap allocator pointer is at ");
-	io::serial::serial_msg(util::itoa((uint64_t)mem_info->user_heap, 16));
-	io::serial::serial_msg("\nKernel heap allocator pointer is at ");
-	io::serial::serial_msg(util::itoa((uint64_t)mem_info->kernel_heap, 16));
-	io::serial::serial_msg("\n");
-
 	allocator_on = true;	
 }
 
@@ -139,17 +135,11 @@ void* memory::allocation::malloc(size_t bytes)
 	if (!allocator_on)
 		return nullptr;
 
-	io::serial::serial_msg("allocating ");
-	io::serial::serial_msg(util::itoa(bytes, 10));
-	io::serial::serial_msg(" byte(s) on user heap, at");	
 
 	if ((uint64_t)user_heap_allocator_ptr % 2 != 0)
 		user_heap_allocator_ptr++;
 
 	char* return_address = user_heap_allocator_ptr;
-
-	io::serial::serial_msg(util::itoa((uint64_t)return_address, 16));
-	io::serial::serial_msg("\n");
 
 	user_heap_allocator_ptr = static_cast<char *>(user_heap_allocator_ptr) + bytes;	
 
@@ -169,17 +159,10 @@ void* memory::allocation::kmalloc(size_t bytes)
 	if (!allocator_on)
 		return nullptr;
 
-	io::serial::serial_msg("allocating ");
-	io::serial::serial_msg(util::itoa(bytes, 10));
-	io::serial::serial_msg(" byte(s) on kernel heap, at ");
-
 	if ((uint64_t)kernel_heap_allocator_ptr % 2 != 0)
 		kernel_heap_allocator_ptr++;
 
 	char* return_address = kernel_heap_allocator_ptr;
-
-	io::serial::serial_msg(util::itoa((uint64_t)return_address, 16));
-	io::serial::serial_msg("\n");
 
 	kernel_heap_allocator_ptr = static_cast<char *>(kernel_heap_allocator_ptr) + bytes;	
 
@@ -246,6 +229,8 @@ void* memory::paging::allocation::request_page() {
 
         return (void*)(index * 4096);
     }
+
+    io::serial::serial_msg("requesting page, no pages available, returning nullptr\n");
 
     return nullptr;
 }
