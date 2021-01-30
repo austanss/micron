@@ -298,55 +298,81 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
 
     pde = pml_4->entries[indexer.pdp_i];
     page_table* pdp;
-    if (!pde.present) {
-
+    if (!pde.get_flag(pt_flag::present)){
         pdp = (page_table*)allocation::request_page();
         memory::operations::memset(pdp, 0, 0x1000);
-        pde.address = (uint64_t)pdp >> 12;
-        pde.present = true;
-        pde.read_write = true;
+        pde.set_address((uint64_t)pdp >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
         pml_4->entries[indexer.pdp_i] = pde;
     }
     else
-        pdp = (page_table*)((uint64_t)pde.address << 12);
-    
+    {
+        pdp = (page_table*)((uint64_t)pde.get_address() << 12);
+    }
     
     
     pde = pdp->entries[indexer.pd_i];
     page_table* pd;
-    if (!pde.present) {
-
+    if (!pde.get_flag(pt_flag::present)){
         pd = (page_table*)allocation::request_page();
         memory::operations::memset(pd, 0, 0x1000);
-        pde.address = (uint64_t)pd >> 12;
-        pde.present = true;
-        pde.read_write = true;
+        pde.set_address((uint64_t)pd >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
         pdp->entries[indexer.pd_i] = pde;
     }
     else
-        pd = (page_table*)((uint64_t)pde.address << 12);
-    
+    {
+        pd = (page_table*)((uint64_t)pde.get_address() << 12);
+    }
 
     pde = pd->entries[indexer.pt_i];
     page_table* pt;
-    if (!pde.present) {
-
+    if (!pde.get_flag(pt_flag::present)){
         pt = (page_table*)allocation::request_page();
         memory::operations::memset(pt, 0, 0x1000);
-        pde.address = (uint64_t)pt >> 12;
-        pde.present = true;
-        pde.read_write = true;
+        pde.set_address((uint64_t)pt >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
         pd->entries[indexer.pt_i] = pde;
     }
     else
-        pt = (page_table*)((uint64_t)pde.address << 12);
-    
+    {
+        pt = (page_table*)((uint64_t)pde.get_address() << 12);
+    }
 
     pde = pt->entries[indexer.p_i];
-    pde.address = (uint64_t)physical_memory >> 12;
-    pde.present = true;
-    pde.read_write = true;
+    pde.set_address((uint64_t)physical_memory >> 12);
+    pde.set_flag(pt_flag::present, true);
+    pde.set_flag(pt_flag::read_write, true);
     pt->entries[indexer.p_i] = pde;
+}
+
+void memory::paging::page_directory_entry::set_flag(pt_flag flag, bool enabled) {
+
+    uint64_t bit_selector = (uint64_t)1 << flag;
+    value &= ~bit_selector;
+    if (enabled)
+        value |= bit_selector;
+}
+
+bool memory::paging::page_directory_entry::get_flag(pt_flag flag) {
+
+    uint64_t bit_selector = (uint64_t)1 << flag;
+    return value & bit_selector > 0 ? true : false;
+}
+
+uint64_t memory::paging::page_directory_entry::get_address() {
+
+    return (value & 0x000ffffffffff000) >> 12;
+}
+
+void memory::paging::page_directory_entry::set_address(uint64_t address) {
+
+    address &= 0x000000ffffffffff;
+    value &= 0xfff0000000000fff;
+    value |= (address << 12);
 }
 
 //////////////////////////////////////////

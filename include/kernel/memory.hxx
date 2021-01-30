@@ -13,18 +13,25 @@ namespace memory {
 	extern size_t reserved_memory_size;
 
 	namespace paging {	
+		enum pt_flag {
+			present = 0,
+			read_write = 1,
+			user_super = 2,
+			write_through = 3,
+			cache_disabled = 4,
+			accessed = 5,
+			larger_pages = 7,
+			custom_0 = 9,
+			custom_1 = 10,
+			custom_2 = 11,
+			nx = 63 // only if supported
+		};	
 		struct page_directory_entry {
-			bool present : 1;
-			bool read_write : 1;
-			bool user_super : 1;
-			bool write_through : 1;
-			bool cache_disabled : 1;
-			bool accessed : 1;
-			bool ignore_0 : 1; 
-			bool larger_pages : 1;
-			bool ignore_1 : 1;
-			uint8_t available : 3;
-			uint64_t address : 52;
+			uint64_t value;
+			void set_flag(pt_flag flag, bool enabled);
+			bool get_flag(pt_flag flag);
+			void set_address(uint64_t address);
+			uint64_t get_address();
 		};
 
 		struct page_table { 

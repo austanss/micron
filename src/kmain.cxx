@@ -51,6 +51,8 @@ void kernel_main(boot::boot_info *bootloader_info)
 
 	memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
 
+	memory::paging::allocation::lock_pages(&_kernel_start, _kernel_pages);
+
 	memory::paging::pml_4 = (memory::paging::page_table *)memory::paging::allocation::request_page();
 	
 	memory::operations::memset(memory::paging::pml_4, 0, 0x1000);
@@ -67,6 +69,7 @@ void kernel_main(boot::boot_info *bootloader_info)
         memory::paging::map_memory((void*)t, (void*)t);
 
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
+
 
 //	memory::allocation::start_malloc();
 
