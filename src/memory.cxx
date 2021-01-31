@@ -61,17 +61,18 @@ const char *memory_types[] =
 
 uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size)
 {
-    static uint64_t memory_size_bytes = 0;
-    if (memory_size_bytes > 0) 
-		return memory_size_bytes;
+    static uint64_t memorySizeBytes = 0;
+    if (memorySizeBytes > 0) return memorySizeBytes;
 
-    for (uint64_t i = 0; i < map_size / desc_size; i++){
+    uint64_t map_entries = map_size / desc_size;
+
+    for (auto i = 0; i < map_entries; i++) {
+
         boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
-        memory_size_bytes += desc->count * 4096;
+        memorySizeBytes += desc->count * 4096;
     }
 
-    return memory_size_bytes;
-
+    return memorySizeBytes;
 }
 
 void reserve_pages(void* address, uint64_t page_count);
@@ -104,7 +105,7 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
 
     init_bitmap(bitmap_size, largest_free_memory_segment);
 
-    memory::paging::allocation::lock_pages(&page_bitmap_map, page_bitmap_map.size / 4096 + 1);
+    memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
 
     for (uint64_t i = 0; i < map_entries; i++){
         boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
@@ -280,6 +281,12 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
 {
     page_map_indexer indexer = page_map_indexer((uint64_t)virtual_memory);
     page_directory_entry pde;
+
+    io::serial::serial_msg("mapping virtual address ");
+    io::serial::serial_msg(util::itoa((long)virtual_memory, 16));
+    io::serial::serial_msg(" to physical address ");
+    io::serial::serial_msg(util::itoa((long)physical_memory, 16));
+    io::serial::serial_msg("\n");
 
     pde = pml_4->entries[indexer.pdp_i];
     page_table* pdp;
