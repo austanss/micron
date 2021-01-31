@@ -21,11 +21,7 @@ void sys::config::setup_paging(boot::boot_info* bootloader_info)
     uint64_t fb_size = (uint64_t)bootloader_info->vbe_framebuffer->framebuffer_size + 0x1000;
 
     for (uint64_t t = fb_base; t < fb_base + fb_size; t += 4096)
-        memory::paging::map_memory((void*)t, (void*)t);
-
-io::serial::serial_msg("pml4 address: ");
-io::serial::serial_msg(util::itoa((uint64_t)memory::paging::pml_4, 16));
-io::serial::serial_msg("\n");
+        { memory::paging::map_memory((void*)t, (void*)t); }
 
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
 }
@@ -34,7 +30,7 @@ void sys::config::configure_memory(boot::boot_info* bootloader_info)
 {
     memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
     sys::config::setup_paging(bootloader_info);
-    memory::allocation::start_malloc();
+    memory::allocation::start_allocator();
 }
 
 void sys::config::configure_graphics(boot::boot_info* bootloader_info)

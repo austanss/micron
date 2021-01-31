@@ -61,24 +61,17 @@ namespace memory {
 	};
 
 	namespace allocation {
-		typedef struct s_memory_info {
+		struct memory_info {
 			size_t 				memory_size; // bytes
 			void* 				kernel_heap;
 			size_t 		   kernel_heap_size; // bytes
 			void*				  user_heap;
 			size_t 			 user_heap_size; // bytes
-		} memory_info;
+		};
 
-		typedef struct s_conv_mem_chunk {
-			void* start;
-			size_t pages;
-		} conventional_memory_chunk;
-
-		void* 		malloc(size_t bytes);
-		void 		free(void* data);
 		void* 		kmalloc(size_t bytes);
 		void 		kfree(void* data);
-		void 		start_malloc();
+		void 		start_allocator();
 		void		map_memory(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
 		uint64_t	get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
 	};

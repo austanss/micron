@@ -424,8 +424,3 @@ extern "C" void puts(char* data)
 {
 	printf("%s\n", data);
 }
-
-static bool print(const char* data, size_t length) {
-	terminal::instance().write(data, length);
-	return true;
-}

@@ -17,9 +17,6 @@ size_t memory::free_memory_size;
 size_t memory::used_memory_size;
 size_t memory::total_memory_size;
 size_t memory::reserved_memory_size;
-memory::allocation::conventional_memory_chunk user_heap;
-memory::allocation::conventional_memory_chunk kernel_heap;
-memory::allocation::conventional_memory_chunk page_bitmap;
 util::bitmap page_bitmap_map;
 char* kernel_heap_allocator_ptr;
 char* user_heap_allocator_ptr;
@@ -66,7 +63,7 @@ uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* 
 
     uint64_t map_entries = map_size / desc_size;
 
-    for (auto i = 0; i < map_entries; i++) {
+    for (uint64_t i = 0; i < map_entries; i++) {
 
         boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
         memorySizeBytes += desc->count * 4096;
@@ -117,42 +114,9 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
     reserve_pages((void *)0x0, 0x10000 / 0x1000);
 }
 
-void memory::allocation::start_malloc()
+void memory::allocation::start_allocator()
 {
-
-	kernel_heap.start = mem_info->kernel_heap;
-	kernel_heap.pages = mem_info->kernel_heap_size / 0x1000;
-	user_heap.start = mem_info->user_heap;
-	user_heap.pages = mem_info->user_heap_size / 0x1000;
-
-	user_heap_allocator_ptr = (char *)user_heap.start;
-	kernel_heap_allocator_ptr = (char *)kernel_heap.start;
-
 	allocator_on = true;	
-}
-
-void* memory::allocation::malloc(size_t bytes)
-{
-	if (!allocator_on)
-		return nullptr;
-
-
-	if ((uint64_t)user_heap_allocator_ptr % 2 != 0)
-		user_heap_allocator_ptr++;
-
-	char* return_address = user_heap_allocator_ptr;
-
-	user_heap_allocator_ptr = static_cast<char *>(user_heap_allocator_ptr) + bytes;	
-
-	return return_address;
-}
-
-void memory::allocation::free(void* data)
-{
-	if (!allocator_on)
-		return;
-
-	return;	
 }
 
 void* memory::allocation::kmalloc(size_t bytes)
@@ -175,6 +139,7 @@ void* memory::allocation::kmalloc(size_t bytes)
 
 void memory::allocation::kfree(void* data)
 {
+    data = (void*)(uint64_t)data;
 	if (!allocator_on)
 		return;
 	
@@ -231,8 +196,6 @@ void* memory::paging::allocation::request_page() {
         return (void*)(index * 4096);
     }
 
-    io::serial::serial_msg("requesting page, no pages available, returning nullptr\n");
-
     return nullptr;
 }
 
@@ -281,12 +244,6 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
 {
     page_map_indexer indexer = page_map_indexer((uint64_t)virtual_memory);
     page_directory_entry pde;
-
-    io::serial::serial_msg("mapping virtual address ");
-    io::serial::serial_msg(util::itoa((long)virtual_memory, 16));
-    io::serial::serial_msg(" to physical address ");
-    io::serial::serial_msg(util::itoa((long)physical_memory, 16));
-    io::serial::serial_msg("\n");
 
     pde = pml_4->entries[indexer.pdp_i];
     page_table* pdp;
@@ -352,7 +309,7 @@ void memory::paging::page_directory_entry::set_flag(pt_flag flag, bool enabled) 
 bool memory::paging::page_directory_entry::get_flag(pt_flag flag) {
 
     uint64_t bit_selector = (uint64_t)1 << flag;
-    return value & bit_selector > 0 ? true : false;
+    return (value & bit_selector) > 0 ? true : false;
 }
 
 uint64_t memory::paging::page_directory_entry::get_address() {

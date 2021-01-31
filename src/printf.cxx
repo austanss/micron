@@ -189,7 +189,7 @@ int vprintf (const char* format, va_list list)
                 base = 8;
                 specifier = 'u';
                 if (altForm) {
-                    displayString("0", &chars);
+                    displayString((char *)"0", &chars);
                 }
             }
             if (specifier == 'p') {
@@ -203,7 +203,7 @@ int vprintf (const char* format, va_list list)
                 case 'x':
                     base = base == 10 ? 17 : base;
                     if (altForm) {
-                        displayString("0x", &chars);
+                        displayString((char *)"0x", &chars);
                     }
  
                 case 'u':
@@ -450,9 +450,9 @@ int vprintf (const char* format, va_list list)
             }
  
             if (specifier == 'e') {
-                displayString("e+", &chars);
+                displayString((char *)"e+", &chars);
             } else if (specifier == 'E') {
-                displayString("E+", &chars);
+                displayString((char *)"E+", &chars);
             }
  
             if (specifier == 'e' || specifier == 'E') {
