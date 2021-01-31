@@ -57,6 +57,7 @@ namespace memory {
     		void 	lock_page(void* address);
     		void	lock_pages(void* address, uint64_t page_count);
    			void* 	request_page();
+			void*	request_pages(uint64_t page_count);   
 		}
 	};
 
@@ -68,6 +69,8 @@ namespace memory {
 			void*				  user_heap;
 			size_t 			 user_heap_size; // bytes
 		};
+
+		
 
 		void* 		kmalloc(size_t bytes);
 		void 		kfree(void* data);

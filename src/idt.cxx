@@ -85,12 +85,14 @@ typedef struct s_registers
 
 void exception_handler(registers& registers)
 {
+	/*
 	terminal::instance().clear();
 
 	puts((char *)"$RED!FATAL ERROR: $WHITE!The CPU has thrown a fatal exception and the system must terminate.\n");
 	puts((char *)"A register dump has been printed to serial output.\n");
 	puts((char *)"\n");
 	puts((char *)"The system will restart momentarily...");
+	*/
 	io::serial::serial_msg("\n\nFATAL ERROR: CPU EXCEPTION ");
 	io::serial::serial_msg(util::itoa(registers.interruptNumber, 16));
 	io::serial::serial_msg(" -/- ERROR CODE ");
@@ -132,7 +134,9 @@ void exception_handler(registers& registers)
 
 void isr_handler(registers& registers)
 {
-    exception_handler(registers);
+//    exception_handler(registers);
+	asm volatile("cli");
+	asm volatile("1: hlt; jmp 1b");
 }
 
 void irq_handler(registers& registers)

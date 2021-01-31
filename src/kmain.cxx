@@ -17,21 +17,28 @@
     #define ARCH "$RED!UNKNOWN"
 #endif
 
+boot::boot_info bootloader_info;
+boot::gop_framebuffer vbe_framebuffer;
+
 extern "C" {
 
-void kernel_main(boot::boot_info *bootloader_info)
+void kernel_main(boot::boot_info *boot_info)
 {
+	// globalize boot_info because soon it will become invalid
+	// due to paging and raise page faults, which will crash
+	bootloader_info.vbe_framebuffer = &vbe_framebuffer;
+	sys::config::boot_info_copy(&bootloader_info, boot_info);
+
 	// do some startup configurations
 	sys::config::calculate_kernel_size();
-	boot::uefi = bootloader_info->runtime_services;
-	sys::config::configure_memory(bootloader_info);
-	io::serial::console::init();
+	boot::uefi = boot_info->runtime_services;
+	sys::config::configure_memory(&bootloader_info);
+//	io::serial::console::init();	
+	sys::config::configure_graphics(&bootloader_info);
 
 // return because we haven't set up memory properly yet.
 // if we continue we are surely going to break something	
-return;
-	
-	sys::config::configure_graphics(bootloader_info);
+return;	
 	
 	// now terminal is started, print out statuses for things we have already done
 	printf("%s", "Booting...\n");

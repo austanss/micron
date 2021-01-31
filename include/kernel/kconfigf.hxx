@@ -13,5 +13,6 @@ namespace sys {
         void setup_paging(boot::boot_info* bootloader_info);
         void configure_memory(boot::boot_info* bootloader_info);
         void configure_graphics(boot::boot_info* bootloader_info);
+        void boot_info_copy(boot::boot_info* dst, boot::boot_info* src);
     }
 }

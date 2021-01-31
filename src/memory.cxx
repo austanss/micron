@@ -116,7 +116,7 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
 
 void memory::allocation::start_allocator()
 {
-	allocator_on = true;	
+	allocator_on = true;
 }
 
 void* memory::allocation::kmalloc(size_t bytes)
@@ -124,17 +124,8 @@ void* memory::allocation::kmalloc(size_t bytes)
 	if (!allocator_on)
 		return nullptr;
 
-	if ((uint64_t)kernel_heap_allocator_ptr % 2 != 0)
-		kernel_heap_allocator_ptr++;
-
-	char* return_address = kernel_heap_allocator_ptr;
-
-	kernel_heap_allocator_ptr = static_cast<char *>(kernel_heap_allocator_ptr) + bytes;	
-
-	if ((uint64_t)return_address % 2 != 0)
-		return_address++;
-
-	return return_address;
+    bytes = (size_t)(void *)bytes;
+    return nullptr;
 }
 
 void memory::allocation::kfree(void* data)
@@ -197,6 +188,37 @@ void* memory::paging::allocation::request_page() {
     }
 
     return nullptr;
+}
+
+void* memory::paging::allocation::request_pages(uint64_t page_count)
+{
+    if (page_count <= 1)
+        return nullptr;
+
+    io::serial::serial_msg("request for ");
+    io::serial::serial_msg(util::itoa(page_count, 10));
+    io::serial::serial_msg(" pages:\n");
+
+    void* start_ptr = request_page();
+    lock_page(start_ptr);
+    page_count--;
+
+    io::serial::serial_msg("\tstarting at 0x");
+    io::serial::serial_msg(util::itoa((long)start_ptr, 16));
+    io::serial::serial_msg(":\n");
+
+    for (uint64_t i = 1; i <= page_count; i++)
+    {
+        void* page_ptr = request_page();
+//        map_memory((void *)((uint64_t)start_ptr + (i * 0x1000)), page_ptr);
+        io::serial::serial_msg("\t\tmapping page at 0x");
+        io::serial::serial_msg(util::itoa((long)page_ptr, 16));
+        io::serial::serial_msg(" to ");
+        io::serial::serial_msg(util::itoa((uint64_t)start_ptr + (i * 0x1000), 16));
+        io::serial::serial_msg("\r\n");
+    }
+
+    return start_ptr;
 }
 
 void memory::paging::allocation::free_page(void* address) {

@@ -1,4 +1,5 @@
 #include "kernel/kconfigf.hxx"
+#include "kernel/boot.hxx"
 #include "kernel/io.hxx"
 #include "kernel/memory.hxx"
 #include "kernel/terminal.hxx"
@@ -37,13 +38,28 @@ void sys::config::configure_graphics(boot::boot_info* bootloader_info)
 {
     gfx::gop = *(bootloader_info->vbe_framebuffer);
 
-	gfx::buffer = (uint32_t *)memory::allocation::kmalloc(gfx::gop.framebuffer_size);
+	gfx::buffer = (uint32_t *)memory::paging::allocation::request_pages(gfx::gop.framebuffer_size / 0x1000 + 1);
 
-	terminal::instance();
+//	terminal::instance();
 }
 
 void sys::config::calculate_kernel_size()
 {
     _kernel_size = (uint64_t)&_kernel_end - (uint64_t)&_kernel_start;
     _kernel_pages = (uint64_t)_kernel_size / 4096 + 1;
+}
+
+void sys::config::boot_info_copy(boot::boot_info* dst, boot::boot_info* src)
+{
+    dst->verification = src->verification;
+    dst->mmap_size = src->mmap_size;
+    dst->mmap_descriptor_size = src->mmap_descriptor_size;
+    dst->memory_map = src->memory_map;
+    dst->runtime_services = src->runtime_services;
+    dst->vbe_framebuffer->y_resolution = src->vbe_framebuffer->y_resolution;
+    dst->vbe_framebuffer->x_resolution = src->vbe_framebuffer->x_resolution;
+    dst->vbe_framebuffer->framebuffer_base = src->vbe_framebuffer->framebuffer_base;
+    dst->vbe_framebuffer->framebuffer_mode = src->vbe_framebuffer->framebuffer_mode;
+    dst->vbe_framebuffer->framebuffer_size = src->vbe_framebuffer->framebuffer_size;
+    dst->vbe_framebuffer->pixels_per_scan_line = src->vbe_framebuffer->pixels_per_scan_line;
 }
