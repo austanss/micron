@@ -34,7 +34,7 @@ void sys::config::configure_memory(boot::boot_info* bootloader_info)
 {
     memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
     sys::config::setup_paging(bootloader_info);
-//    memory::allocation::start_malloc();
+    memory::allocation::start_malloc();
 }
 
 void sys::config::configure_graphics(boot::boot_info* bootloader_info)
