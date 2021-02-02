@@ -29,8 +29,17 @@ namespace gfx {
 		positional_point 				rect_center(positional_point posTL, positional_point posBR);
 	}
 	namespace screen {
-		void 							plot_pixel(gfx::shapes::positional_point posi, uint32_t pixel);
-		void 							plot_pixel_buffer(gfx::shapes::positional_point posi, uint32_t pixel);
+
+		inline void plot_pixel(gfx::shapes::positional_point posi, uint32_t pixel)
+		{
+			gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
+		}
+
+		inline void plot_pixel_buffer(gfx::shapes::positional_point posi, uint32_t pixel)
+		{
+			gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
+		}
+
 		void 							save_screen();
 		void 							restore_screen();
 		void 							buff();

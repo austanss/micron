@@ -38,7 +38,7 @@ void kernel_main(boot::boot_info *boot_info)
 
 // return because we haven't set up memory properly yet.
 // if we continue we are surely going to break something	
-return;	
+// return;	
 	
 	// now terminal is started, print out statuses for things we have already done
 	printf("%s", "Booting...\n");

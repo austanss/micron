@@ -134,9 +134,7 @@ void exception_handler(registers& registers)
 
 void isr_handler(registers& registers)
 {
-//    exception_handler(registers);
-	asm volatile("cli");
-	asm volatile("1: hlt; jmp 1b");
+    exception_handler(registers);
 }
 
 void irq_handler(registers& registers)

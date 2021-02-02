@@ -30,6 +30,7 @@ terminal::terminal() : row(0), column(0)
 	gfx::screen::buff();
 
 	text_buffer = (uint16_t *)memory::paging::allocation::request_page();
+	memory::paging::map_memory((void*)text_buffer, (void*)text_buffer);
 
 	uint8_t* text = (uint8_t *)text_buffer;
 	text[0] = 'T';

@@ -39,7 +39,7 @@ void gfx::shapes::rect(gfx::shapes::positional_point posi, gfx::shapes::dimensio
 
 void gfx::screen::buff() 
 {
-	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
+//	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
 }
 
 void gfx::screen::save_screen()
@@ -50,16 +50,6 @@ void gfx::screen::save_screen()
 void gfx::screen::restore_screen()
 {
 	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
-}
-
-void gfx::screen::plot_pixel(gfx::shapes::positional_point posi, uint32_t pixel)
-{
-	gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
-}
-
-void gfx::screen::plot_pixel_buffer(gfx::shapes::positional_point posi, uint32_t pixel)
-{
-	buffer[gop.x_resolution * posi.y + posi.x] = pixel;
 }
 
 gfx::shapes::positional_point gfx::shapes::rect_center(gfx::shapes::positional_point posTL, gfx::shapes::positional_point posBR)
