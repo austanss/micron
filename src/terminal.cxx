@@ -23,14 +23,7 @@ terminal::terminal() : row(0), column(0)
 	VGA_WIDTH = size.w;
 	VGA_HEIGHT = size.h;
 
-	for (unsigned int x = 0; x <= gfx::gop.x_resolution; x++)
-		for (unsigned int y = 0; y <= gfx::gop.y_resolution; y++)
-			gfx::buffer[y * gfx::gop.x_resolution + x] = 0x00000000;
-
-	gfx::screen::buff();
-
 	text_buffer = (uint16_t *)memory::paging::allocation::request_page();
-	memory::paging::map_memory((void*)text_buffer, (void*)text_buffer);
 
 	uint8_t* text = (uint8_t *)text_buffer;
 	text[0] = 'T';
@@ -43,6 +36,10 @@ terminal::terminal() : row(0), column(0)
 	text[7] = 'F';
 
 	text_buffer += 8;
+
+	memory::operations::memset((void *)text_buffer, 0, size.h * size.w * 2);
+	memory::operations::memset((void *)gfx::buffer, 0, gfx::gop.framebuffer_size);
+	memory::operations::memset((void *)gfx::gop.framebuffer_base, 0, gfx::gop.framebuffer_size);
 
 	io::serial::serial_msg("text buffer at ");	
 	io::serial::serial_msg(util::itoa((uint64_t)text_buffer, 16));

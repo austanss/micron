@@ -6,7 +6,7 @@
 #include "kernel/terminal.hxx"
 #include "kernel/gfx.hxx"
 #include "kernel/bitmap.hxx"
-#include <cstdint>
+#include <stdint.h>
 
 uint64_t sys::config::_kernel_pages;
 uint64_t sys::config::_kernel_size;
@@ -17,23 +17,18 @@ void sys::config::setup_paging(boot::boot_info* bootloader_info)
 {
 	memory::paging::pml_4 = (memory::paging::page_table *)memory::paging::allocation::request_page();
 	
-    memory::paging::map_memory((void*)memory::paging::pml_4, (void*)memory::paging::pml_4);
-
 	memory::operations::memset(memory::paging::pml_4, 0, 0x1000);
 
-	for (uint64_t t = (uint64_t)&_kernel_start; t < (uint64_t)&_kernel_start + _kernel_pages * 0x1000; t+=0x1000)
+    memory::paging::map_memory((void*)memory::paging::pml_4, (void*)memory::paging::pml_4);
+    
+	for (uint64_t t = 0x0; t < memory::allocation::get_total_memory_size(nullptr, NULL, NULL); t+=0x1000)
 	    { memory::paging::map_memory((void *)t, (void *)t); }
 
-    for (uint64_t t = (uint64_t)page_bitmap_map.buffer; t < (uint64_t)page_bitmap_map.buffer + page_bitmap_map.size; t+=0x1000)
-        { memory::paging::map_memory((void *)t, (void *)t); }
-
-    
 	uint64_t fb_base = (uint64_t)bootloader_info->vbe_framebuffer->framebuffer_base;
     uint64_t fb_size = (uint64_t)bootloader_info->vbe_framebuffer->framebuffer_size + 0x1000;
 
     for (uint64_t t = fb_base; t < fb_base + fb_size; t += 4096)
         { memory::paging::map_memory((void*)t, (void*)t); }
-
 
 
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	

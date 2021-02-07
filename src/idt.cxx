@@ -128,7 +128,7 @@ void exception_handler(registers& registers)
 	io::serial::serial_msg(util::itoa(registers.rflags, 16));
 	io::serial::serial_msg("\n");
 	io::serial::serial_msg("\n");
-	asm volatile("cli");
+	asm volatile("cli; hlt");
 	cpu::power::restart_cold();
 }
 

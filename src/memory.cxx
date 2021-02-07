@@ -1,7 +1,7 @@
 //
 // Created by rizet on 1/26/21.
 //
-#include <cstddef>
+#include <stddef.h>
 #include <stdint.h>
 #include "kernel/kconfigf.hxx"
 #include "kernel/memory.hxx"
@@ -312,10 +312,6 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
     page_map_indexer indexer = page_map_indexer((uint64_t)virtual_memory);
     page_directory_entry pde;
 
-    io::serial::serial_msg("addrof(indexer.pdp_i) == 0x");
-    io::serial::serial_msg(util::itoa((long)&indexer.pdp_i, 16));
-    io::serial::serial_msg("\n");
-
     pde = pml_4->entries[indexer.pdp_i];
     page_table* pdp;
     if (!pde.get_flag(pt_flag::present)) {
@@ -326,6 +322,7 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
         pde.set_flag(pt_flag::present, true);
         pde.set_flag(pt_flag::read_write, true);
         pml_4->entries[indexer.pdp_i] = pde;
+        memory::paging::map_memory((void *)pdp, (void *)pdp);
     }
     else
         pdp = (page_table*)((uint64_t)pde.get_address() << 12);
@@ -341,6 +338,7 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
         pde.set_flag(pt_flag::present, true);
         pde.set_flag(pt_flag::read_write, true);
         pdp->entries[indexer.pd_i] = pde;
+        memory::paging::map_memory((void *)pd, (void *)pd);
     }
     else
         pd = (page_table*)((uint64_t)pde.get_address() << 12);
@@ -355,6 +353,7 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
         pde.set_flag(pt_flag::present, true);
         pde.set_flag(pt_flag::read_write, true);
         pd->entries[indexer.pt_i] = pde;
+        memory::paging::map_memory((void *)pt, (void *)pt);
     }
     else
         pt = (page_table*)((uint64_t)pde.get_address() << 12);

@@ -39,7 +39,7 @@ void gfx::shapes::rect(gfx::shapes::positional_point posi, gfx::shapes::dimensio
 
 void gfx::screen::buff() 
 {
-//	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
+	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
 }
 
 void gfx::screen::save_screen()

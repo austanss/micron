@@ -33,12 +33,9 @@ void kernel_main(boot::boot_info *boot_info)
 	sys::config::calculate_kernel_size();
 	boot::uefi = boot_info->runtime_services;
 	sys::config::configure_memory(&bootloader_info);
-//	io::serial::console::init();	
 	sys::config::configure_graphics(&bootloader_info);
+	io::serial::console::init();	
 
-// return because we haven't set up memory properly yet.
-// if we continue we are surely going to break something	
-// return;	
 	
 	// now terminal is started, print out statuses for things we have already done
 	printf("%s", "Booting...\n");
