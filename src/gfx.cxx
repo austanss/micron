@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "kernel/memory.hxx"
 #include "kernel/gfx.hxx"
+#include "kernel/subif.hxx"
 
 boot::gop_framebuffer 	gfx::gop;
 uint32_t*				gfx::buffer;
@@ -50,6 +51,20 @@ void gfx::screen::save_screen()
 void gfx::screen::restore_screen()
 {
 	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
+}
+
+int gfx::subif::render_image(subif_file* image, shapes::positional_point pos)
+{
+	if (image->header.magic != SUBIF_MAGIC_CHECKSUM)
+		return SUBIF_INVALID_HEADER;
+
+	for (uint32_t x = 0; x < image->header.x_res; x++, pos.x++)
+		for (uint32_t y = 0; y < image->header.y_res; y++, pos.y++)
+			screen::plot_pixel_buffer(pos, image->data[(y * image->header.x_res) + x]);
+
+	screen::buff();
+
+	return SUBIF_SUCCESS;
 }
 
 gfx::shapes::positional_point gfx::shapes::rect_center(gfx::shapes::positional_point posTL, gfx::shapes::positional_point posBR)
