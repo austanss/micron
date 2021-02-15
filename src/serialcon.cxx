@@ -29,22 +29,8 @@ void clear_buffer()
 
 void io::serial::console::init()
 {
-    outb(0x3FB, inb(0x3FB) | 0b10000000); // set the DLAB bit of the Line Control Register
-    
-    // now we can access the divisor registers
-    // set the divisor to set the baud rate
-    outb(0x3F8, 1);
-    outb(0x3F9, 0);
-
-    outb(0x3FB, 0b00000011); // set the line control register
-    // No DLAB bit
-    // 8 character bits
-    // 1 stop bit
-    // No parity bits
-
     outb(0x3F9, 0b00000001); // set the interrupt enable register
     // interrupt when data available
-
 
     io::pic::irq_unmask(4); // unmask the COM1 port IRQ line, therefore accepting generated interrupts from COM1
     clear_buffer();
