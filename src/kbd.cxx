@@ -9,6 +9,37 @@
 #include "kernel/io.hxx"
 #include "kernel/gfx.hxx"
 
+void (*keyboard_event_subscriber[16])();
+int keyboard_subscribers = 0;
+
+void io::keyboard::keyboard_event_publisher() 
+{
+	for (int i = 0; i < keyboard_subscribers; i++)
+	{
+		keyboard_event_subscriber[i]();
+	}
+}
+
+void io::keyboard::keyboard_event_subscribe(void (*subscriber_function)())
+{
+	keyboard_event_subscriber[keyboard_subscribers] = subscriber_function;
+	keyboard_subscribers++;
+}
+
+void io::keyboard::keyboard_event_unsubscribe(void (*subscriber_function)())
+{
+	for (int i = 0; i < keyboard_subscribers; i++)
+	{
+		if (keyboard_event_subscriber[i] == subscriber_function)
+		{
+			keyboard_event_subscriber[i] = nullptr;
+			keyboard_subscribers--;
+		}
+	}
+}
+
+uint8_t* io::keyboard::char_buffer;
+
 void fn_handler_f1  ()  {
 	memory::operations::memset(gfx::buffer, 0xFF, gfx::gop.framebuffer_size);
 	gfx::screen::buff();
@@ -46,7 +77,7 @@ void fn_handler_f10 ()  { }
 void fn_handler_f11 ()  { }
 void fn_handler_f12 ()  { }
 
-char io::keyboard::scan_code_to_char(uint8_t keycode)
+char io::keyboard::scan_code_to_char(uint16_t keycode)
 {
 	if (io::keyboard::caps_lock && io::keyboard::shifted)
 	{
@@ -140,6 +171,7 @@ char io::keyboard::scan_code_to_char(uint8_t keycode)
 			case 0xAA: io::keyboard::shifted = false;
 			case 0xB6: io::keyboard::shifted = false;
 			case 0xB8: io::keyboard::alt_down = false;
+			case 0xE0: return scan_code_to_char(inb(0x60));
 
 			default: return 0;
 		}
@@ -236,6 +268,7 @@ char io::keyboard::scan_code_to_char(uint8_t keycode)
 			case 0xAA: io::keyboard::shifted = false;
 			case 0xB6: io::keyboard::shifted = false;
 			case 0xB8: io::keyboard::alt_down = false;
+			case 0xE0: return scan_code_to_char(inb(0x60));
 
 			default: return 0;
 		}
@@ -332,6 +365,7 @@ char io::keyboard::scan_code_to_char(uint8_t keycode)
 			case 0xAA: io::keyboard::shifted = false;
 			case 0xB6: io::keyboard::shifted = false;
 			case 0xB8: io::keyboard::alt_down = false;
+			case 0xE0: return scan_code_to_char(inb(0x60));
 
 			default: return 0;
 		}
@@ -428,6 +462,7 @@ char io::keyboard::scan_code_to_char(uint8_t keycode)
 			case 0xAA: io::keyboard::shifted = false;
 			case 0xB6: io::keyboard::shifted = false;
 			case 0xB8: io::keyboard::alt_down = false;
+			case 0xE0: return scan_code_to_char(inb(0x60));
 
 			default: return 0;
 		}
@@ -451,4 +486,5 @@ void io::keyboard::init()
 	io::keyboard::ctrl_down = false;
 	io::keyboard::fn_down = false;
 	io::pic::irq_unmask(1);
+	char_buffer = (uint8_t *)memory::allocation::malloc(buffer_size);
 }

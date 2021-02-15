@@ -163,15 +163,8 @@ void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 		bits[i - 1] = util::get_bit(font_selector, i);
 	}
 
-		//	for (int i = 63; i >= 0; i--)
-		//	{
-		//		if ((i + 1) % 8 == 0)
-		//			serial_msg('\n');
-		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
-		//	}
-
 	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy++) {
-		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
+ 		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
 			if (bits[(8 * y) + x]) {
 				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), fg_color);
 			} else {
@@ -228,11 +221,11 @@ void terminal::render_buffer()
 	{
 		for (uint16_t xpos = 0; xpos < VGA_WIDTH; xpos++)
 		{
-			render_entry_at_buffer(xpos, ypos);
+			render_entry_at(xpos, ypos);
 		}
 	}
 
-	gfx::screen::buff();
+//	gfx::screen::buff();
 }
 
 void terminal::shift()

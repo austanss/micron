@@ -35,22 +35,7 @@ dirs:
 	mkdir -p $(OBJ_DIR)/pch/kernel
 	mkdir -p $(OBJ_DIR_RES)
 
-headers:
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/idt.hxx.gch -c $(HEADERS_DIR)/kernel/idt.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/io.hxx.gch -c $(HEADERS_DIR)/kernel/io.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/terminal.hxx.gch -c $(HEADERS_DIR)/kernel/terminal.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/bitmap.hxx.gch -c $(HEADERS_DIR)/kernel/bitmap.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/kutil.hxx.gch -c $(HEADERS_DIR)/kernel/kutil.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/kconfigf.hxx.gch -c $(HEADERS_DIR)/kernel/kconfigf.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/kbd.hxx.gch -c $(HEADERS_DIR)/kernel/kbd.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/gdt.hxx.gch -c $(HEADERS_DIR)/kernel/gdt.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/gfx.hxx.gch -c $(HEADERS_DIR)/kernel/gfx.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/boot.hxx.gch -c $(HEADERS_DIR)/kernel/boot.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/power.hxx.gch -c $(HEADERS_DIR)/kernel/power.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/serialcon.hxx.gch -c $(HEADERS_DIR)/kernel/serialcon.hxx
-	$(CXX) -o $(OBJ_DIR)/pch/kernel/memory.hxx.gch -c $(HEADERS_DIR)/kernel/memory.hxx
-
-kernel: dirs headers
+kernel: dirs
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR)
@@ -69,12 +54,13 @@ kernel: dirs headers
 	$(CXX) -MF$(OBJ_DIR)/kconfigf.cxx.o.d -o $(OBJ_DIR)/kconfigf.cxx.o -c $(KERNEL_SRC_DIR)/kconfigf.cxx
 	$(CXX) -MF$(OBJ_DIR)/kbd.cxx.o.d -o $(OBJ_DIR)/kbd.cxx.o -c $(KERNEL_SRC_DIR)/kbd.cxx
 	$(CXX) -MF$(OBJ_DIR)/gfx.cxx.o.d -o $(OBJ_DIR)/gfx.cxx.o -c $(KERNEL_SRC_DIR)/gfx.cxx
+	$(CXX) -MF$(OBJ_DIR)/tui.cxx.o.d -o $(OBJ_DIR)/tui.cxx.o -c $(KERNEL_SRC_DIR)/tui.cxx
 	$(CXX) -MF$(OBJ_DIR)/kmain.cxx.o.d -o $(OBJ_DIR)/kmain.cxx.o -c $(KERNEL_SRC_DIR)/kmain.cxx -DARCH=\"$(ARCH)\"
 	$(CXX) -MF$(OBJ_DIR)/boot.cxx.o.d -o $(OBJ_DIR)/boot.cxx.o -c $(KERNEL_SRC_DIR)/boot.cxx
 	$(CXX) -MF$(OBJ_DIR)/power.cxx.o.d -o $(OBJ_DIR)/power.cxx.o -c $(KERNEL_SRC_DIR)/power.cxx
 	$(CXX) -MF$(OBJ_DIR)/serialcon.cxx.o.d -o $(OBJ_DIR)/serialcon.cxx.o -c $(KERNEL_SRC_DIR)/serialcon.cxx
 	$(CXX) -MF$(OBJ_DIR)/memory.cxx.o.d -o $(OBJ_DIR)/memory.cxx.o -c $(KERNEL_SRC_DIR)/memory.cxx
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/boot.cxx.o $(OBJ_DIR)/bitmap.cxx.o $(OBJ_DIR)/serialcon.cxx.o $(OBJ_DIR)/printf.cxx.o $(OBJ_DIR)/power.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/interrupts.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/kconfigf.cxx.o $(OBJ_DIR)/memory.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR)/gfx.cxx.o -T $(RES_DIR)/Linkerscript
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/boot.cxx.o $(OBJ_DIR)/bitmap.cxx.o $(OBJ_DIR)/serialcon.cxx.o $(OBJ_DIR)/printf.cxx.o $(OBJ_DIR)/power.cxx.o $(OBJ_DIR)/tui.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/interrupts.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/kconfigf.cxx.o $(OBJ_DIR)/memory.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR)/gfx.cxx.o -T $(RES_DIR)/Linkerscript
 
 clean:
 	rm -rfv $(BUILD_DIR)/*.* $(OBJ_DIR)/*.* iso
