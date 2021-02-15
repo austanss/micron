@@ -166,22 +166,12 @@ void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 		//	}
 
-	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
-		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
+	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy++) {
+		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
 			if (bits[(8 * y) + x]) {
 				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), color);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy), color);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 1), color);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 1), color);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 2), color);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 2), color);
 			} else {
 				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), 0x00000000);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy), 0x00000000);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 1), 0x00000000);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 1), 0x00000000);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy + 2), 0x00000000);
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx + 1, yy + 2), 0x00000000);
 			}
 		}
 	}
@@ -213,22 +203,12 @@ void terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 		//	}
 
-	for (uint32_t y = 0, yy = (ypos * 25); y < 8; y++, yy += 3) {
-		for (uint32_t x = 0, xx = (xpos * 16); x < 8; x++, xx += 2) {
+	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy++) {
+		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
 			if (bits[(8 * y) + x]) {
 				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), color);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy), color);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 1), color);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 1), color);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 2), color);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 2), color);
 			} else {
 				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), 0x00000000);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy), 0x00000000);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 1), 0x00000000);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 1), 0x00000000);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy + 2), 0x00000000);
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx + 1, yy + 2), 0x00000000);
 			}
 		}
 	}
@@ -412,8 +392,8 @@ terminal& terminal::instance()
 gfx::shapes::dimensions terminal::get_optimal_size(gfx::shapes::dimensions screen_res) {
 	gfx::shapes::dimensions term_size;
 
-	term_size.w = (screen_res.w / 16);
-	term_size.h = (screen_res.h / 25);
+	term_size.w = (screen_res.w / 8);
+	term_size.h = (screen_res.h / 9);
 
 	return term_size;
 }
