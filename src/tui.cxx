@@ -44,19 +44,19 @@ void sys::tui::start()
     term.write(terminal_line);
 
     term.setCursor(6, 9);
-    term.write("\t  Label for Title");
+    term.write("\t  Testing Menu");
     term.setCursor(6, 12);
-    term.write("Element 1");
+    term.write("CPU");
     term.setCursor(6, 13);
-    term.write("Element 2");
+    term.write("Memory");
     term.setCursor(6, 14);
-    term.write("Element 3");
+    term.write("Graphics");
     term.setCursor(6, 15);
-    term.write("Element 4");
+    term.write("I/O");
     term.setCursor(6, 16);
-    term.write("Element 5");
+    term.write("Input");
     term.setCursor(6, 17);
-    term.write("Element 6");
+    term.write("UEFI");
 
     selection_stars[0] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((12 * term.VGA_WIDTH) + 4) * 2);
     selection_stars[1] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((13 * term.VGA_WIDTH) + 4) * 2);

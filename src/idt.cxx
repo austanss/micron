@@ -163,10 +163,11 @@ void irq_handler(registers& registers)
 				io::keyboard::char_buffer[i] = io::keyboard::char_buffer[i-1];
 			}
 			io::keyboard::char_buffer[0] = keychar;
+			
+			io::keyboard::keyboard_event_publisher();
 		}
 	}
 	
-	io::keyboard::keyboard_event_publisher();
 
 	if (registers.interruptNumber == 36) // com port
 		io::serial::console::read_character();
