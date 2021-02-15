@@ -38,7 +38,14 @@ void sys::config::configure_memory(boot::boot_info* bootloader_info)
 {
     memory::allocation::map_memory(bootloader_info->memory_map, bootloader_info->mmap_size, bootloader_info->mmap_descriptor_size);
     sys::config::setup_paging(bootloader_info);
-    memory::allocation::start_allocator();
+    
+    for (int t = 0; t < 0x100; t++) { 
+        void* pos = (void*)0xffff800000000000;
+        memory::paging::map_memory(pos, memory::paging::allocation::request_page());
+        pos = (void*)((uint64_t)pos + 0x1000);
+    }
+
+    memory::allocation::initialize_heap((void*)0xffff800000000000, 0x100000);
 }
 
 void sys::config::configure_graphics(boot::boot_info* bootloader_info)
@@ -54,19 +61,4 @@ void sys::config::calculate_kernel_size()
 {
     _kernel_size = (uint64_t)&_kernel_end - (uint64_t)&_kernel_start;
     _kernel_pages = (uint64_t)_kernel_size / 4096 + 1;
-}
-
-void sys::config::boot_info_copy(boot::boot_info* dst, boot::boot_info* src)
-{
-    dst->verification = src->verification;
-    dst->mmap_size = src->mmap_size;
-    dst->mmap_descriptor_size = src->mmap_descriptor_size;
-    dst->memory_map = src->memory_map;
-    dst->runtime_services = src->runtime_services;
-    dst->vbe_framebuffer->y_resolution = src->vbe_framebuffer->y_resolution;
-    dst->vbe_framebuffer->x_resolution = src->vbe_framebuffer->x_resolution;
-    dst->vbe_framebuffer->framebuffer_base = src->vbe_framebuffer->framebuffer_base;
-    dst->vbe_framebuffer->framebuffer_mode = src->vbe_framebuffer->framebuffer_mode;
-    dst->vbe_framebuffer->framebuffer_size = src->vbe_framebuffer->framebuffer_size;
-    dst->vbe_framebuffer->pixels_per_scan_line = src->vbe_framebuffer->pixels_per_scan_line;
 }

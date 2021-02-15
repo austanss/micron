@@ -97,9 +97,9 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
     void* largest_free_memory_segment = NULL;
     size_t largest_free_memory_segment_size = 0;
 
-    for (uint64_t i = 0; i < map_entries; i++){
+    for (uint64_t i = 0; i < map_entries; i++) {
         boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
-        if (desc->type == 7){ // type = EfiConventionalMemory
+        if (desc->type == 7) { // type = EfiConventionalMemory
             if (desc->count * 4096 > largest_free_memory_segment_size)
             {
                 largest_free_memory_segment = (void *)desc->physical_start;
@@ -122,7 +122,7 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
 
     memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
 
-    for (uint64_t i = 0; i < map_entries; i++){
+    for (uint64_t i = 0; i < map_entries; i++) {
         boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
         io::serial::serial_msg("@ 0x");
         io::serial::serial_msg(util::itoa(desc->physical_start, 16));
@@ -139,27 +139,78 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
     reserve_pages((void *)&sys::config::_kernel_start, sys::config::_kernel_pages);
 }
 
-void memory::allocation::start_allocator()
-{
-	allocator_on = true;
+void* heap_start;
+void* heap_end;
+
+void memory::allocation::initialize_heap(void* heap_address, size_t heap_length) {
+    heap_start = heap_address;
+    heap_end = (void*)((size_t)heap_start + heap_length);
+    heap_segment_header* start_segment = (heap_segment_header*)heap_address;
+    start_segment->length = heap_length - sizeof(heap_segment_header);
+    start_segment->last = NULL;
+    start_segment->next = NULL;
+    start_segment->free = true;
 }
 
-void* memory::allocation::kmalloc(size_t bytes)
-{
-	if (!allocator_on)
-		return nullptr;
+void* memory::allocation::malloc(uint64_t size) {
+    if (size = 0) return nullptr;
+    if (size % 0x10 != 0) size = size % 0x10 + 0x10; //Make sure to round up to 0x10
 
-    bytes = (size_t)(void *)bytes;
+    heap_segment_header* current_segment = (heap_segment_header*)heap_start;
+    while(true) {
+        if (current_segment->free) {
+            
+            if (current_segment->length > size) {
+                current_segment->split(size);
+                current_segment->free = false;
+                return current_segment;
+            }
+            if (current_segment->length == size ) {
+                current_segment->free = false;
+                return current_segment;
+            }
+        }
+        if (current_segment->next == NULL) break;
+        current_segment = current_segment->next;
+    }
     return nullptr;
 }
 
-void memory::allocation::kfree(void* data)
-{
-    data = (void*)(uint64_t)data;
-	if (!allocator_on)
-		return;
-	
-	return;	
+void memory::allocation::free(void* address) {
+    heap_segment_header* current_segment = (heap_segment_header*)address;
+    current_segment->free = true;
+    if (current_segment->next != NULL && current_segment->next->free)current_segment->combine_forward();
+    if (current_segment->last != NULL && current_segment->last->free)current_segment->combine_backward();
+}
+
+memory::allocation::heap_segment_header* memory::allocation::heap_segment_header::split(size_t split_length) {
+    if (split_length < 0x10) return NULL;
+    size_t splitSegLength = length - split_length - (sizeof(heap_segment_header) * 2);
+    if (splitSegLength< 0x10) return NULL;
+    heap_segment_header* new_split_header = (heap_segment_header*) ((size_t)this + split_length + sizeof(heap_segment_header));
+    next->last = new_split_header; // Set the next segment's last segment to our new segment
+    new_split_header->next = next; // Set the new segment's next segment to our original next segment
+    next = new_split_header; // Set our next segment to our new segment
+    new_split_header->last = this; // Set our new segment's last segment to the currect segment
+    new_split_header->length = splitSegLength;
+    new_split_header->free = free; // Make sure the new segment is as free as the original
+    length = split_length;
+    return new_split_header;
+}
+
+void memory::allocation::heap_segment_header::combine_forward() {
+    if (next == NULL) return;
+    if (!next->free) return;
+    
+    if (next->next != NULL) {
+        next->next->last = this;
+    }
+    length = length + next->length + sizeof(heap_segment_header);
+
+}
+
+void memory::allocation::heap_segment_header::combine_backward() {
+    if (last != NULL) last->combine_forward();
 }
 
 //////////////////////////////////////////
@@ -281,7 +332,7 @@ void memory::paging::allocation::free_pages(void* address, uint64_t page_count) 
         memory::paging::allocation::free_page((void*)((uint64_t)address + (t * 4096)));
 }
 
-void memory::paging::allocation::lock_page(void* address){
+void memory::paging::allocation::lock_page(void* address) {
     uint64_t index = (uint64_t)address / 4096;
     if (page_bitmap_map[index] == true) return;
     page_bitmap_map.set(index, true);

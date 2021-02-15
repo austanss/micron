@@ -71,11 +71,19 @@ namespace memory {
 			size_t 			 user_heap_size; // bytes
 		};
 
-		
+		struct heap_segment_header {
+    		size_t length;
+    		heap_segment_header* next;
+    		heap_segment_header* last;
+    		bool free;
+    		void combine_forward();
+    		void combine_backward();
+    		heap_segment_header* split(size_t split_length);
+		};
 
-		void* 		kmalloc(size_t bytes);
-		void 		kfree(void* data);
-		void 		start_allocator();
+		void* 		malloc(size_t bytes);
+		void 		free(void* data);
+		void 		initialize_heap(void* heap_address, size_t heap_length);
 		void		map_memory(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
 		uint64_t	get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
 	};
