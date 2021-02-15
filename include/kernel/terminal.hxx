@@ -18,6 +18,12 @@ public:
     {
     	return (uint16_t)uc | (uint16_t)color << 8;
     }
+
+    static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg) 
+    {
+	    return fg | bg << 4;
+    }
+
     enum vga_color
     {
         VGA_COLOR_BLACK = 0,

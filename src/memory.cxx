@@ -153,7 +153,7 @@ void memory::allocation::initialize_heap(void* heap_address, size_t heap_length)
 }
 
 void* memory::allocation::malloc(uint64_t size) {
-    if (size = 0) return nullptr;
+    if (size == 0) return nullptr;
     if (size % 0x10 != 0) size = size % 0x10 + 0x10; //Make sure to round up to 0x10
 
     heap_segment_header* current_segment = (heap_segment_header*)heap_start;
