@@ -142,14 +142,18 @@ uint32_t terminal::convert_vga_to_pix(uint8_t vga_color)
 
 void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 {
-  	uint32_t color;
+  	uint32_t fg_color;
+  	uint32_t bg_color;
 
 	uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
 
-	uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
+	uint8_t vga_color_fg = (entry & 0x0f00) >> 8;	
+	uint8_t vga_color_bg = (entry >> 12);
+	
 	char c = entry ^ 0b1111111100000000;
 
-	color = convert_vga_to_pix(vga_color);
+	fg_color = convert_vga_to_pix(vga_color_fg);
+	bg_color = convert_vga_to_pix(vga_color_bg);
 
     uint64_t font_selector = gfx::fonts::get_character_font(c);
 
@@ -169,9 +173,9 @@ void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy++) {
 		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
 			if (bits[(8 * y) + x]) {
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), color);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), fg_color);
 			} else {
-				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), 0x00000000);
+				gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), bg_color);
 			}
 		}
 	}
@@ -179,14 +183,18 @@ void terminal::render_entry_at(uint16_t xpos, uint16_t ypos)
 
 void terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 {
-  	uint32_t color;
+  	uint32_t fg_color;
+  	uint32_t bg_color;
 
 	uint16_t entry = text_buffer[(ypos * VGA_WIDTH + xpos)];
 
-	uint8_t vga_color = (entry >> 8) ^ 0b1111111100000000;
+	uint8_t vga_color_fg = (entry & 0x0f00) >> 8;	
+	uint8_t vga_color_bg = (entry >> 12);
+	
 	char c = entry ^ 0b1111111100000000;
 
-	color = convert_vga_to_pix(vga_color);
+	fg_color = convert_vga_to_pix(vga_color_fg);
+	bg_color = convert_vga_to_pix(vga_color_bg);
 
     uint64_t font_selector = gfx::fonts::get_character_font(c);
 
@@ -203,12 +211,12 @@ void terminal::render_entry_at_buffer(uint16_t xpos, uint16_t ypos)
 		//		serial_msg(new_bits[i] + 48); // 48, ASCII code '0'
 		//	}
 
-	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy++) {
-		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx++) {
+	for (uint32_t y = 0, yy = (ypos * 9); y < 8; y++, yy+=2) {
+		for (uint32_t x = 0, xx = (xpos * 8); x < 8; x++, xx+=2) {
 			if (bits[(8 * y) + x]) {
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), color);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), fg_color);
 			} else {
-				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), 0x00000000);
+				gfx::screen::plot_pixel_buffer(gfx::shapes::pos(xx, yy), bg_color);
 			}
 		}
 	}
@@ -249,6 +257,12 @@ void terminal::put_char(char c, uint8_t color)
 {
 	if (c == 0)
 		return;
+
+	if (c == '\t')
+	{
+		column = (column / 4 + 1) * 4;
+		return;
+	}
 
 	if (c == '\b')
 	{
