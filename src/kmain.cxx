@@ -37,18 +37,22 @@ void kernel_main(boot::boot_info *bootloader_info)
 	printf("framebuffer: at 0x%x for %d pages\n",
 		gfx::gop.framebuffer_base,
 		gfx::gop.framebuffer_size / 4096 + 1);	
+	
+	gfx::shapes::dimensions term_size = terminal::get_optimal_size(gfx::shapes::dims(gfx::gop.x_resolution, gfx::gop.y_resolution));
+	printf("terminal: sized %dx%d\n",
+		term_size.w,
+		term_size.h,
+		terminal::text_buffer);
 
 	// print out kernel position information
 	printf("kernel: at 0x%x for %d pages\n",
 		&sys::config::_kernel_start,
 		sys::config::_kernel_pages);
 
+	// print out memory information
 	printf("memory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
-	gfx::shapes::dimensions term_size = terminal::get_optimal_size(gfx::shapes::dims(gfx::gop.x_resolution, gfx::gop.y_resolution));
-	printf("terminal: sized %dx%d\n",
-		term_size.w,
-		term_size.h);
+
 }
 }
