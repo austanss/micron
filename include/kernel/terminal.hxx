@@ -14,6 +14,8 @@ class terminal
 {
 
 public:
+	size_t VGA_WIDTH = 64;
+	size_t VGA_HEIGHT = 30;
     static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
     {
     	return (uint16_t)uc | (uint16_t)color << 8;
@@ -66,8 +68,6 @@ public:
 private:
 	terminal();
 	terminal(terminal const&);
-	size_t VGA_WIDTH = 64;
-	size_t VGA_HEIGHT = 30;
 	void operator=(terminal const&);
 };
 

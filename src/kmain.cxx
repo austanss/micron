@@ -10,6 +10,7 @@
 #include "kernel/power.hxx"
 #include "kernel/kconfigf.hxx"
 #include "kernel/serialcon.hxx"
+#include "kernel/tui.hxx"
 
 #define __hang__ while (true);
 
@@ -53,6 +54,6 @@ void kernel_main(boot::boot_info *bootloader_info)
 	printf("memory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
-
+	sys::tui::start();
 }
 }
