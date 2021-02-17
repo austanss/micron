@@ -41,7 +41,7 @@ void io::keyboard::keyboard_event_unsubscribe(void (*subscriber_function)())
 uint8_t* io::keyboard::char_buffer;
 
 void fn_handler_f1  ()  {
-	memory::operations::memset(gfx::buffer, 0xFF, gfx::gop.framebuffer_size);
+	memory::operations::memset(gfx::buffer, 0xFF, gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * gfx::gop.framebuffer_bpp);
 	gfx::screen::buff();
 }
 void fn_handler_f2  ()  { 
@@ -77,7 +77,7 @@ void fn_handler_f10 ()  { }
 void fn_handler_f11 ()  { }
 void fn_handler_f12 ()  { }
 
-char io::keyboard::scan_code_to_char(uint16_t keycode)
+char io::keyboard::scan_code_to_char(uint8_t keycode)
 {
 	if (io::keyboard::caps_lock && io::keyboard::shifted)
 	{

@@ -6,6 +6,7 @@
 #include "kernel/kbd.hxx"
 #include "kernel/power.hxx"
 #include "kernel/serialcon.hxx"
+#include "kernel/timer.hxx"
 
 uint8_t prevKeyCode = 156;
 
@@ -67,6 +68,10 @@ extern void lidt(uint64_t);
 
 typedef struct s_registers
 {
+	uint64_t cr4;
+	uint64_t cr3;
+	uint64_t cr2;
+	uint64_t cr0;
 	uint64_t ds;
 	uint64_t rdi;
 	uint64_t rsi;
@@ -83,51 +88,51 @@ typedef struct s_registers
 	uint64_t ss;
 } registers;
 
+const char* exception_messages[32] {
+	"Division by Zero",
+	"Debug",
+	"Non-maskable interrupt",
+	"Breakpoint",
+	"Overflow",
+	"Bound Range Exceeded",
+	"Invalid Opcode",
+	"Device Not Available",
+	"Double Fault",
+	"Coprocessor Segment Overrun",
+	"Invalid TSS",
+	"Segment Not Present",
+	"Stack-Segment Fault",
+	"General Protection",
+	"Page Fault",
+	"Reserved",
+	"x87 Floating-Point",
+	"Alignment Check",
+	"Machine Check",
+	"SIMD Floating-Point",
+	"Virtualization",
+	"Reserved",
+	"Security",
+	"Reserved",
+	"FPU Error"
+};
+
 void exception_handler(registers& registers)
 {
-	/*
-	terminal::instance().clear();
+	terminal& term = terminal::instance();
+	term.clear();
 
-	puts((char *)"$RED!FATAL ERROR: $WHITE!The CPU has thrown a fatal exception and the system must terminate.\n");
-	puts((char *)"A register dump has been printed to serial output.\n");
-	puts((char *)"\n");
-	puts((char *)"The system will restart momentarily...");
-	*/
-	io::serial::serial_msg("\n\nFATAL ERROR: CPU EXCEPTION ");
-	io::serial::serial_msg(util::itoa(registers.interruptNumber, 16));
-	io::serial::serial_msg(" -/- ERROR CODE ");
-	io::serial::serial_msg(util::itoa(registers.errorCode, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("DS: ");
-	io::serial::serial_msg(util::itoa(registers.ds, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("RDI: ");
-	io::serial::serial_msg(util::itoa(registers.rdi, 16));
-	io::serial::serial_msg(" | RSI: ");
-	io::serial::serial_msg(util::itoa(registers.rsi, 16));
-	io::serial::serial_msg(" | RBP: ");
-	io::serial::serial_msg(util::itoa(registers.rbp, 16));
-	io::serial::serial_msg(" | RSP: ");
-	io::serial::serial_msg(util::itoa(registers.ss, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("RBX: ");
-	io::serial::serial_msg(util::itoa(registers.rbx, 16));
-	io::serial::serial_msg(" | RDX: ");
-	io::serial::serial_msg(util::itoa(registers.rdx, 16));
-	io::serial::serial_msg(" | RCX: ");
-	io::serial::serial_msg(util::itoa(registers.rcx, 16));
-	io::serial::serial_msg(" | RAX: ");
-	io::serial::serial_msg(util::itoa(registers.rax, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("RIP: ");
-	io::serial::serial_msg(util::itoa(registers.rip, 16));
-	io::serial::serial_msg(" | CS: ");
-	io::serial::serial_msg(util::itoa(registers.cs, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("RFLAGS: ");
-	io::serial::serial_msg(util::itoa(registers.rflags, 16));
-	io::serial::serial_msg("\n");
-	io::serial::serial_msg("\n");
+	term.write((char *)"$RED!FATAL ERROR: $WHITE!");
+	printf("The CPU has thrown a fatal %s exception (0x%x).\n\n\n\n", exception_messages[registers.interruptNumber], registers.interruptNumber);
+
+	term.write((char *)"$GREEN!Registers:$WHITE!\n\n\n$LIGHT_CYAN!Segmentation) ");
+	printf("CS=0x%x, DS=0x%x, SS=0x%x\n\n", registers.cs, registers.ds, registers.ss);
+
+	term.write((char *)"$LIGHT_CYAN!CPU) ");
+	printf("CR0=0x%x, CR2=0x%x, CR3=0x%x, CR4=0x%x,\n\t\t\tRIP=0x%x, RFLAGS=0x%x\n\n", registers.cr0, registers.cr2, registers.cr3, registers.cr4, registers.rip, registers.rflags);
+
+	term.write((char *)"$LIGHT_CYAN!General) ");
+	printf("RAX=0x%x, RBX=0x%x. RCX=0x%x, RDX=0x%x,\n\t\t\tRSI=0x%x, RDI=0x%x", registers.rax, registers.rbx, registers.rcx, registers.rdx, registers.rsi, registers.rdi);
+
 	asm volatile("cli; hlt");
 	cpu::power::restart_cold();
 }
@@ -137,8 +142,22 @@ void isr_handler(registers& registers)
     exception_handler(registers);
 }
 
+uint32_t milliseconds = 0;
+uint64_t seconds = 0;
+
 void irq_handler(registers& registers)
 {
+	if (registers.interruptNumber == 32) // PIT
+	{
+		sys::chrono::ms_clock++;
+		milliseconds++;
+		if (milliseconds >= io::pit::frequency_hz)
+		{
+			milliseconds = 0;
+			seconds++;
+		}
+	}
+
 	if (registers.interruptNumber == 33) // keyboard
 	{
 		uint16_t keycode = io::inw(0x60);
@@ -163,11 +182,10 @@ void irq_handler(registers& registers)
 				io::keyboard::char_buffer[i] = io::keyboard::char_buffer[i-1];
 			}
 			io::keyboard::char_buffer[0] = keychar;
-			
+
 			io::keyboard::keyboard_event_publisher();
 		}
 	}
-	
 
 	if (registers.interruptNumber == 36) // com port
 		io::serial::console::read_character();

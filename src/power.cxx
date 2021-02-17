@@ -4,19 +4,21 @@
 
 #include "kernel/power.hxx"
 #include "kernel/boot.hxx"
+#include "kernel/terminal.hxx"
 
 // extern as C so can be called from ASM
 extern "C"
 {
 void cpu::power::shutdown() {
-	boot::uefi->reset_system(boot::efi_reset_shutdown, 0, 0, nullptr);
+	terminal::instance().clear();
+	asm volatile ("cli; hlt");
 }
 
 void cpu::power::restart_warm() {
-	boot::uefi->reset_system(boot::efi_reset_warm, 0, 0, nullptr);
+	asm volatile ("jmp 0x0");
 }
 
 void cpu::power::restart_cold() {
-	boot::uefi->reset_system(boot::efi_reset_cold, 0, 0, nullptr);
+	asm volatile ("jmp 0x0");
 }
 }

@@ -3,7 +3,7 @@
 #include "kernel/gfx.hxx"
 #include "kernel/subif.hxx"
 
-boot::gop_framebuffer 	gfx::gop;
+stivale_framebuffer 	gfx::gop;
 uint32_t*				gfx::buffer;
 
 gfx::shapes::positional_point gfx::shapes::pos(uint32_t x, uint32_t y) {
@@ -31,8 +31,8 @@ void gfx::shapes::rect(gfx::shapes::positional_point posi, gfx::shapes::dimensio
 
 	gfx::shapes::positional_point rect_absolute_center = pos(posi.x + rect_relative_center.x, posi.y + rect_relative_center.y);
 
-	for (uint32_t xx = (rect_absolute_center.x - (dimens.w / 2)); (xx <= (rect_absolute_center.x + (dimens.w / 2))) && (xx < gop.x_resolution); xx++)
-		for (uint32_t yy = (rect_absolute_center.y - (dimens.h / 2)); (yy <= rect_absolute_center.y + (dimens.h / 2)) && (yy < gop.y_resolution); yy++)
+	for (uint32_t xx = (rect_absolute_center.x - (dimens.w / 2)); (xx <= (rect_absolute_center.x + (dimens.w / 2))) && (xx < gop.framebuffer_width); xx++)
+		for (uint32_t yy = (rect_absolute_center.y - (dimens.h / 2)); (yy <= rect_absolute_center.y + (dimens.h / 2)) && (yy < gop.framebuffer_height); yy++)
 			gfx::screen::plot_pixel(gfx::shapes::pos(xx, yy), color);
 
 	gfx::screen::buff();
@@ -40,17 +40,17 @@ void gfx::shapes::rect(gfx::shapes::positional_point posi, gfx::shapes::dimensio
 
 void gfx::screen::buff() 
 {
-	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
+	memory::operations::memcpy((void*)gop.framebuffer_addr, buffer, gop.framebuffer_width * gop.framebuffer_height * 4);
 }
 
 void gfx::screen::save_screen()
 {
-	memory::operations::memcpy(buffer, gop.framebuffer_base, gop.x_resolution * gop.y_resolution * 4);
+	memory::operations::memcpy(buffer, (void *)gop.framebuffer_addr, gop.framebuffer_width * gop.framebuffer_height * 4);
 }
 
 void gfx::screen::restore_screen()
 {
-	memory::operations::memcpy(gop.framebuffer_base, buffer, gop.x_resolution * gop.y_resolution * 4);
+	memory::operations::memcpy((void *)gop.framebuffer_addr, buffer, gop.framebuffer_width * gop.framebuffer_height * 4);
 }
 
 int gfx::subif::render_image(subif_file* image, shapes::positional_point pos)
