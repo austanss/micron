@@ -10,9 +10,8 @@ namespace sys {
         extern uint64_t _kernel_size;
         extern uint64_t _kernel_pages;
         void calculate_kernel_size();
-        void setup_paging(boot::boot_info* bootloader_info);
-        void configure_memory(boot::boot_info* bootloader_info);
-        void configure_graphics(boot::boot_info* bootloader_info);
-        void boot_info_copy(boot::boot_info* dst, boot::boot_info* src);
+        void setup_paging(stivale_framebuffer *framebuffer);
+        void configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map);
+        void configure_graphics(stivale_framebuffer *framebuffer);
     }
 }

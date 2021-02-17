@@ -35,6 +35,15 @@ isr_common_stub:
    mov fs, ax
    mov gs, ax
 
+   mov rax, cr0
+   push rax ; gp control register
+   mov rax, cr2
+   push rax ; page fault faulty addy
+   mov rax, cr3
+   push rax ; page fault error info
+   mov rax, cr4
+   push rax ; gp control register
+
    ; Since we assembled the struct
    ; on the stack, we can simply
    ; pass the stack pointer as a
@@ -46,6 +55,10 @@ isr_common_stub:
    call isr_handler
 
   ; 3. Restore state
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rdx
    pop rbx
    mov ds, bx
    mov es, bx
@@ -68,6 +81,15 @@ irq_common_stub:
    mov es, ax
    mov fs, ax
    mov gs, ax
+   
+   mov rax, cr0
+   push rax ; gp control register
+   mov rax, cr2
+   push rax ; page fault faulty addy
+   mov rax, cr3
+   push rax ; page fault error info
+   mov rax, cr4
+   push rax ; gp control register
 
    ; Since we assembled the struct
    ; on the stack, we can simply
@@ -80,6 +102,10 @@ irq_common_stub:
    call irq_handler
 
   ; 3. Restore state
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rdx
    pop rax
    mov ds, ax
    mov es, ax
@@ -370,12 +396,10 @@ isr31:
 
 ; This IRQ is the Programmable Interval Timer. Since it spams us with
 ; interrupts, we will ignore it until we have a use for chronology
-irq0:
-;	 
-;	push 0
-;	push 32
-;	jmp irq_common_stub
-	sti
+irq0:	 
+	push 0
+	push 32
+	jmp irq_common_stub
 	iretq
 
 irq1:

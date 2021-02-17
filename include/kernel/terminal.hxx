@@ -45,6 +45,7 @@ public:
         VGA_COLOR_LIGHT_BROWN = 14,
         VGA_COLOR_WHITE = 15
     };
+    
 	size_t row;
 	size_t column;
     static terminal &instance();

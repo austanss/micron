@@ -1,4 +1,6 @@
 global kernel_entry
+global stack_begin
+global stack_end
 
 extern kernel_main
 extern load_idt
@@ -9,25 +11,10 @@ extern configure_pic
 
 kernel_entry:
 
-	mov r15, rdi					;	preserve parameters]
-
-	mov rcx, [r15+8]
-	mov qword rdx, [rcx]
-	mov qword [asm_framebuffer_ptr], rdx
-	mov dword eax, [rcx+20]
-	mov dword [asm_framebuffer_x_res], eax
-	mov dword eax, [rcx+24]
-	mov dword [asm_framebuffer_y_res], eax
-	mov rax, 0
-	mov rbx, 0
-	mov rcx, 0
-	mov rdx, 0
-
-	mov edi, 0xFFFFFF00
-	call set_status_color
-
+	mov r15, rdi					;	preserve parameters
 
 	mov esp, stack_end				;	reconfigure the stack
+	xor ebp, ebp
 
 	; ensure we are in long mode
 	; and replace the UEFI-owned
@@ -40,22 +27,22 @@ kernel_entry:
 	; gdt
 	call load_gdt
 
-	mov edi, 0x0000FF00
-	call set_status_color
+;	mov edi, 0x0000FF00
+;	call set_status_color
 
 	; idt
 	call load_idt
 
-	mov edi, 0xFF00FF00
-	call set_status_color
+;	mov edi, 0xFF00FF00
+;	call set_status_color
 
 	call configure_pic
 
 	; interrupts
 	sti								;	set the interrupt flag
 
-	mov edi, 0x00FFFF00
-	call set_status_color
+;	mov edi, 0x00FFFF00
+;	call set_status_color
 
 	mov rdi, r15					;	bring back original rdi
 

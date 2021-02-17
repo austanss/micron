@@ -11,7 +11,7 @@ namespace io {
 
 	namespace keyboard {
 		void 		init();
-		char 		scan_code_to_char(uint16_t keycode);
+		char 		scan_code_to_char(uint8_t keycode);
 		void		keyboard_event_publisher();
 		void		keyboard_event_subscribe(void (*subscriber_function)());
 		void		keyboard_event_unsubscribe(void (*subscriber_function)());

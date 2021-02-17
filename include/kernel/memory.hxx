@@ -84,8 +84,8 @@ namespace memory {
 		void* 		malloc(size_t bytes);
 		void 		free(void* data);
 		void 		initialize_heap(void* heap_address, size_t heap_length);
-		void		map_memory(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
-		uint64_t	get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size);
+		void		map_memory(stivale_memory_map* memory_map, uint64_t map_size, uint64_t desc_size);
+		uint64_t	get_total_memory_size(stivale_memory_map* memory_map, uint64_t map_size, uint64_t desc_size);
 	};
 
 	namespace operations {	

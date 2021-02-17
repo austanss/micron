@@ -5,6 +5,12 @@ SECTIONS
 	. = 1M;
 
 	_kernel_start = .;
+	
+	.stivalehdr : 
+	{
+        KEEP(*(.stivalehdr))
+    }
+
 	.text :
 	{
 		*(.text .text.*)
