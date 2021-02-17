@@ -41,32 +41,33 @@ void interface_controller()
 void sys::tui::start()
 {
     terminal& term = terminal::instance();
+    term.write("\n");
     term.write(terminal_line);
 
-    term.setCursor(6, 9);
-    term.write("\t  Testing Menu");
     term.setCursor(6, 12);
-    term.write("CPU");
-    term.setCursor(6, 13);
-    term.write("Memory");
-    term.setCursor(6, 14);
-    term.write("Graphics");
+    term.write("\t  Testing Menu");
     term.setCursor(6, 15);
-    term.write("I/O");
+    term.write("CPU");
     term.setCursor(6, 16);
-    term.write("Input");
+    term.write("Memory");
     term.setCursor(6, 17);
+    term.write("Graphics");
+    term.setCursor(6, 18);
+    term.write("I/O");
+    term.setCursor(6, 19);
+    term.write("Input");
+    term.setCursor(6, 20);
     term.write("UEFI");
 
-    selection_stars[0] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((12 * term.VGA_WIDTH) + 4) * 2);
-    selection_stars[1] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((13 * term.VGA_WIDTH) + 4) * 2);
-    selection_stars[2] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((14 * term.VGA_WIDTH) + 4) * 2);
-    selection_stars[3] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((15 * term.VGA_WIDTH) + 4) * 2);
-    selection_stars[4] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((16 * term.VGA_WIDTH) + 4) * 2);
-    selection_stars[5] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((17 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[0] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((15 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[1] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((16 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[2] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((17 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[3] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((18 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[4] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((19 * term.VGA_WIDTH) + 4) * 2);
+    selection_stars[5] = (uint16_t *)(((uint64_t)terminal::text_buffer) + ((20 * term.VGA_WIDTH) + 4) * 2);
 
     *selection_stars[0] = selector_entry;
     term.render_buffer();
 
-    io::keyboard::keyboard_event_subscribe(&interface_controller);
+    io::keyboard::keyboard_event_subscribe(interface_controller);
 }

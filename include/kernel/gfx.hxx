@@ -7,8 +7,8 @@
 
 namespace gfx {
 
-	extern uint32_t*					buffer;
-	extern boot::gop_framebuffer 		gop;
+	extern uint32_t*							buffer;
+	extern stivale_framebuffer			 		gop;
 
 	namespace fonts {
 		uint64_t						get_character_font(char c);
@@ -32,12 +32,12 @@ namespace gfx {
 
 		inline void plot_pixel(gfx::shapes::positional_point posi, uint32_t pixel)
 		{
-			gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
+			((uint32_t *)gop.framebuffer_addr)[gop.framebuffer_width * posi.y + posi.x] = pixel;
 		}
 
 		inline void plot_pixel_buffer(gfx::shapes::positional_point posi, uint32_t pixel)
 		{
-			gop.framebuffer_base[gop.x_resolution * posi.y + posi.x] = pixel;
+			((uint32_t *)gop.framebuffer_addr)[gop.framebuffer_width * posi.y + posi.x] = pixel;
 		}
 
 		void 							save_screen();

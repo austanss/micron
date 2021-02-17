@@ -27,23 +27,19 @@ memory::paging::page_table* memory::paging::pml_4;
 
 bool allocator_on = false;
 
-const char *memory_types[] =
+char *memory_types(uint16_t type)
 {
-	"EfiReservedMemoryType",
-	"EfiLoaderCode",
-	"EfiLoaderData",
-	"EfiBootServicesCode",
-	"EfiBootServicesData",
-	"EfiRuntimeServicesCode",
-	"EfiRuntimeServicesData",
-	"EfiConventionalMemory",
-	"EfiUnusableMemory",
-	"EfiACPIReclaimMemory",
-	"EfiACPIMemoryNVS",
-	"EfiMemoryMappedIO",
-	"EfiMemoryMappedIOPortSpace",
-	"EfiPalCode",
-};
+    switch (type)
+    {
+        case 1: return "Conventional memory";
+        case 2: return "Reserved memory";
+        case 3: return "Reclaimable ACPI memory";
+        case 4: return "ACPI NVS memory";
+        case 5: return "Faulty memory";
+        case 10: return "Kernel memory";
+        case 4096: return "Reclaimable bootloader memory";
+    }
+}
 
 //////////////////////////////////////////
 // malloc
@@ -57,7 +53,7 @@ const char *memory_types[] =
         *(uint8_t*)(page_bitmap_map.buffer + i) = 0;
 } 
 
-uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* memory_map, uint64_t map_size, uint64_t desc_size)
+uint64_t memory::allocation::get_total_memory_size(stivale_memory_map* memory_map, uint64_t map_size, uint64_t desc_size)
 {
     static uint64_t memory_size_bytes = 0;
     if (memory_size_bytes > 0) return memory_size_bytes;
@@ -67,12 +63,12 @@ uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* 
 
     for (uint64_t i = 0; i < map_entries; i++) {
 
-        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
+        stivale_mmap_entry* desc = (stivale_mmap_entry *)((uint64_t)memory_map->memory_map_addr + (i * desc_size));
         
-        if (desc->physical_start < 0x100000)
+        if (desc->base < 0x100000)
             continue;
 
-        memory_size_pages += desc->count;
+        memory_size_pages += (desc->length  / 0x1000);
     }
 
     memory_size_bytes = memory_size_pages * 0x1000;
@@ -86,7 +82,7 @@ uint64_t memory::allocation::get_total_memory_size(boot::memory_map_descriptor* 
 
 void reserve_pages(void* address, uint64_t page_count);
 
-void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, const uint64_t map_size, const uint64_t desc_size)
+void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64_t map_size, uint64_t desc_size)
 {
     if (initialized) return;
 
@@ -98,12 +94,12 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
     size_t largest_free_memory_segment_size = 0;
 
     for (uint64_t i = 0; i < map_entries; i++) {
-        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
-        if (desc->type == 7) { // type = EfiConventionalMemory
-            if (desc->count * 4096 > largest_free_memory_segment_size)
+        stivale_mmap_entry* desc = (stivale_mmap_entry *)((uint64_t)memory_map->memory_map_addr + (i * desc_size));
+        if (desc->type == 1 || desc->type == 3 || desc->type == 0x1000 || desc->type == 0x1001) { // usable memory
+            if ((desc->length / 0x1000) * 4096 > largest_free_memory_segment_size)
             {
-                largest_free_memory_segment = (void *)desc->physical_start;
-                largest_free_memory_segment_size = desc->count * 4096;
+                largest_free_memory_segment = (void *)desc->base;
+                largest_free_memory_segment_size = (desc->length  / 0x1000) * 4096;
             }
         }
     }
@@ -123,16 +119,16 @@ void memory::allocation::map_memory(boot::memory_map_descriptor* memory_map, con
     memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
 
     for (uint64_t i = 0; i < map_entries; i++) {
-        boot::memory_map_descriptor* desc = (boot::memory_map_descriptor*)((uint64_t)memory_map + (i * desc_size));
+        stivale_mmap_entry* desc = (stivale_mmap_entry *)((uint64_t)memory_map->memory_map_addr + (i * desc_size));
         io::serial::serial_msg("@ 0x");
-        io::serial::serial_msg(util::itoa(desc->physical_start, 16));
+        io::serial::serial_msg(util::itoa(desc->base, 16));
         io::serial::serial_msg(": ");
-        io::serial::serial_msg(memory_types[desc->type]);
+        io::serial::serial_msg(memory_types(desc->type));
         io::serial::serial_msg(", for ");
-        io::serial::serial_msg(util::itoa(desc->count, 10));
+        io::serial::serial_msg(util::itoa((desc->length  / 0x1000), 10));
         io::serial::serial_msg(" pages\n");
-        if (desc->type != 7) // not efiConventionalMemory
-            reserve_pages((void *)desc->physical_start, desc->count);
+        if (desc->type != 1) // not conventional memory
+            reserve_pages((void *)desc->base, (desc->length  / 0x1000));
     }
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);

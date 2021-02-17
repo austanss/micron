@@ -2,6 +2,27 @@
 // Created by rizet on 11/27/20.
 //
 
+#include <stddef.h>
+#include <stdint.h>
 #include "kernel/boot.hxx"
+#include "kernel/gfx.hxx"
 
-boot::efi_runtime_services* boot::uefi;
+// The stivale2 specification says we need to define a "header structure".
+// This structure needs to reside in the .stivale2hdr ELF section in order
+// for the bootloader to find it. We use this __attribute__ directive to
+// tell the compiler to put the following structure in said section.
+__attribute__((section(".stivalehdr"), used))
+struct stivale_header stivale_hdr = {
+
+    .stack = NULL,
+
+    .flags = 0b001,
+    
+    .framebuffer_width = 0,    
+
+    .framebuffer_height = 0,
+    
+    .framebuffer_bpp = 32,
+    
+    .entry_point = 0,
+};

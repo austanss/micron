@@ -18,7 +18,7 @@ uint16_t* terminal::text_buffer;
 
 terminal::terminal() : row(0), column(0)
 {
-	gfx::shapes::dimensions size = get_optimal_size(gfx::shapes::dims(gfx::gop.x_resolution, gfx::gop.y_resolution));
+	gfx::shapes::dimensions size = get_optimal_size(gfx::shapes::dims(gfx::gop.framebuffer_width, gfx::gop.framebuffer_height));
 
 	VGA_WIDTH = size.w;
 	VGA_HEIGHT = size.h;
@@ -38,10 +38,10 @@ terminal::terminal() : row(0), column(0)
 	text_buffer += 8;
 
 	memory::operations::memset((void *)text_buffer, 0, size.h * size.w * 2);
-	memory::operations::memset((void *)gfx::buffer, 0, gfx::gop.framebuffer_size);
-	memory::operations::memset((void *)gfx::gop.framebuffer_base, 0, gfx::gop.framebuffer_size);
+	memory::operations::memset((void *)gfx::buffer, 0, gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8));
+	memory::operations::memset((void *)gfx::gop.framebuffer_addr, 0, gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8));
 
-	io::serial::serial_msg("text buffer at ");	
+	io::serial::serial_msg("text buffer at ");
 	io::serial::serial_msg(util::itoa((uint64_t)text_buffer, 16));
 }
 
