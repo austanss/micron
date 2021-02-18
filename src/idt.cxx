@@ -145,6 +145,8 @@ void isr_handler(registers& registers)
 uint32_t milliseconds = 0;
 uint64_t seconds = 0;
 
+extern void kbd_irq_handler();
+
 void irq_handler(registers& registers)
 {
 	if (registers.interruptNumber == 32) // PIT
@@ -159,33 +161,7 @@ void irq_handler(registers& registers)
 	}
 
 	if (registers.interruptNumber == 33) // keyboard
-	{
-		uint16_t keycode = io::inw(0x60);
-
-		asm volatile ("ror $8, %0" : "=r"(keycode));
-
-		char keychar = io::keyboard::scan_code_to_char(keycode);
-
-		// cursor chars
-		switch (keycode)
-		{
-			case 0xE048: case 0xE075: keychar = 0xF1; break; // up
-			case 0xE04B: case 0xE074: keychar = 0xF3; break; // right
-			case 0xE04D: case 0xE06B: keychar = 0xF4; break; // left
-			case 0xE050: case 0xE072: keychar = 0xF2; break; // down
-		}
-
-		if (keychar != 0)
-		{
-			for (int i = 1; i < io::keyboard::buffer_size; i++)
-			{
-				io::keyboard::char_buffer[i] = io::keyboard::char_buffer[i-1];
-			}
-			io::keyboard::char_buffer[0] = keychar;
-
-			io::keyboard::keyboard_event_publisher();
-		}
-	}
+		kbd_irq_handler();
 
 	if (registers.interruptNumber == 36) // com port
 		io::serial::console::read_character();

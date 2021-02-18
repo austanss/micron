@@ -12,9 +12,20 @@ namespace io {
 	namespace keyboard {
 		void 		init();
 		char 		scan_code_to_char(uint8_t keycode);
-		void		keyboard_event_publisher();
-		void		keyboard_event_subscribe(void (*subscriber_function)());
-		void		keyboard_event_unsubscribe(void (*subscriber_function)());
+		void		keyboard_event_publisher(struct keyboard_packet kbpacket);
+		void		keyboard_event_subscribe(void (*subscriber_function)(struct keyboard_packet kbpacket));
+		void		keyboard_event_unsubscribe(void (*subscriber_function)(struct keyboard_packet kbpacket));
+		struct keyboard_packet {
+			unsigned char key_code 	: 8;
+			bool release_or_press 	: 1; // release = 0, press = 1
+			bool shifted 			: 1;
+			bool ctrl_down 			: 1;
+			bool alt_down 			: 1;
+			bool fn_down 			: 1;
+			bool caps_lock 			: 1;
+			bool scroll_lock 		: 1;
+			bool num_lock 			: 1;
+		} __attribute__((packed));
 		extern bool shifted;
 		extern bool ctrl_down;
 		extern bool alt_down;
@@ -22,8 +33,6 @@ namespace io {
 		extern bool caps_lock;
 		extern bool scroll_lock;
 		extern bool num_lock;
-		constexpr uint16_t buffer_size = 0x400;
-		extern uint8_t* char_buffer;
 	}
 	
 };
