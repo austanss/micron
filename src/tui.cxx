@@ -17,7 +17,7 @@ struct tui {
 
 // Values for interfacing/selection
 int selected_element = 1;
-const uint16_t selector_entry = 2858;
+const uint16_t selector_entry = 2858; // the value used for the selection star
 
 void interface_controller(struct io::keyboard::keyboard_packet kbpacket) 
 {

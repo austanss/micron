@@ -18,27 +18,21 @@ load_gdt:
 
 
 gdt:                           ; Global Descriptor Table (64-bit).
-    .null: equ $ - gdt         ; The null descriptor.
-    dw 0xFFFF                    ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 0                         ; Access.
-    db 1                         ; Granularity.
-    db 0                         ; Base (high).
-    .code: equ $ - gdt         ; The code descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 10011010b                 ; Access (exec/read).
-    db 10101111b                 ; Granularity, 64 bits flag, limit19:16.
-    db 0                         ; Base (high).
-    .data: equ $ - gdt         ; The data descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 10010010b                 ; Access (read/write).
-    db 00000000b                 ; Granularity.
-    db 0                         ; Base (high).
+   ; Invalid segment
+    .null:
+    DQ 0x0000000000000000 ; 0x0
+   ; Kernel code: RW, executable, code/data segment, present, 64-bit, ring 0
+    .kcode
+    DQ 0x00209A0000000000 ; 0x8
+   ; Kernel data: RW, data, code/data segment, present, ring 0
+    .kdata
+    DQ 0x0000920000000000 ; 0x10
+   ; User data: RW, data, code/data segment, present, ring 3
+    .udata
+    DQ 0x0020F20000000000 ; 0x18
+   ; User code: RW, executable, code/data segment, present, 64-bit, ring 3
+    .ucode
+    dq 0x0020FA0000000000 ; 0x20
     .ptr:                      ; The GDT-pointer.
     dw $ - gdt - 1               ; Limit.
     dq gdt                       ; Base.
