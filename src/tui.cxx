@@ -19,13 +19,16 @@ struct tui {
 int selected_element = 1;
 const uint16_t selector_entry = 2858;
 
-void interface_controller() 
+void interface_controller(struct io::keyboard::keyboard_packet kbpacket) 
 {
+    if (!kbpacket.release_or_press)
+        return;
+
     *selection_stars[selected_element - 1] = NULL;
 
-    if (io::keyboard::char_buffer[0] == 0xF1)
+    if (kbpacket.key_code == 0xB8)
         selected_element--;
-    else if (io::keyboard::char_buffer[0] == 0xF2)
+    else if (kbpacket.key_code == 0xC0)
         selected_element++;
 
     if (selected_element > 6)
