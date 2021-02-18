@@ -34,8 +34,8 @@ namespace io {
     }
 
     namespace pic {
-        void                irq_mask(unsigned char IRQLine);
-        void                irq_unmask(unsigned char IRQLine);
+        extern "C" void     irq_mask(unsigned char IRQLine);
+        extern "C" void     irq_unmask(unsigned char IRQLine);
         extern "C" void     pic_remap(int offset1, int offset2);
         extern "C" void     pic_send_eoi(unsigned char irq);
     }

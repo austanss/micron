@@ -51,6 +51,7 @@ namespace memory {
 		extern page_table* pml_4_id_full;
 
 		void map_memory(void* virtual_memory, void* physical_memory);
+		void donate_to_userspace(void* virtual_address);
 
 		namespace allocation {
 			void 	free_page(void* address);

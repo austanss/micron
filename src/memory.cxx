@@ -395,6 +395,22 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
     pt->entries[indexer.p_i] = pde;
 }
 
+void memory::paging::donate_to_userspace(void* virtual_address)
+{
+    page_map_indexer indexer = page_map_indexer((uint64_t)virtual_address);
+    page_directory_entry pde;
+    pde = pml_4->entries[indexer.pdp_i];
+    pml_4->entries[indexer.pdp_i].set_flag(pt_flag::user_super, 1);
+    page_table* pdp = (page_table*)((uint64_t)pde.get_address() << 12);
+    pdp->entries[indexer.pd_i].set_flag(pt_flag::user_super, 1);
+    pde = pdp->entries[indexer.pd_i];
+    page_table* pd = (page_table*)((uint64_t)pde.get_address() << 12);
+    pd->entries[indexer.pt_i].set_flag(pt_flag::user_super, 1);
+    pde = pd->entries[indexer.pt_i];
+    page_table* pt = (page_table*)((uint64_t)pde.get_address() << 12);
+    pt->entries[indexer.p_i].set_flag(pt_flag::user_super, 1);
+}
+
 void memory::paging::page_directory_entry::set_flag(pt_flag flag, bool enabled) {
 
     uint64_t bit_selector = (uint64_t)1 << flag;
