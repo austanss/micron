@@ -25,11 +25,10 @@ void sys::config::setup_paging(stivale_framebuffer *framebuffer)
 	    { memory::paging::map_memory((void *)t, (void *)t); }
 
 	uint64_t fb_base = (uint64_t)framebuffer->framebuffer_addr;
-    uint64_t fb_size = (uint64_t)framebuffer->framebuffer_width * framebuffer->framebuffer_height * (framebuffer->framebuffer_bpp / 8);
+    uint64_t fb_size = (((uint64_t)framebuffer->framebuffer_width * framebuffer->framebuffer_height * (framebuffer->framebuffer_bpp / 8) + 1024));
 
     for (uint64_t t = fb_base; t < fb_base + fb_size; t+=0x1000)
         { memory::paging::map_memory((void*)t, (void*)t); }
-
 
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
 }
