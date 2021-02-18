@@ -9,7 +9,7 @@
 #include "kernel/io.hxx"
 #include "kernel/gfx.hxx"
 
-void (*keyboard_event_subscriber[16])(struct io::keyboard::keyboard_packet kbpacket);
+void (*keyboard_event_subscriber[64])(struct io::keyboard::keyboard_packet kbpacket);
 int keyboard_subscribers = 0;
 
 void io::keyboard::keyboard_event_publisher(struct keyboard_packet kbpacket) 
@@ -28,13 +28,22 @@ void io::keyboard::keyboard_event_subscribe(void (*subscriber_function)(struct k
 
 void io::keyboard::keyboard_event_unsubscribe(void (*subscriber_function)(struct keyboard_packet kbpacket))
 {
+	int function_index = 0;
+
 	for (int i = 0; i < keyboard_subscribers; i++)
 	{
 		if (keyboard_event_subscriber[i] == subscriber_function)
 		{
 			keyboard_event_subscriber[i] = nullptr;
 			keyboard_subscribers--;
+			function_index = i;
+			break;
 		}
+	}
+
+	for (int i = function_index; i < 64; i++)
+	{
+		keyboard_event_subscriber[i] = keyboard_event_subscriber[i + 1];
 	}
 }
 
