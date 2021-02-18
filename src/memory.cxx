@@ -280,22 +280,9 @@ void* memory::paging::allocation::request_pages(uint64_t page_count)
     if (page_count <= 1)
         return nullptr;
 
-    io::serial::serial_msg("request for ");
-    io::serial::serial_msg(util::itoa(page_count, 10));
-    io::serial::serial_msg(" pages:\n");
-
     void* start_ptr = request_page();
     page_count--;
 
-    io::serial::serial_msg("\tstarting at 0x");
-    io::serial::serial_msg(util::itoa((long)start_ptr, 16));
-    io::serial::serial_msg(":\n");
-
-    io::serial::serial_msg("\t\tmapping page at 0x");
-    io::serial::serial_msg(util::itoa((long)start_ptr, 16));
-    io::serial::serial_msg(" to ");
-    io::serial::serial_msg(util::itoa((uint64_t)start_ptr, 16));
-    io::serial::serial_msg("\r\n");
     map_memory(start_ptr, start_ptr);
 
 
@@ -303,11 +290,6 @@ void* memory::paging::allocation::request_pages(uint64_t page_count)
     {
         void* page_ptr = request_page();
         map_memory((void *)((uint64_t)start_ptr + (i * 0x1000)), page_ptr);
-        io::serial::serial_msg("\t\tmapping page at 0x");
-        io::serial::serial_msg(util::itoa((long)page_ptr, 16));
-        io::serial::serial_msg(" to ");
-        io::serial::serial_msg(util::itoa((uint64_t)start_ptr + (i * 0x1000), 16));
-        io::serial::serial_msg("\r\n");
     }
 
     return start_ptr;
