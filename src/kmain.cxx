@@ -99,5 +99,7 @@ void kernel_main(stivale_struct *bootloader_info)
 		memory::free_memory_size / 0x400 / 0x400);	
 
 	sys::tui::start();
+
+	sys::config::configure_userspace();
 }
 }

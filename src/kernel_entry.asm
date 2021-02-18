@@ -8,6 +8,7 @@ extern load_gdt
 extern restart_cold
 extern puts
 extern configure_pic
+extern enter_userspace
 
 kernel_entry:
 
@@ -48,11 +49,7 @@ kernel_entry:
 
 	call kernel_main				;	call kernel
 
-	.halt:							;	hang
-		hlt
-		jmp .halt
-
-	call restart_cold				;	if loop breaks save system from fatal errors
+	jmp enter_userspace
 
 set_status_color:
 	push r14
