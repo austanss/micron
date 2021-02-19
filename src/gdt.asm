@@ -1,5 +1,7 @@
 global load_gdt
+extern tss
 global gdt
+global gdt.tss
 
 load_gdt:
 	push rax
@@ -33,6 +35,7 @@ gdt:                           ; Global Descriptor Table (64-bit).
    ; User code: RW, executable, code/data segment, present, 64-bit, ring 3
     .ucode
     dq 0x0020FA0000000000 ; 0x20
+
     .ptr:                      ; The GDT-pointer.
     dw $ - gdt - 1               ; Limit.
     dq gdt                       ; Base.
