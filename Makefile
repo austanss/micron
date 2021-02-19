@@ -17,12 +17,12 @@ KERNEL_SRC_DIR := $(SRC_DIR)
 HEADERS_DIR := include
 OBJ_DIR := $(BUILD_DIR)/obj
 OBJ_DIR_RES := $(OBJ_DIR)/res
-CC := gcc -I$(HEADERS_DIR) -I$(OBJ_DIR)/pch -H -pipe -ftree-vectorize -D_FILE_OFFSET_BITS=64 -Wall -fno-pic -no-pie -Winvalid-pch -Wnon-virtual-dtor -g3 -ggdb -O0 -m64 -march=nocona -nostdlib -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
-CXX := g++ -I$(HEADERS_DIR) -I$(OBJ_DIR)/pch -H -pipe -ftree-vectorize -D_FILE_OFFSET_BITS=64 -Wall -fno-pic -no-pie --std=gnu++17 -Winvalid-pch -Wnon-virtual-dtor -g3 -ggdb -O0 -m64 -march=nocona -nostdlib -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
-ASM := nasm -f elf64
+CC := gcc -I$(HEADERS_DIR) -I$(OBJ_DIR)/pch -H -pipe -ftree-vectorize -D_FILE_OFFSET_BITS=64 -Wall -fno-pic -no-pie -Winvalid-pch -Wnon-virtual-dtor -gdwarf -march=nocona -nostdlib -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
+CXX := g++ -I$(HEADERS_DIR) -I$(OBJ_DIR)/pch -H -pipe -ftree-vectorize -D_FILE_OFFSET_BITS=64 -Wall -fno-pic -no-pie --std=gnu++17 -Winvalid-pch -Wnon-virtual-dtor -gdwarf -O0 -m64 -march=nocona -nostdlib -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive -MD
+ASM := nasm -f elf64 -g -F dwarf
 STATIC_LINK := llvm-ar
 OBJCOPY := objcopy -O elf64-x86-64 -I binary
-CXX_LINK := g++ -m64 -Wl,--as-needed -Wl,--no-undefined -H -no-pie -fno-pic -march=x86-64 -nostdlib -g3 -ggdb -O0 -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive
+CXX_LINK := g++ -m64 -Wl,--as-needed -Wl,--no-undefined -H -no-pie -fno-pic -march=x86-64 -nostdlib -gdwarf -O0 -ffreestanding -Wall -Wextra -fno-threadsafe-statics -Wl,--build-id=none -Wreturn-type -fpermissive
 IMAGE_GEN := $(RES_DIR)/GenerateImage
 
 export GCC
@@ -46,7 +46,6 @@ kernel: dirs
 	$(ASM) $(KERNEL_SRC_DIR)/kernel_entry.asm -o $(OBJ_DIR)/kernel_entry.o
 	$(ASM) $(KERNEL_SRC_DIR)/userspace_entry.asm -o $(OBJ_DIR)/userspace_entry.o
 	$(ASM) $(KERNEL_SRC_DIR)/sleep.asm -o $(OBJ_DIR)/sleep.o
-	$(ASM) $(KERNEL_SRC_DIR)/tss.asm -o $(OBJ_DIR)/tss.o
 	$(CXX) -MF$(OBJ_DIR)/idt.cxx.o.d -o $(OBJ_DIR)/idt.cxx.o -c $(KERNEL_SRC_DIR)/idt.cxx
 	$(CXX) -MF$(OBJ_DIR)/pic.cxx.o.d -o $(OBJ_DIR)/pic.cxx.o -c $(KERNEL_SRC_DIR)/pic.cxx
 	$(CXX) -MF$(OBJ_DIR)/io.cxx.o.d -o $(OBJ_DIR)/io.cxx.o -c $(KERNEL_SRC_DIR)/io.cxx
@@ -64,8 +63,10 @@ kernel: dirs
 	$(CXX) -MF$(OBJ_DIR)/serialcon.cxx.o.d -o $(OBJ_DIR)/serialcon.cxx.o -c $(KERNEL_SRC_DIR)/serialcon.cxx
 	$(CXX) -MF$(OBJ_DIR)/memory.cxx.o.d -o $(OBJ_DIR)/memory.cxx.o -c $(KERNEL_SRC_DIR)/memory.cxx
 	$(CXX) -MF$(OBJ_DIR)/timer.cxx.o.d -o $(OBJ_DIR)/timer.cxx.o -c $(KERNEL_SRC_DIR)/timer.cxx
+	$(CXX) -MF$(OBJ_DIR)/gdt.cxx.o.d -o $(OBJ_DIR)/gdt.cxx.o -c $(KERNEL_SRC_DIR)/gdt.cxx
+	$(CXX) -MF$(OBJ_DIR)/tss.cxx.o.d -o $(OBJ_DIR)/tss.cxx.o -c $(KERNEL_SRC_DIR)/tss.cxx
 	$(CXX) -MF$(OBJ_DIR)/speaker.cxx.o.d -o $(OBJ_DIR)/speaker.cxx.o -c $(KERNEL_SRC_DIR)/speaker.cxx
-	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/sleep.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/boot.cxx.o $(OBJ_DIR)/speaker.cxx.o $(OBJ_DIR)/timer.cxx.o $(OBJ_DIR)/bitmap.cxx.o $(OBJ_DIR)/serialcon.cxx.o $(OBJ_DIR)/printf.cxx.o $(OBJ_DIR)/power.cxx.o $(OBJ_DIR)/tui.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/interrupts.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/kconfigf.cxx.o $(OBJ_DIR)/memory.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/userspace_entry.o $(OBJ_DIR)/tss.o -T $(RES_DIR)/Linkerscript
+	$(CXX_LINK) -o $(BUILD_DIR)/microCORE.kernel $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/sleep.o $(OBJ_DIR)/kmain.cxx.o $(OBJ_DIR)/gdt.cxx.o $(OBJ_DIR)/boot.cxx.o $(OBJ_DIR)/speaker.cxx.o $(OBJ_DIR)/timer.cxx.o $(OBJ_DIR)/bitmap.cxx.o $(OBJ_DIR)/serialcon.cxx.o $(OBJ_DIR)/printf.cxx.o $(OBJ_DIR)/power.cxx.o $(OBJ_DIR)/tui.cxx.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/interrupts.o $(OBJ_DIR)/idt.cxx.o $(OBJ_DIR)/io.cxx.o $(OBJ_DIR)/kconfigf.cxx.o $(OBJ_DIR)/memory.cxx.o $(OBJ_DIR)/terminal.cxx.o $(OBJ_DIR)/pic.cxx.o $(OBJ_DIR)/kutil.cxx.o $(OBJ_DIR)/kbd.cxx.o $(OBJ_DIR)/gfx.cxx.o $(OBJ_DIR)/userspace_entry.o $(OBJ_DIR)/tss.cxx.o -T $(RES_DIR)/Linkerscript
 
 clean:
 	rm -rfv $(BUILD_DIR)/*.* $(OBJ_DIR)/*.* iso
