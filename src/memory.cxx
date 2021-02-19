@@ -80,7 +80,7 @@ uint64_t memory::allocation::get_total_memory_size(stivale_memory_map* memory_ma
     return memory_size_bytes;
 }
 
-void reserve_pages(void* address, uint64_t page_count);
+extern "C" void reserve_pages(void* address, uint64_t page_count);
 
 void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64_t map_size, uint64_t desc_size)
 {
@@ -230,7 +230,7 @@ void unreserve_pages(void* address, uint64_t pageCount) {
         unreserve_page((void*)((uint64_t)address + (t * 4096)));
 }
 
-void reserve_page(void* address) 
+extern "C" void reserve_page(void* address) 
 {
     uint64_t index = (uint64_t)address / 4096;
 /*
@@ -250,13 +250,13 @@ void reserve_page(void* address)
     memory::reserved_memory_size += 4096;
 }
 
-void reserve_pages(void* address, uint64_t pageCount) {
+extern "C" void reserve_pages(void* address, uint64_t pageCount) {
 
     for (size_t t = 0; t < pageCount; t++)
         reserve_page((void*)((uint64_t)address + (t * 4096)));
 }
 
-void* memory::paging::allocation::request_page() {
+extern "C" void* memory::paging::allocation::request_page() {
 
     for (uint64_t index = 0; index < page_bitmap_map.size * 8; index++) {
 
@@ -275,7 +275,7 @@ void* memory::paging::allocation::request_page() {
     return nullptr;
 }
 
-void* memory::paging::allocation::request_pages(uint64_t page_count)
+extern "C" void* memory::paging::allocation::request_pages(uint64_t page_count)
 {
     if (page_count <= 1)
         return nullptr;
@@ -295,7 +295,7 @@ void* memory::paging::allocation::request_pages(uint64_t page_count)
     return start_ptr;
 }
 
-void memory::paging::allocation::free_page(void* address) {
+extern "C" void memory::paging::allocation::free_page(void* address) {
 
     uint64_t index = (uint64_t)address / 4096;
     if (page_bitmap_map[index] == false) return;
@@ -304,13 +304,13 @@ void memory::paging::allocation::free_page(void* address) {
     used_memory_size -= 4096;
 }
 
-void memory::paging::allocation::free_pages(void* address, uint64_t page_count) {
+extern "C" void memory::paging::allocation::free_pages(void* address, uint64_t page_count) {
  
     for (size_t t = 0; t < page_count; t++)
         memory::paging::allocation::free_page((void*)((uint64_t)address + (t * 4096)));
 }
 
-void memory::paging::allocation::lock_page(void* address) {
+extern "C" void memory::paging::allocation::lock_page(void* address) {
     uint64_t index = (uint64_t)address / 4096;
     if (page_bitmap_map[index] == true) return;
     page_bitmap_map.set(index, true);
@@ -318,7 +318,7 @@ void memory::paging::allocation::lock_page(void* address) {
     used_memory_size += 4096;
 }
 
-void memory::paging::allocation::lock_pages(void* address, uint64_t page_count) {
+extern "C" void memory::paging::allocation::lock_pages(void* address, uint64_t page_count) {
 
     for (size_t t = 0; t < page_count; t++)
         memory::paging::allocation::lock_page((void*)((uint64_t)address + (t * 4096)));
