@@ -395,7 +395,7 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
     pt->entries[indexer.p_i] = pde;
 }
 
-void memory::paging::donate_to_userspace(void* virtual_address)
+extern "C" void memory::paging::donate_to_userspace(void* virtual_address)
 {
     page_map_indexer indexer = page_map_indexer((uint64_t)virtual_address);
     page_directory_entry pde;
