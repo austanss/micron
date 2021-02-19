@@ -3,6 +3,14 @@ global userspace_entry
 extern irq_mask
 
 enter_userspace:
+
+    push rdi
+    mov rdi, 0x0
+    call irq_mask
+    mov rdi, 0x1
+    call irq_mask
+    pop rdi
+    
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
     mov es, ax
