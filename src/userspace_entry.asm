@@ -7,8 +7,6 @@ enter_userspace:
 
     push rdi
     push rsi
-    mov rdi, 0x0
-    call irq_mask
     mov rdi, 0
     mov rsi, rsp
     call tss_install
