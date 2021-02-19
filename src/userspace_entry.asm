@@ -1,20 +1,20 @@
 global enter_userspace
 global userspace_entry
-extern tss.kernel_rsp
 extern irq_mask
-extern request_page
+extern tss_install
 
 enter_userspace:
 
     push rdi
+    push rsi
     mov rdi, 0x0
     call irq_mask
+    mov rdi, 0
+    mov rsi, rsp
+    call tss_install
+    pop rsi
     pop rdi
     
-    call request_page
-    add rax, 0x1000
-    mov [tss.kernel_rsp], rax
-
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
     mov es, ax
@@ -29,7 +29,7 @@ enter_userspace:
 
 align 4096
 userspace_entry:
-    mov r15, 0xD00D1ED1D17
+    mov rax, 0xD00D1ED1D17
     jmp $
 
 section .bss

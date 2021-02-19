@@ -4,9 +4,7 @@ global stack_end
 
 extern kernel_main
 extern load_idt
-extern load_gdt
-extern restart_cold
-extern puts
+extern gdt_init
 extern configure_pic
 extern enter_userspace
 
@@ -26,7 +24,7 @@ kernel_entry:
 	cli								;	clear the interrupt flag
 
 	; gdt
-	call load_gdt
+	call gdt_init
 
 ;	mov edi, 0x0000FF00
 ;	call set_status_color
