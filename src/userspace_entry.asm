@@ -1,24 +1,34 @@
 global enter_userspace
 global userspace_entry
-extern irq_mask
 extern tss_install
+extern request_page
+extern donate_to_userspace
 
 enter_userspace:
 
     push rdi
     push rsi
+
     mov rdi, 0
     mov rsi, rsp
     call tss_install
+    
+    call request_page
+    mov rbx, rax
+    add rbx, 0x1000
+    mov rdi, rax
+    call donate_to_userspace
+
     pop rsi
     pop rdi
     
+
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
     mov es, ax
 
     push rax                    ; Selector 0x18 (User Data) + RPL 3
-    push userspace_stack_end    ; User space stack
+    push rbx                    ; User space stack
     push 0x202                  ; rflags = interrupt enable + reserved bit
     push 0x23                   ; Selector 0x20 (User Code) + RPL 3
     push userspace_entry        ; Entry point in user space
@@ -27,11 +37,12 @@ enter_userspace:
 
 align 4096
 userspace_entry:
-    mov rax, 0xD00D1ED1D17
+    ; Validate stack: if the stack is invalid and no exception 
+    ; is thrown (i.e. #PF), throw one so we know that the stack
+    ; is bad. Came in clutch for me so I could fix the stack issues
+    push 0x80
+    pop rax
+    mov rbx, 0x80
+    cmp rax, rbx
+    jne 0x0
     jmp $
-
-section .bss
-
-userspace_stack_begin:
-    resb 4096 ; 4 KiB
-userspace_stack_end:         
