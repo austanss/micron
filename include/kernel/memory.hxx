@@ -54,12 +54,12 @@ namespace memory {
 		void donate_to_userspace(void* virtual_address);
 
 		namespace allocation {
-			void 	free_page(void* address);
-    		void 	free_pages(void* address, uint64_t page_count);
-    		void 	lock_page(void* address);
-    		void	lock_pages(void* address, uint64_t page_count);
-   			void* 	request_page();
-			void*	request_pages(uint64_t page_count);   
+			extern "C" void 	free_page(void* address);
+    		extern "C" void 	free_pages(void* address, uint64_t page_count);
+    		extern "C" void 	lock_page(void* address);
+    		extern "C" void		lock_pages(void* address, uint64_t page_count);
+   			extern "C" void* 	request_page();
+			extern "C" void*	request_pages(uint64_t page_count);   
 		}
 	};
 
