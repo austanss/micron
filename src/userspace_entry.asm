@@ -59,4 +59,4 @@ userspace_entry:
     jmp $
 
 userspace_message:
-    db "Got into userspace, and system calls are working!",0
+    db 0x0A,0x0A,"Got into userspace, and system calls are working!",0
