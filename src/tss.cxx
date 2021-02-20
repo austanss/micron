@@ -29,3 +29,8 @@ void cpu::tss::tss_setstack(int num_cpu, uint64_t stack) {
 extern "C" cpu::tss::tss_t* tss_get(int num_cpu) {
     return &s_tss_descriptors[num_cpu];
 }
+
+extern "C" void userspace_debug_catch()
+{
+    return;
+}
