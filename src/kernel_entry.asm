@@ -45,7 +45,7 @@ kernel_entry:
 
 	mov rdi, r15					;	bring back original rdi
 
-	call kernel_main				;	call kernel
+	call kernel_main				;	call kernel to configure
 
 	jmp enter_userspace
 

@@ -3,6 +3,8 @@ global userspace_entry
 extern tss_install
 extern request_page
 extern donate_to_userspace
+extern setup_syscalls
+extern userspace_debug_catch
 
 enter_userspace:
 
@@ -19,9 +21,9 @@ enter_userspace:
     mov rdi, rax
     call donate_to_userspace
 
+    call setup_syscalls
     pop rsi
     pop rdi
-    
 
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
@@ -45,4 +47,16 @@ userspace_entry:
     mov rbx, 0x80
     cmp rax, rbx
     jne 0x0
+
+    call userspace_debug_catch
+
+    ; Test syscalls: 
+    ; rax=100501h: serial message string
+    ; rbx: parameter: pointer to null-terminated string
+    mov rax, 0x100501
+    mov rbx, userspace_message
+    syscall
     jmp $
+
+userspace_message:
+    db "Got into userspace, and system calls are working!",0
