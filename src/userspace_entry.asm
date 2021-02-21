@@ -1,20 +1,13 @@
 global enter_userspace
 global userspace_entry
-extern tss_install
 extern request_page
 extern donate_to_userspace
 extern setup_syscalls
 extern userspace_debug_catch
 
+
 enter_userspace:
 
-    push rdi
-    push rsi
-
-    mov rdi, 0
-    mov rsi, rsp
-    call tss_install
-    
     call request_page
     mov rbx, rax
     add rbx, 0x1000
@@ -22,8 +15,6 @@ enter_userspace:
     call donate_to_userspace
 
     call setup_syscalls
-    pop rsi
-    pop rdi
 
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
@@ -56,6 +47,7 @@ userspace_entry:
     mov rax, 0x100501
     mov rbx, userspace_message
     syscall
+    int 0x06
     jmp $
 
 userspace_message:

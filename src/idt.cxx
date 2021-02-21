@@ -13,7 +13,7 @@ uint8_t prevKeyCode = 156;
 extern "C"
 {
 
-cpu::idt::idt_descriptor   idt[256];
+cpu::idt::idt_descriptor  	 idt_s[256];
 cpu::idt::idt_ptr			 idtPointer;
 
 extern void isr0();
@@ -173,25 +173,34 @@ void irq_handler(registers& registers)
 
 void idt_set(uint8_t number, uint64_t base, uint16_t selector, uint8_t flags) {
 	/* Set Base Address */
-	idt[number].baseLow = base & 0xFFFF;
-	idt[number].baseMid = (base >> 16) & 0xFFFF;
-	idt[number].baseHigh = (base >> 32) & 0xFFFFFFFF;
+	idt_s[number].baseLow = base & 0xFFFF;
+	idt_s[number].baseMid = (base >> 16) & 0xFFFF;
+	idt_s[number].baseHigh = (base >> 32) & 0xFFFFFFFF;
 
 	/* Set Selector */
-	idt[number].selector = selector;
-	idt[number].flags = flags;
+	idt_s[number].selector = selector;
+	idt_s[number].flags = flags;
+
+/*
+	/* Set IST 
+	if (number < 32)
+		idt_s[number].reservedIst = 1;
+	else if (number < 48)
+		idt_s[number].reservedIst = 2;	
+	else
+		idt_s[number].reservedIst = 3;
 
 	/* Set Reserved Areas to Zero */
-	idt[number].reservedIst = 0;
-	idt[number].reserved = 0;
+	idt_s[number].reservedIst = 0;
+	idt_s[number].reserved = 0;
 }
 
-void load_idt()
+void cpu::idt::load_idt()
 {
 	idtPointer.limit = sizeof(cpu::idt::idt_descriptor) * 256 - 1;
-	idtPointer.base  = (uint64_t)&idt;
+	idtPointer.base  = (uint64_t)&idt_s;
 
-	memory::operations::memset((uint8_t *)&idt, 0, sizeof(cpu::idt::idt_descriptor) * 256);
+	memory::operations::memset((uint8_t *)&idt_s, 0, sizeof(cpu::idt::idt_descriptor) * 256);
 
 	idt_set(0,  (uint64_t)isr0,  0x08, 0x8E);
 	idt_set(1,  (uint64_t)isr1,  0x08, 0x8E);
