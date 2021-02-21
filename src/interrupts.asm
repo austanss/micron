@@ -1,6 +1,12 @@
-; Defined in GDT.cpp
-[extern isr_handler]
-[extern irq_handler]
+; Defined in idt.cxx
+extern isr_handler
+extern irq_handler
+
+global lidt
+
+lidt:
+	lidt [rdi]
+	ret
 
 %macro pusha 0
     push rax
@@ -40,7 +46,7 @@ isr_common_stub:
    mov rax, cr2
    push rax ; page fault faulty addy
    mov rax, cr3
-   push rax ; page fault error info
+   push rax ; paging table ptr
    mov rax, cr4
    push rax ; gp control register
 
@@ -66,7 +72,7 @@ isr_common_stub:
    mov gs, bx
    popa
    add rsp, 16 ; Cleans up the pushed error code and pushed ISR number
-   iretq ; pops 5 things at once: CS, EIP, EFLAGS, SS, and RSP
+   iretq ; pops 5 things at once: CS, RIP, RFLAGS, SS, and RSP
 
 ; Common IRQ code. Identical to ISR code except for the 'call'
 ; and the 'pop ebx'

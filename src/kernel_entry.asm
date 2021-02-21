@@ -29,9 +29,6 @@ kernel_entry:
 ;	mov edi, 0x0000FF00
 ;	call set_status_color
 
-	; idt
-	call load_idt
-
 ;	mov edi, 0xFF00FF00
 ;	call set_status_color
 
@@ -44,6 +41,7 @@ kernel_entry:
 ;	call set_status_color
 
 	mov rdi, r15					;	bring back original rdi
+	mov rsi, rsp					;	pass rsp to kernel for tss
 
 	call kernel_main				;	call kernel to configure
 
