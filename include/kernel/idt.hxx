@@ -9,8 +9,8 @@ namespace cpu {
 		typedef struct {
 			uint16_t  baseLow;
 			uint16_t  selector;
-			uint8_t  reservedIst;
-			uint8_t  flags;
+			uint8_t   reservedIst;
+			uint8_t   flags;
 			uint16_t  baseMid;
 			uint32_t  baseHigh;
 			uint32_t  reserved;
@@ -24,7 +24,7 @@ namespace cpu {
 			uint64_t  base;
 		} __attribute__((packed)) idt_ptr;
 
-		void loadIDT();
+		void load_idt();
 		void initIDT();
 	}
 }

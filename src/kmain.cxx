@@ -13,6 +13,7 @@
 #include "kernel/tui.hxx"
 #include "kernel/timer.hxx"
 #include "kernel/speaker.hxx"
+#include "kernel/tss.hxx"
 
 #define __hang__ while (true);
 
@@ -23,11 +24,15 @@
 
 extern "C" {
 
-void kernel_main(stivale_struct *bootloader_info)
+void kernel_main(stivale_struct *bootloader_info, uint64_t stack)
 {	
 	// do some startup configurationsur
 	sys::config::calculate_kernel_size();
 	sys::config::configure_memory(&(bootloader_info->framebuffer), &(bootloader_info->memory_map));
+	asm volatile ("cli");
+	cpu::tss::tss_install(0, stack);
+	cpu::idt::load_idt();
+	asm volatile ("sti");
 	sys::config::configure_graphics(&(bootloader_info->framebuffer));
 
 	io::pit::set_c0_frequency(1000);
