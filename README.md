@@ -1,27 +1,23 @@
-# µCORE
+# microCORE
 
-µCORE (microCORE) is the kernel of µNET (microNET).
+microCORE is the kernel powering microNET.
 
 # About
 ## Use Case
-µNET is designed to be used in embedded or low power operations, where the maximum performance is obtained via having minimal overhead. However, in comparison to other common embedded operating systems (eg. Linux or Windows Embedded), µNET is designed with a hybrid-kernel. This provides a perfect compromise between kernel modularity and performance, leaving minimal overhead.
+microCORE is designed uniquely, as a kernel, to be as small, performant, secure, and stable as possible, to run on embedded devices which lack power or memory, for extended periods of time.
 
-## Compatibility
-While it may sound enticing for embedded systems to squeeze more performance, in practice it is a challenge. Developers for embedded systems will have to port their existing software, which can either be a simple recompile, all the way up to a complete rewrite. µNET solves this issue by embedding a .NET Framework-compliant runtime (Mono) into the heart of the OS.
+## Stable
+microCORE has been designed to be stable. We are adding more features for stability, but at the time, these include:
 
-# Development
-## Requirements
-µCORE requires the following software for building:
+    - complete position-independence
 
-- GNU Make (build-essential on some systems)
-- GCC/G++
-- NASM
-- GNU Binutils
+## Secure
+microCORE has security as a #3 priority, but at the moment we have no features to provide for this.
 
-## Building
-```
-make kernel
-```
+## Speedy
+microCORE is compiled, at release target, with maximum optimizations. More features are to come.
 
-Object files will be located in `bin/obj`.\
-The binary will be located in `bin` (`microCORE.kernel`).\
+## Small
+microCORE is optimized to the fullest extent so that the kernel has minimal components, for modularity, and size.
+
+Compare this to the Linux kernel, which is 80MB **at compressed size**, or the NT kernel (as of Windows 7), which is 25MB.
