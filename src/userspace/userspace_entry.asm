@@ -24,6 +24,7 @@ enter_userspace:
     mov ds, ax
     mov es, ax
 
+    pop rbp
     push rax                    ; Selector 0x18 (User Data) + RPL 3
     push rbx                    ; User space stack
     push 0x202                  ; rflags = interrupt enable + reserved bit
@@ -31,10 +32,15 @@ enter_userspace:
     lea r14, [rel userspace_entry]
     push r14                    ; Entry point in user space
 
+
     iretq
 
 section .userspace
 userspace_entry:
+    xor rbp, rbp
+    push rbp
+    mov rbp, rsp
+
     ; Test syscalls: 
     ; rax=100501h: serial message string
     ; rbx: parameter: pointer to null-terminated string
