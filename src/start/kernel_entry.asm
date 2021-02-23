@@ -15,11 +15,12 @@ kernel_entry:
 	mov r15, rdi					;	preserve parameters
 
 	lea rsp, [rel stack_end]		;	reconfigure the stack
+	
+	xor rbp, rbp
 	push rbp
 	mov rbp, rsp
 
-	; ensure we are in long mode
-	; and replace the UEFI-owned
+	; replace the UEFI-owned
 	; existing GDT and IDT, ofc
 
 	cli								;	clear the interrupt flag

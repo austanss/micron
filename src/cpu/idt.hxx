@@ -20,7 +20,7 @@ namespace cpu {
 		* Interrupt Descriptor Pointer
 		*/
 		typedef struct {
-			dword	limit;
+			word	limit;
 			address	base;
 		} __attribute__((packed)) idt_ptr;
 
