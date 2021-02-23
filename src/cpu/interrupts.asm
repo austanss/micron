@@ -10,119 +10,6 @@ lidt:
 	lidt [rdi]
 	ret
 
-%macro pusha 0
-    push rax
-    push rcx
-    push rdx
-    push rbx
-    push rbp
-    push rsi
-    push rdi
-%endmacro
-
-%macro popa 0
-    pop rdi
-    pop rsi
-    pop rbp
-    pop rbx
-    pop rdx
-    pop rcx
-    pop rax
-%endmacro
-
-; Common ISR code
-isr_common_stub:
-   ; Save CPU state into a structure,
-   ; assembled onto the stack
-   pusha 			; Pushes rdi, rsi, rbp and r[a-d]x
-   mov ax, ds 		; Set the lower 16 bits of rax to ds
-   push rax 		; save the value of rax, which is now ds
-   mov ax, 0x10  	; kernel data segment descriptor
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
-
-   mov rax, cr0
-   push rax ; gp control register
-   mov rax, cr2
-   push rax ; page fault faulty addy
-   mov rax, cr3
-   push rax ; paging table ptr
-   mov rax, cr4
-   push rax ; gp control register
-
-   ; Since we assembled the struct
-   ; on the stack, we can simply
-   ; pass the stack pointer as a
-   ; pointer to our structure
-   mov rdi, rsp
-
-  ; 2. Call C handler
-   cld
-   call isr_handler
-
-  ; 3. Restore state
-   pop rdx
-   pop rdx
-   pop rdx
-   pop rdx
-   pop rbx
-   mov ds, bx
-   mov es, bx
-   mov fs, bx
-   mov gs, bx
-   popa
-   add rsp, 16 ; Cleans up the pushed error code and pushed ISR number
-   iretq ; pops 5 things at once: CS, RIP, RFLAGS, SS, and RSP
-
-; Common IRQ code. Identical to ISR code except for the 'call'
-; and the 'pop ebx'
-irq_common_stub:
-   ; Save CPU state into a structure,
-   ; assembled onto the stack
-   pusha 			; Pushes rdi, rsi, rbp and r[a-d]x
-   mov ax, ds 		; Set the lower 16 bits of rax to ds
-   push rax 		; save the value of rax, which is now ds
-   mov ax, 0x10  	; kernel data segment descriptor
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
-   
-   mov rax, cr0
-   push rax ; gp control register
-   mov rax, cr2
-   push rax ; page fault faulty addy
-   mov rax, cr3
-   push rax ; page fault error info
-   mov rax, cr4
-   push rax ; gp control register
-
-   ; Since we assembled the struct
-   ; on the stack, we can simply
-   ; pass the stack pointer as a
-   ; pointer to our structure
-   mov rdi, rsp
-
-  ; 2. Call C handler
-   cld
-   lea r14, [rel irq_handler]
-   call r14
-
-  ; 3. Restore state
-   pop rdx
-   pop rdx
-   pop rdx
-   pop rdx
-   pop rax
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
-   popa
-   add rsp, 16 ; Cleans up the pushed error code and pushed ISR number
-   iretq ; pops 5 things at once: CS, RIP, RFLAGS, SS, and RSP
 
 ; We don't get information about which interrupt was caller
 ; when the handler is run, so we will need to have a different handler
@@ -547,3 +434,117 @@ irq15:
 	push 47
 	lea r14, [rel irq_common_stub]
 	jmp r14
+    
+%macro pusha 0
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rbp
+    push rsi
+    push rdi
+%endmacro
+
+%macro popa 0
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+%endmacro
+
+; Common ISR code
+isr_common_stub:
+   ; Save CPU state into a structure,
+   ; assembled onto the stack
+   pusha 			; Pushes rdi, rsi, rbp and r[a-d]x
+   mov ax, ds 		; Set the lower 16 bits of rax to ds
+   push rax 		; save the value of rax, which is now ds
+   mov ax, 0x10  	; kernel data segment descriptor
+   mov ds, ax
+   mov es, ax
+   mov fs, ax
+   mov gs, ax
+
+   mov rax, cr0
+   push rax ; gp control register
+   mov rax, cr2
+   push rax ; page fault faulty addy
+   mov rax, cr3
+   push rax ; paging table ptr
+   mov rax, cr4
+   push rax ; gp control register
+
+   ; Since we assembled the struct
+   ; on the stack, we can simply
+   ; pass the stack pointer as a
+   ; pointer to our structure
+   mov rdi, rsp
+
+  ; 2. Call C handler
+   cld
+   call isr_handler
+
+  ; 3. Restore state
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rbx
+   mov ds, bx
+   mov es, bx
+   mov fs, bx
+   mov gs, bx
+   popa
+   add rsp, 16 ; Cleans up the pushed error code and pushed ISR number
+   iretq ; pops 5 things at once: CS, RIP, RFLAGS, SS, and RSP
+
+; Common IRQ code. Identical to ISR code except for the 'call'
+; and the 'pop ebx'
+irq_common_stub:
+   ; Save CPU state into a structure,
+   ; assembled onto the stack
+   pusha 			; Pushes rdi, rsi, rbp and r[a-d]x
+   mov ax, ds 		; Set the lower 16 bits of rax to ds
+   push rax 		; save the value of rax, which is now ds
+   mov ax, 0x10  	; kernel data segment descriptor
+   mov ds, ax
+   mov es, ax
+   mov fs, ax
+   mov gs, ax
+   
+   mov rax, cr0
+   push rax ; gp control register
+   mov rax, cr2
+   push rax ; page fault faulty addy
+   mov rax, cr3
+   push rax ; page fault error info
+   mov rax, cr4
+   push rax ; gp control register
+
+   ; Since we assembled the struct
+   ; on the stack, we can simply
+   ; pass the stack pointer as a
+   ; pointer to our structure
+   mov rdi, rsp
+
+  ; 2. Call C handler
+   cld
+   lea r14, [rel irq_handler]
+   call r14
+
+  ; 3. Restore state
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rdx
+   pop rax
+   mov ds, ax
+   mov es, ax
+   mov fs, ax
+   mov gs, ax
+   popa
+   add rsp, 16 ; Cleans up the pushed error code and pushed ISR number
+   iretq ; pops 5 things at once: CS, RIP, RFLAGS, SS, and RSP
