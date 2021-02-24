@@ -63,7 +63,7 @@ setup_syscalls:
     wrmsr
     mov rcx, 0xc0000081
     rdmsr
-    mov edx, 0x00180008
+    mov edx, 0x00100008
     wrmsr
 
     ret

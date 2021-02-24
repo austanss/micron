@@ -17,7 +17,7 @@ enter_userspace:
     lea r14, [rel donate_to_userspace]
     call r14
 
-    lea r14, [rel donate_to_userspace]
+    lea r14, [rel setup_syscalls]
     call r14
 
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
@@ -44,13 +44,14 @@ userspace_entry:
     ; Test syscalls: 
     ; rax=100501h: serial message string
     ; rbx: parameter: pointer to null-terminated string
-    mov rax, 0x100501
-    lea rbx, [rel userspace_message]
-    syscall
-    int 0x06
-    lea rbx, [rel userspace_entry.halt]
-    .halt:
-        jmp rbx
+;    mov rax, 0x100501
+;    lea rbx, [rel userspace_message]
+;    syscall
+    lea r14, [rel userspace_entry.halt]
+    int 0x03
+    
+    userspace_entry.halt:
+        jmp r14
 
 userspace_message:
     db 0x0A,0x0A,"Got into userspace, and system calls are working!",0x0A,0x0A,0
