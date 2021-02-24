@@ -44,14 +44,10 @@ userspace_entry:
     ; Test syscalls: 
     ; rax=100501h: serial message string
     ; rbx: parameter: pointer to null-terminated string
-;    mov rax, 0x100501
-;    lea rbx, [rel userspace_message]
-;    syscall
-    lea r14, [rel userspace_entry.halt]
-    int 0x03
-    
-    userspace_entry.halt:
-        jmp r14
+    mov rax, 0x100501
+    lea rbx, [rel userspace_message]
+    syscall
+    jmp $   ; no need for pie conventions, already agnostic
 
 userspace_message:
     db 0x0A,0x0A,"Got into userspace, and system calls are working!",0x0A,0x0A,0
