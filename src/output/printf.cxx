@@ -1,5 +1,5 @@
 #include <stdbool.h> 
-#include "types.hxx"
+#include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include "util/kutil.hxx"
@@ -7,7 +7,7 @@
 #include "output/terminal.hxx"
 
 
-char* __int_str(sint i, char b[], int base, bool plusSignIfNeeded, bool spaceSignIfNeeded,
+char* __int_str(intmax_t i, char b[], int base, bool plusSignIfNeeded, bool spaceSignIfNeeded,
                 int paddingNo, bool justify, bool zeroPad) {
  
     char digit[32] = {0};
@@ -31,7 +31,7 @@ char* __int_str(sint i, char b[], int base, bool plusSignIfNeeded, bool spaceSig
         *p++ = ' ';
     }
  
-    sint shifter = i;
+    intmax_t shifter = i;
     do {
         ++p;
         shifter = shifter / base;
@@ -76,7 +76,7 @@ void displayCharacter(char c, int* a) {
     *a += 1;
 }
  
-void displayString(const char* c, int* a) {
+void displayString(char* c, int* a) {
     for (int i = 0; c[i]; ++i) {
         displayCharacter(c[i], a);
     }
@@ -189,7 +189,7 @@ int vprintf (const char* format, va_list list)
                 base = 8;
                 specifier = 'u';
                 if (altForm) {
-                    displayString((const char *)"0", &chars);
+                    displayString((char *)"0", &chars);
                 }
             }
             if (specifier == 'p') {
@@ -200,14 +200,11 @@ int vprintf (const char* format, va_list list)
             switch (specifier) {
                 case 'X':
                     base = 16;
-                    break;
-
                 case 'x':
                     base = base == 10 ? 17 : base;
                     if (altForm) {
-                        displayString((const char *)"0x", &chars);
+                        displayString((char *)"0x", &chars);
                     }
-                    break;
  
                 case 'u':
                 {
@@ -242,14 +239,14 @@ int vprintf (const char* format, va_list list)
                         }
                         case 'q':
                         {
-                            unsigned long integer = va_arg(list, unsigned long);
+                            unsigned long long integer = va_arg(list, unsigned long long);
                             __int_str(integer, intStrBuffer, base, plusSign, spaceNoSign, lengthSpec, leftJustify, zeroPad);
                             displayString(intStrBuffer, &chars);
                             break;
                         }
                         case 'j':
                         {
-                            uint integer = va_arg(list, uint);
+                            uintmax_t integer = va_arg(list, uintmax_t);
                             __int_str(integer, intStrBuffer, base, plusSign, spaceNoSign, lengthSpec, leftJustify, zeroPad);
                             displayString(intStrBuffer, &chars);
                             break;
@@ -308,14 +305,14 @@ int vprintf (const char* format, va_list list)
                     }
                     case 'q':
                     {
-                        long integer = va_arg(list, long);
+                        long long integer = va_arg(list, long long);
                         __int_str(integer, intStrBuffer, base, plusSign, spaceNoSign, lengthSpec, leftJustify, zeroPad);
                         displayString(intStrBuffer, &chars);
                         break;
                     }
                     case 'j':
                     {
-                        sint integer = va_arg(list, sint);
+                        intmax_t integer = va_arg(list, intmax_t);
                         __int_str(integer, intStrBuffer, base, plusSign, spaceNoSign, lengthSpec, leftJustify, zeroPad);
                         displayString(intStrBuffer, &chars);
                         break;
@@ -343,7 +340,7 @@ int vprintf (const char* format, va_list list)
                 case 'c':
                 {
                     if (length == 'l') {
-                        displayCharacter(va_arg(list, sint), &chars);
+                        displayCharacter(va_arg(list, int64_t), &chars);
                     } else {
                         displayCharacter(va_arg(list, int), &chars);
                     }
@@ -377,10 +374,10 @@ int vprintf (const char* format, va_list list)
                             *(va_arg(list, long*)) = chars;
                             break;
                         case 'q':
-                            *(va_arg(list, long*)) = chars;
+                            *(va_arg(list, long long*)) = chars;
                             break;
                         case 'j':
-                            *(va_arg(list, sint*)) = chars;
+                            *(va_arg(list, intmax_t*)) = chars;
                             break;
                         case 'z':
                             *(va_arg(list, size_t*)) = chars;
@@ -393,17 +390,16 @@ int vprintf (const char* format, va_list list)
                     }
                     break;
                 }
-                break;
  
                 case 'e':
                 case 'E':
                     emode = true;
-                    break;
  
                 case 'f':
                 case 'F':
                 case 'g':
                 case 'G':
+                {
                     double floating = va_arg(list, double);
  
                     while (emode && floating >= 10) {
@@ -426,10 +422,10 @@ int vprintf (const char* format, va_list list)
  
                     floating -= (int) floating;
  
-                    for (int j = 0; j < precSpec; ++j) {
+                    for (int i = 0; i < precSpec; ++i) {
                         floating *= 10;
                     }
-                    sint decPlaces = (sint) (floating + 0.5);
+                    intmax_t decPlaces = (intmax_t) (floating + 0.5);
  
                     if (precSpec) {
                         displayCharacter('.', &chars);
@@ -441,12 +437,22 @@ int vprintf (const char* format, va_list list)
                     }
  
                     break;
+                }
+ 
+ 
+                case 'a':
+                case 'A':
+                    //ACK! Hexadecimal floating points...
+                    break;
+ 
+                default:
+                    break;
             }
  
             if (specifier == 'e') {
-                displayString((const char *)"e+", &chars);
+                displayString((char *)"e+", &chars);
             } else if (specifier == 'E') {
-                displayString((const char *)"E+", &chars);
+                displayString((char *)"E+", &chars);
             }
  
             if (specifier == 'e' || specifier == 'E') {
