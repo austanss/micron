@@ -2,8 +2,10 @@
 
 #include "io/io.hxx"
 
-extern "C" void ex_syscall_handler(uint syscall_number, uint primary_parameter/*, uint secondary_parameter*/)
+extern "C" void ex_syscall_handler(uint syscall_number, uint primary_parameter, uint secondary_parameter)
 {
+    (void)secondary_parameter;
+    
     switch (syscall_number)
     {
         case 1:
