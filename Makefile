@@ -20,20 +20,18 @@ WFLAGS	=\
 -pedantic-errors \
 -Werror \
 -Wall \
+-Wno-implicit-fallthrough \
 -Wextra \
 -Wfloat-equal \
 -Wundef \
--Wshadow \
 -Wunsafe-loop-optimizations \
 -Wpointer-arith \
--Wcast-qual \
 -Wwrite-strings \
 -Wmissing-field-initializers \
 -Wmissing-noreturn \
 -Wnormalized=nfc \
 -Wunreachable-code \
 -Winline \
--Wlong-long \
 -Wdisabled-optimization
 
 CFLAGS 	= -ffreestanding -I$(SRCDIR) -fPIC -std=c++2a -gdwarf -O0 -mno-red-zone -msse2 -fno-threadsafe-statics $(WFLAGS)
