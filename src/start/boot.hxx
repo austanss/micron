@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.hxx"
+#include "io/acpi.hxx"
 
 /* --- Header --------------------------------------------------------------- */
 /*  Information passed from the kernel to the bootloader                      */
@@ -58,9 +59,9 @@ struct stivale_memory_map {
 
 struct stivale_struct {
     address cmdline;
-    stivale_memory_map memory_map;
+    stivale_memory_map  memory_map;
     stivale_framebuffer framebuffer;
-    address rsdp;
+    sys::acpi::rsdp2*     rsdp;
     uint64  module_count;
     address modules;
     uint64  epoch;

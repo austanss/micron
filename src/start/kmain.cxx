@@ -33,6 +33,8 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 	cpu::idt::load_idt();
 	asm volatile ("sti");
 	sys::config::configure_graphics(&(bootloader_info->framebuffer));
+	// print out pci stuffs
+	sys::config::configure_pci(bootloader_info->rsdp);
 
 	io::pit::set_c0_frequency(1000);
 	io::pit::pit_init();
@@ -102,7 +104,8 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 	printf("\tmemory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
-	sys::tui::start();
+
+//	sys::tui::start();
 
 	sys::config::configure_userspace();
 }
