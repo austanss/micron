@@ -24,6 +24,7 @@ WFLAGS	=\
 -Wextra \
 -Wfloat-equal \
 -Wundef \
+-Wno-int-to-pointer-cast \
 -Wunsafe-loop-optimizations \
 -Wpointer-arith \
 -Wwrite-strings \

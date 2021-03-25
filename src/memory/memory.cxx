@@ -64,9 +64,14 @@ uint memory::allocation::get_total_memory_size(stivale_memory_map* memory_map, u
     for (uint i = 0; i < map_entries; i++) {
 
         stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
+        stivale_mmap_entry* prev = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + ((i-1) * desc_size));
         
         if (desc->base < 0x100000)
             continue;
+
+        if (desc->base != prev->base + (prev->length))
+            if (desc->base != 0x100000)
+                break;
 
         memory_size_pages += (desc->length  / 0x1000);
     }
@@ -127,7 +132,7 @@ void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64 map_s
         io::serial::serial_msg(", for ");
         io::serial::serial_msg(util::itoa((desc->length  / 0x1000), 10));
         io::serial::serial_msg(" pages\n");
-        if (desc->type != 1) // not conventional memory
+        if (desc->type != 1 && desc->base < memory_size) // not conventional memory
             reserve_pages((void *)desc->base, (desc->length  / 0x1000));
     }
     
@@ -198,11 +203,12 @@ void memory::allocation::heap_segment_header::combine_forward() {
     if (next == NULL) return;
     if (!next->free) return;
     
-    if (next->next != NULL) {
+    if (next->next != NULL)
         next->next->last = this;
-    }
-    length = length + next->length + sizeof(heap_segment_header);
 
+    next = next->next;
+
+    length = length + next->length + sizeof(heap_segment_header);
 }
 
 void memory::allocation::heap_segment_header::combine_backward() {
@@ -233,15 +239,7 @@ void unreserve_pages(void* vaddress, uint64 pageCount) {
 extern "C" void reserve_page(void* vaddress) 
 {
     uint64 index = (uint64)vaddress / 4096;
-/*
-    io::serial::serial_msg("reserving page @ 0x");
-    io::serial::serial_msg(util::itoa((long)address, 16));
-    io::serial::serial_msg(" from page_bitmap_map[");
-    io::serial::serial_msg(util::itoa(index, 10));
-    io::serial::serial_msg("] (bitmap max index is ");
-    io::serial::serial_msg(util::itoa(page_bitmap_map.size * 8 - 1, 10));
-    io::serial::serial_msg(")...\n");
-*/
+
     if (page_bitmap_map[index] == true) 
 		return;
 

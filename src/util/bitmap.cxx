@@ -1,6 +1,10 @@
 #include "util/bitmap.hxx"
 
 bool util::bitmap::operator[](uint64 index) {
+    return get(index);
+}
+
+bool util::bitmap::get(uint64 index) {
 
     if (index > size * 8 - 1)
         asm volatile ("int $0x0d");
