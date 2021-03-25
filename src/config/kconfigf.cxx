@@ -1,6 +1,7 @@
 #include "config/kconfigf.hxx"
 #include "start/boot.hxx"
 #include "io/io.hxx"
+#include "io/pci.hxx"
 #include "util/kutil.hxx"
 #include "memory/memory.hxx"
 #include "output/terminal.hxx"
@@ -54,6 +55,14 @@ void sys::config::configure_graphics(stivale_framebuffer *framebuffer)
 	gfx::buffer = (uint32 *)memory::paging::allocation::request_pages(gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8) / 0x1000 + 1);
 
 	terminal::instance();
+}
+
+void sys::config::configure_pci(sys::acpi::rsdp2* rsdp)
+{
+    sys::acpi::rsdp = rsdp;
+    sys::acpi::mcfg_header* mcfg = (sys::acpi::mcfg_header *)sys::acpi::get_table((char *)"MCFG");
+    io::pci::mcfg = mcfg;
+    io::pci::enumerate_pci();
 }
 
 void sys::config::calculate_kernel_size()

@@ -78,8 +78,8 @@ typedef struct s_registers
 	qword rdx;
 	qword rcx;
 	qword rax;
-	qword interruptNumber;
-	qword errorCode;
+	qword interrupt_number;
+	qword error_code;
 	qword rip;
 	qword cs;
 	qword rflags;
@@ -127,7 +127,7 @@ void exception_handler(registers& regs)
 	term.clear();
 
 	term.write("$RED!FATAL ERROR: $WHITE!");
-	printf("The CPU has thrown a fatal %s exception (0x%x).\n\n\n\n", exception_messages[regs.interruptNumber], regs.interruptNumber);
+	printf("The CPU has thrown a fatal %s exception (0x%x) \n\t\t\tcode %x\n\n\n\n", exception_messages[regs.interrupt_number], regs.interrupt_number, regs.error_code);
 
 	term.write("$GREEN!Registers:$WHITE!\n\n\n$LIGHT_CYAN!Segmentation) ");
 	printf("CS=0x%x, DS=0x%x, SS=0x%x\n\n", regs.cs, regs.ds, regs.ss);
@@ -154,7 +154,7 @@ extern void kbd_irq_handler();
 
 void irq_handler(registers& regs)
 {
-	if (regs.interruptNumber == 32) // PIT
+	if (regs.interrupt_number == 32) // PIT
 	{
 		sys::chrono::ms_clock++;
 		milliseconds++;
@@ -165,13 +165,13 @@ void irq_handler(registers& regs)
 		}
 	}
 
-	if (regs.interruptNumber == 33) // keyboard
+	if (regs.interrupt_number == 33) // keyboard
 		kbd_irq_handler();
 
-	if (regs.interruptNumber == 36) // com port
+	if (regs.interrupt_number == 36) // com port
 		io::serial::console::read_character();
 
-    if (regs.interruptNumber >= 40)
+    if (regs.interrupt_number >= 40)
         io::outb(0xA0, 0x20); /* slave */
     io::outb(0x20, 0x20); /* master */
 }
