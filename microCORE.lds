@@ -2,7 +2,7 @@ ENTRY(kernel_entry)
 
 SECTIONS
 {
-	. = 1M;
+	. = 2M;
 
 	_kernel_start = .;
 	

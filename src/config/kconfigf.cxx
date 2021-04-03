@@ -36,7 +36,9 @@ void sys::config::setup_paging(stivale_framebuffer *framebuffer)
 
 void sys::config::configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map)
 {
+	memory::operations::memset((void *)framebuffer->framebuffer_addr, 0xFF, 0xFFFF);
     memory::allocation::map_memory(memory_map, memory_map->memory_map_entries * sizeof(stivale_mmap_entry), sizeof(stivale_mmap_entry));
+
     sys::config::setup_paging(framebuffer);
     
     for (int t = 0; t < 0x100; t++) { 

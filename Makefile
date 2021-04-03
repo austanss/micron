@@ -24,6 +24,7 @@ WFLAGS	=\
 -Wextra \
 -Wfloat-equal \
 -Wundef \
+-Wno-suggest-attribute=noreturn \
 -Wno-int-to-pointer-cast \
 -Wunsafe-loop-optimizations \
 -Wpointer-arith \
@@ -33,9 +34,11 @@ WFLAGS	=\
 -Wnormalized=nfc \
 -Wunreachable-code \
 -Winline \
--Wdisabled-optimization
+-Wdisabled-optimization \
+-Wno-error=unused-parameter \
+-Wno-error=unused-variable
 
-CFLAGS 	= -ffreestanding -I$(SRCDIR) -fPIC -std=c++2a -gdwarf -O0 -mno-red-zone -msse2 -fno-threadsafe-statics $(WFLAGS)
+CFLAGS 	= -ffreestanding -I$(SRCDIR) -fPIC -std=c++20 -gdwarf -O0 -mno-red-zone -msse2 -fno-threadsafe-statics $(WFLAGS)
 LFLAGS  = -ffreestanding -nostdlib -fPIC -mno-red-zone -z max-page-size=0x1000 -lgcc -T $(LDS)
 AFLAGS	= -f elf64 -g -F dwarf 
 
