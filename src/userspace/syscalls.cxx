@@ -2,7 +2,7 @@
 
 #include "io/io.hxx"
 
-extern "C" void ex_syscall_handler(uint syscall_number, uint primary_parameter, uint secondary_parameter)
+extern "C" void syscall_handler_ex(uint syscall_number, uint primary_parameter, uint secondary_parameter)
 {
     (void)secondary_parameter;
     

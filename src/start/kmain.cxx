@@ -14,6 +14,7 @@
 #include "chrono/timer.hxx"
 #include "output/speaker.hxx"
 #include "cpu/tss.hxx"
+#include "io/disk/ahci.hxx"
 
 #define __hang__ while (true);
 
@@ -26,7 +27,7 @@ extern "C" {
 
 void kernel_main(stivale_struct *bootloader_info, uint stack)
 {	
-	// do some startup configurationsur
+	// do some startup configurations
 	sys::config::calculate_kernel_size();
 	sys::config::configure_memory(&(bootloader_info->framebuffer), &(bootloader_info->memory_map));
 	cpu::tss::tss_install(0, stack);
@@ -104,9 +105,14 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 	printf("\tmemory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
+	void* disk_buffer = memory::paging::allocation::request_page();
+
+	io::disk::ahci::command_read(1, 0, 1, disk_buffer);
+
+	puts((char *)disk_buffer);
 
 //	sys::tui::start();
-
+ 
 	sys::config::configure_userspace();
 }
 }

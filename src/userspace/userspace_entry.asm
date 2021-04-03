@@ -42,9 +42,9 @@ userspace_entry:
     mov rbp, rsp
 
     ; Test syscalls: 
-    ; rax=100501h: serial message string
+    ; rax=0x1: serial message string
     ; rbx: parameter: pointer to null-terminated string
-    mov rax, 0x100501
+    mov rax, 0x1
     lea rbx, [rel userspace_message]
     syscall
     jmp $   ; no need for pie conventions, already agnostic
