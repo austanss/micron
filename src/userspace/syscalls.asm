@@ -1,6 +1,6 @@
 global setup_syscalls
 global syscall_handler
-extern ex_syscall_handler
+extern syscall_handler_ex
 extern serial_msg
 extern tss_get
 
@@ -87,7 +87,7 @@ syscall_handler:
     mov rdi, r15
     mov rsi, rbx
     mov rdx, r12
-    lea r14, [rel ex_syscall_handler]
+    lea r14, [rel syscall_handler_ex]
     call r14
 
     .syscall_end:

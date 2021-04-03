@@ -53,31 +53,19 @@ const char *memory_types(uint16 type)
         *(byte *)(page_bitmap_map.buffer + i) = 0;
 } 
 
-uint memory::allocation::get_total_memory_size(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size)
+uint memory::allocation::get_total_memory_size(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size) 
 {
     static uint64 memory_size_bytes = 0;
     if (memory_size_bytes > 0) return memory_size_bytes;
 
     uint64 map_entries = map_size / desc_size;
-    uint64 memory_size_pages = 0;
 
     for (uint i = 0; i < map_entries; i++) {
-
         stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
-        stivale_mmap_entry* prev = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + ((i-1) * desc_size));
         
-        if (desc->base < 0x100000)
-            continue;
-
-        if (desc->base != prev->base + (prev->length))
-            if (desc->base != 0x100000)
-                break;
-
-        memory_size_pages += (desc->length  / 0x1000);
+        if (desc->type == 1)
+            memory_size_bytes = desc->base + desc->length;
     }
-
-    memory_size_bytes = memory_size_pages * 0x1000;
-    memory_size_bytes += 0x100000;
 
     memory_size_bytes /= 0x100000; //////////
     memory_size_bytes *= 0x100000; //// account for inaccuracies
@@ -100,13 +88,21 @@ void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64 map_s
 
     for (uint i = 0; i < map_entries; i++) {
         stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
-        if (desc->type == 1 || desc->type == 3 || desc->type == 0x1000 || desc->type == 0x1001) { // usable memory
+        if (desc->type == 1) { // usable memory
             if ((desc->length / 0x1000) * 4096 > largest_free_memory_segment_size)
             {
                 largest_free_memory_segment = (void *)desc->base;
                 largest_free_memory_segment_size = (desc->length  / 0x1000) * 4096;
             }
         }
+        
+        io::serial::serial_msg("@ 0x");
+        io::serial::serial_msg(util::itoa(desc->base, 16));
+        io::serial::serial_msg(": ");
+        io::serial::serial_msg(memory_types(desc->type));
+        io::serial::serial_msg(", for ");
+        io::serial::serial_msg(util::itoa((desc->length  / 0x1000), 10));
+        io::serial::serial_msg(" pages\n");
     }
 
     uint memory_size = get_total_memory_size(memory_map, map_size, desc_size);
@@ -121,20 +117,13 @@ void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64 map_s
 
     init_bitmap(bitmap_size, largest_free_memory_segment);
 
-    memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
-
     for (uint i = 0; i < map_entries; i++) {
         stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
-        io::serial::serial_msg("@ 0x");
-        io::serial::serial_msg(util::itoa(desc->base, 16));
-        io::serial::serial_msg(": ");
-        io::serial::serial_msg(memory_types(desc->type));
-        io::serial::serial_msg(", for ");
-        io::serial::serial_msg(util::itoa((desc->length  / 0x1000), 10));
-        io::serial::serial_msg(" pages\n");
         if (desc->type != 1 && desc->base < memory_size) // not conventional memory
             reserve_pages((void *)desc->base, (desc->length  / 0x1000));
     }
+
+    memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);
     reserve_pages((void *)&sys::config::_kernel_start, sys::config::_kernel_pages);
@@ -206,9 +195,9 @@ void memory::allocation::heap_segment_header::combine_forward() {
     if (next->next != NULL)
         next->next->last = this;
 
-    next = next->next;
-
     length = length + next->length + sizeof(heap_segment_header);
+
+    next = next->next; 
 }
 
 void memory::allocation::heap_segment_header::combine_backward() {
