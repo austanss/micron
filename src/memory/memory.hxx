@@ -52,6 +52,7 @@ namespace memory {
 
 		void map_memory(void* virtual_memory, void* physical_memory);
 		extern "C" void donate_to_userspace(void* virtual_address);
+		void* get_physical_address(void* virtual_address);
 
 		namespace allocation {
 			extern "C" void 	free_page(void* address);

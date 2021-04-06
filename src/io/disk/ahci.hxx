@@ -61,8 +61,9 @@ namespace io {
 
             enum ahci_read_status {
                 success = 0,
-                device_hung = -1,
-                task_file_error = -2
+                device_hung = 1,
+                task_file_error = 2,
+                device_too_busy = 3
             };
 
             struct hba_port {
@@ -227,7 +228,7 @@ namespace io {
                 uint08 transfer_direction : 1;	
                 uint08 interrupt          : 1;	                
                 uint08 auto_activate      : 1;
-                uint08 pad_ex[2];
+                uint08 pad_ex[2];  
                 uint64 dma_buffer_id;
                 uint32 pad_ex_ex;
                 uint32 dma_buffer_offset; 

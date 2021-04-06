@@ -98,8 +98,8 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 
 	// print out kernel position information
 	printf("\tkernel: at 0x%x for %d pages\n",
-		&sys::config::_kernel_start,
-		sys::config::_kernel_pages);
+		&sys::config::__kernel_start,
+		sys::config::__kernel_pages);
 
 	// print out memory information
 	printf("\tmemory: %d MiB free\n",
@@ -107,9 +107,14 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 
 	void* disk_buffer = memory::paging::allocation::request_page();
 
-	io::disk::ahci::command_read(1, 0, 1, disk_buffer);
+	int ret = io::disk::ahci::command_read(2, 0, 1, disk_buffer);
 
-	puts((char *)disk_buffer);
+	io::serial::serial_msg("command_read returned: ");
+	io::serial::serial_byte('0' + ret);
+	io::serial::serial_byte('\n');
+
+	for (int i = 0; i < 512; i++)
+		terminal::instance().put_char(((char *)disk_buffer)[i], 0x0F);
 
 //	sys::tui::start();
  

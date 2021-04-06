@@ -9,8 +9,8 @@
 #include "util/bitmap.hxx"
 
 
-uint64 sys::config::_kernel_pages;
-uint64 sys::config::_kernel_size;
+uint64 sys::config::__kernel_pages;
+uint64 sys::config::__kernel_size;
 
 extern util::bitmap page_bitmap_map;
 
@@ -69,8 +69,8 @@ void sys::config::configure_pci(sys::acpi::rsdp2* rsdp)
 
 void sys::config::calculate_kernel_size()
 {
-    _kernel_size = (address)&_kernel_end - (address)&_kernel_start;
-    _kernel_pages = (uint64)_kernel_size / 4096 + 1;
+    __kernel_size = (address)&__kernel_end - (address)&__kernel_start;
+    __kernel_pages = (uint64)__kernel_size / 4096 + 1;
 }
 
 extern "C" void userspace_entry();
