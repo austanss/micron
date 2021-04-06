@@ -7,6 +7,18 @@ io::disk::ahci::hba_memory* io::disk::ahci::abar;
 io::disk::ahci::ahci_port* io::disk::ahci::ports[32];
 uint08 io::disk::ahci::usable_ports;
 
+int $find_command_slot(io::disk::ahci::hba_port* port)
+{
+	uint32 slots = (port->sata_active | port->command_issue);
+	for (int i = 0; i < 32; i++)
+	{
+		if ((slots & 1) == 0)
+			return i;
+		slots >>= 1;
+	}
+	return -1;
+}
+
 void io::disk::ahci::initialize(pci::device_header* ahci_device_header) {
     ahci_controller = ahci_device_header;
     printf("\n\t\t\tahci devices:\n");
@@ -106,7 +118,6 @@ void io::disk::ahci::configure_port(uint port_number)
         memory::operations::memset((void *)address, 0, 0x100);
     }
 
-
     command_start(port_number);
 }
 
@@ -138,13 +149,10 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
 {
     ahci_port* port = ports[port_number];
 
-    uint64 spinlock = 0;
+    int command_list_slot = $find_command_slot(port->port);
 
-    while ((port->port->task_file_data & (tf_data_bits::busy | tf_data_bits::drq)) && spinlock < 1000000)
-        spinlock++;
-
-    if (spinlock >= 1000000)
-        return ahci_read_status::device_hung;
+    if (command_list_slot < 0)
+        return ahci_read_status::device_too_busy;
 
     uint32 sector_low = (uint32)sector;
     uint32 sector_high = (uint32)(sector >> 32);
@@ -165,10 +173,10 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
 
     command_table->prdt_entries[0].data_base_address = (uint32)((address)buffer);
     command_table->prdt_entries[0].data_base_address_upper = (uint32)((address)buffer >> 32);
-    command_table->prdt_entries[0].byte_count = (sector_count * 512);
+    command_table->prdt_entries[0].byte_count = (sector_count << 9) - 1;
     command_table->prdt_entries[0].interrupt_on_completion = 1;
 
-    fis_register_h2d* command_fis = (fis_register_h2d *)&command_table->command_fis;
+    fis_register_h2d* command_fis = (fis_register_h2d *)command_table->command_fis;
     command_fis->fis_type = fis_type::reg_h2d;
     command_fis->cc = 1;
     command_fis->command = sata_command::read_dma_ex;
@@ -185,11 +193,19 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
     command_fis->count_low = sector_count & 0xFF;
     command_fis->count_high = (sector_count >> 8) & 0xFF;
 
-    port->port->command_issue = 1;
+    uint64 spinlock = 0;
+
+    while ((port->port->task_file_data & (tf_data_bits::busy | tf_data_bits::drq)) && spinlock < 1000000)
+        spinlock++;
+
+    if (spinlock >= 1000000)
+        return ahci_read_status::device_hung;
+
+    port->port->command_issue |= 1 << command_list_slot;
 
     while (true)
     {
-        if (!port->port->command_issue)
+        if (!((port->port->command_issue >> command_list_slot) & 1))
             break;
 
         if (port->port->interrupt_status & hba_pxis::tfes)
