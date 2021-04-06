@@ -105,17 +105,6 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 	printf("\tmemory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
-	void* disk_buffer = memory::paging::allocation::request_page();
-
-	int ret = io::disk::ahci::command_read(2, 0, 1, disk_buffer);
-
-	io::serial::serial_msg("command_read returned: ");
-	io::serial::serial_byte('0' + ret);
-	io::serial::serial_byte('\n');
-
-	for (int i = 0; i < 512; i++)
-		terminal::instance().put_char(((char *)disk_buffer)[i], 0x0F);
-
 //	sys::tui::start();
  
 	sys::config::configure_userspace();
