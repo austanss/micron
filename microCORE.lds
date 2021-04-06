@@ -4,7 +4,7 @@ SECTIONS
 {
 	. = 2M;
 
-	_kernel_start = .;
+	__kernel_start = .;
 	
 	.stivalehdr : 
 	{
@@ -43,5 +43,5 @@ SECTIONS
 
 	. = ALIGN(4K);
 
-	_kernel_end = .;
+	__kernel_end = .;
 }

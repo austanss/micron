@@ -126,7 +126,7 @@ void memory::allocation::map_memory(stivale_memory_map* memory_map, uint64 map_s
     memory::paging::allocation::lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);
-    reserve_pages((void *)&sys::config::_kernel_start, sys::config::_kernel_pages);
+    reserve_pages((void *)&sys::config::__kernel_start, sys::config::__kernel_pages);
 }
 
 void* heap_start;
@@ -379,6 +379,69 @@ void memory::paging::map_memory(void *virtual_memory, void *physical_memory)
     pde.set_flag(pt_flag::present, true);
     pde.set_flag(pt_flag::read_write, true);
     pt->entries[indexer.p_i] = pde;
+}
+
+void* memory::paging::get_physical_address(void* virtual_address)
+{
+    page_map_indexer indexer = page_map_indexer((uint64)virtual_address);
+    page_directory_entry pde;
+
+    uint16 address_offset = (uint16)(uint64)virtual_address & 0xFFF;
+    virtual_address = (void *)~(uint64)virtual_address;
+
+    pde = pml_4->entries[indexer.pdp_i];
+    page_table* pdp;
+    if (!pde.get_flag(pt_flag::present)) {
+    
+        pdp = (page_table*)allocation::request_page();
+        memory::operations::memset(pdp, 0, 0x1000);
+        pde.set_address((uint64)pdp >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
+        pml_4->entries[indexer.pdp_i] = pde;
+        memory::paging::map_memory((void *)pdp, (void *)pdp);
+    }
+    else
+        pdp = (page_table*)((uint64)pde.get_address() << 12);
+    
+    
+    pde = pdp->entries[indexer.pd_i];
+    page_table* pd;
+    if (!pde.get_flag(pt_flag::present)) {
+
+        pd = (page_table*)allocation::request_page();
+        memory::operations::memset(pd, 0, 0x1000);
+        pde.set_address((uint64)pd >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
+        pdp->entries[indexer.pd_i] = pde;
+        memory::paging::map_memory((void *)pd, (void *)pd);
+    }
+    else
+        pd = (page_table*)((uint64)pde.get_address() << 12);
+
+    pde = pd->entries[indexer.pt_i];
+    page_table* pt;
+    if (!pde.get_flag(pt_flag::present)) {
+
+        pt = (page_table*)allocation::request_page();
+        memory::operations::memset(pt, 0, 0x1000);
+        pde.set_address((uint64)pt >> 12);
+        pde.set_flag(pt_flag::present, true);
+        pde.set_flag(pt_flag::read_write, true);
+        pd->entries[indexer.pt_i] = pde;
+        memory::paging::map_memory((void *)pt, (void *)pt);
+    }
+    else
+        pt = (page_table*)((uint64)pde.get_address() << 12);
+
+
+    pde = pt->entries[indexer.p_i];
+
+    if (!pde.get_flag(present))
+        return nullptr;
+
+    return (void *)(pde.get_address() | address_offset);
 }
 
 extern "C" void memory::paging::donate_to_userspace(void* virtual_address)
