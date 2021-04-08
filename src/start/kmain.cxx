@@ -22,10 +22,7 @@
     #define ARCH "$RED!UNKNOWN"
 #endif
 
-
-extern "C" {
-
-void kernel_main(stivale_struct *bootloader_info, uint stack)
+extern "C" void kernel_main(stivale_struct *bootloader_info, uint stack)
 {	
 	// do some startup configurations
 	sys::config::calculate_kernel_size();
@@ -105,8 +102,12 @@ void kernel_main(stivale_struct *bootloader_info, uint stack)
 	printf("\tmemory: %d MiB free\n",
 		memory::free_memory_size / 0x400 / 0x400);	
 
+	void* data_buffer = memory::paging::allocation::request_page();
+	memory::operations::memset(data_buffer, 0x69, 0x1000);
+
+	io::disk::ahci::command_write(1, 1, 8, data_buffer);
+
 //	sys::tui::start();
  
 	sys::config::configure_userspace();
-}
 }

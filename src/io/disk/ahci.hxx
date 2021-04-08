@@ -47,7 +47,13 @@ namespace io {
             };
 
             enum sata_command {
-                read_dma_ex = 0x25
+                read_pio = 0x20,
+                read_dma_ex = 0x25,
+                write_pio = 0x30,
+                write_dma_ex = 0x35,
+                packet = 0xA1,
+                flush = 0xE7,
+                identify = 0xEC
             };
 
             enum tf_data_bits {
@@ -60,10 +66,17 @@ namespace io {
             };
 
             enum ahci_read_status {
-                success = 0,
-                device_hung = 1,
-                task_file_error = 2,
-                device_too_busy = 3
+                r_success = 0,
+                r_device_hung = 1,
+                r_task_file_error = 2,
+                r_device_too_busy = 3
+            };
+
+            enum ahci_write_status {
+                w_success = 0,
+                w_device_hung = 1,
+                w_task_file_error = 2,
+                w_device_too_busy = 3
             };
 
             struct hba_port {
@@ -241,7 +254,8 @@ namespace io {
             void configure_port(uint port_number);
             void command_start(uint port_number);
             void command_stop(uint port_number);
-            int command_read(uint port_number, uint64 sector, uint32 sector_count, void* buffer);
+            int command_read(uint port_number, uint64 sector, uint16 sector_count, void* buffer);
+            int command_write(uint port_number, uint64 sector, uint16 sector_count, void* data);
             port_type get_port_type(hba_port* port);
             extern pci::device_header* ahci_controller;
             extern hba_memory* abar;
