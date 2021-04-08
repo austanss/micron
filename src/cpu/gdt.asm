@@ -3,8 +3,9 @@ global load_tss
 
 default rel
 
+section .text
+
 load_gdt:
-	push rax
 	lgdt [rdi]        ; Load the new GDT pointer
 	mov ax, 0x10
 	mov ds, ax
@@ -13,15 +14,10 @@ load_gdt:
    	mov gs, ax
    	mov ss, ax
 	pop rax
-	jmp far [cs_ptr]
-
-	.ret:
-		ret
+	push 0x08
+	push rax
+	retfq
 
 load_tss:
     ltr di
     ret        
-
-cs_ptr:
-	dq load_gdt.ret
-	dw 0x08
