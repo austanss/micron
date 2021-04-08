@@ -38,8 +38,8 @@ WFLAGS	=\
 -Wno-error=unused-parameter \
 -Wno-error=unused-variable
 
-CFLAGS 	= -ffreestanding -I$(SRCDIR) -fPIE -std=c++20 -gdwarf -O0 -mno-red-zone -msse3 -fno-threadsafe-statics $(WFLAGS)
-LFLAGS  = -ffreestanding -nostdlib -fPIE -static-pie -z max-page-size=0x1000 -lgcc -T $(LDS)
+CFLAGS 	= -ffreestanding -I$(SRCDIR) -fno-pic -fpie -std=c++2a -gdwarf -O0 -mno-red-zone -msse3 -fno-threadsafe-statics $(WFLAGS)
+LFLAGS  = -ffreestanding -nostdlib -fno-pic -fpie -static-pie -pie -z max-page-size=0x1000 -lgcc -T $(LDS)
 AFLAGS	= -f elf64 -g -F dwarf 
 
 .DEFAULT-GOAL = all
