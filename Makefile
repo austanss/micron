@@ -17,26 +17,9 @@ ASMC 	= nasm
 # Flags to enable all (reasonable) warnings possible
 # and treat them as errors to ensure code quality
 WFLAGS	=\
--pedantic-errors \
 -Werror \
 -Wall \
--Wno-implicit-fallthrough \
--Wextra \
--Wfloat-equal \
--Wundef \
--Wno-suggest-attribute=noreturn \
--Wno-int-to-pointer-cast \
--Wunsafe-loop-optimizations \
--Wpointer-arith \
--Wwrite-strings \
--Wmissing-field-initializers \
--Wmissing-noreturn \
--Wnormalized=nfc \
--Wunreachable-code \
--Winline \
--Wdisabled-optimization \
--Wno-error=unused-parameter \
--Wno-error=unused-variable
+-Wno-int-to-pointer-cast
 
 CFLAGS 	= -ffreestanding -I$(SRCDIR) -fno-pic -fpie -std=c++2a -gdwarf -O0 -mno-red-zone -msse3 -fno-threadsafe-statics $(WFLAGS)
 LFLAGS  = -ffreestanding -nostdlib -fno-pic -fpie -static-pie -pie -z max-page-size=0x1000 -lgcc -T $(LDS)
