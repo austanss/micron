@@ -25,18 +25,6 @@ terminal::terminal() : row(0), column(0)
 
 	text_buffer = (word *)memory::paging::allocation::request_page();
 
-	byte* text = (byte *)text_buffer;
-	text[0] = 'T';
-	text[1] = 'E';
-	text[2] = 'X';
-	text[3] = 'T';
-	text[4] = 'B';
-	text[5] = 'U';
-	text[6] = 'F';
-	text[7] = 'F';
-
-	text_buffer += 8;
-
 	memory::operations::memset((void *)text_buffer, 0, size.h * size.w * 2);
 	memory::operations::memset((void *)gfx::buffer, 0, gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8));
 	memory::operations::memset((void *)gfx::gop.framebuffer_addr, 0, gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8));
