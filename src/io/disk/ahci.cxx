@@ -145,14 +145,14 @@ void io::disk::ahci::command_stop(uint port_number)
     }
 }
 
-int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_count, void* buffer)
+int io::disk::ahci::command_read(uint port_number, uint64 sector, uint16 sector_count, void* buffer)
 {
     ahci_port* port = ports[port_number];
 
     int command_list_slot = $find_command_slot(port->port);
 
     if (command_list_slot < 0)
-        return ahci_read_status::device_too_busy;
+        return ahci_read_status::r_device_too_busy;
 
     uint32 sector_low = (uint32)sector;
     uint32 sector_high = (uint32)(sector >> 32);
@@ -166,8 +166,6 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
     command_header->command_fis_length = sizeof(fis_register_h2d) / sizeof(uint32);
     command_header->write = false;
     command_header->prdt_length = 1;
-    if (port->type == port_type::sata_pi)
-        command_header->sata_pi = true;
 
     hba_command_table* command_table = (hba_command_table *)command_header->command_table_base;
     command_table = (hba_command_table *)(((uint64)command_table) | (((uint64)command_header->command_table_base_upper) << 32));
@@ -196,23 +194,13 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
     command_fis->count_low = sector_count & 0xFF;
     command_fis->count_high = (sector_count >> 8) & 0xFF;
 
-    io::serial::serial_msg("\nfis @ ");
-    io::serial::serial_msg(util::itoa((unsigned long)command_fis, 16));
-    io::serial::serial_msg("\ndma buffer @ ");
-    io::serial::serial_msg(util::itoa((unsigned long)buffer, 16));
-    io::serial::serial_msg("\n reading ");
-    io::serial::serial_msg(util::itoa(sector_count, 10));
-    io::serial::serial_msg(" sectors from lba ");
-    io::serial::serial_msg(util::itoa(sector, 10));
-    io::serial::serial_msg("\n");
-
     uint64 spinlock = 0;
 
     while ((port->port->task_file_data & (tf_data_bits::busy | tf_data_bits::drq)) && spinlock < 1000000)
         spinlock++;
 
     if (spinlock >= 1000000)
-        return ahci_read_status::device_hung;
+        return ahci_read_status::r_device_hung;
 
     port->port->command_issue |= 1 << command_list_slot;
 
@@ -222,8 +210,79 @@ int io::disk::ahci::command_read(uint port_number, uint64 sector, uint32 sector_
             break;
 
         if (port->port->interrupt_status & hba_pxis::tfes)
-            return ahci_read_status::task_file_error;
+            return ahci_read_status::r_task_file_error;
     }
 
-    return ahci_read_status::success;
+    return ahci_read_status::r_success;
+}
+
+int io::disk::ahci::command_write(uint port_number, uint64 sector, uint16 sector_count, void* data)
+{
+    ahci_port* port = ports[port_number];
+
+    int command_list_slot = $find_command_slot(port->port);
+
+    if (command_list_slot < 0)
+        return ahci_write_status::w_device_too_busy;
+
+    uint32 sector_low = (uint32)sector;
+    uint32 sector_high = (uint32)(sector >> 32);
+
+    port->port->interrupt_status = (uint32)-1;
+
+    hba_command_header* command_header = (hba_command_header *)port->port->command_list_base;
+    command_header = (hba_command_header *)(((uint64)command_header) | (((uint64)port->port->command_list_base_upper) << 32));
+    command_header += command_list_slot;
+
+    command_header->command_fis_length = sizeof(fis_register_h2d) / sizeof(uint32);
+    command_header->write = true;
+    command_header->prdt_length = 1;
+
+    hba_command_table* command_table = (hba_command_table *)command_header->command_table_base;
+    command_table = (hba_command_table *)(((uint64)command_table) | (((uint64)command_header->command_table_base_upper) << 32));
+
+    memory::operations::memset(command_table, 0, sizeof(hba_command_table) + (command_header->prdt_length - 1) * sizeof(hba_prdt_entry));
+
+    command_table->prdt_entries[0].data_base_address = (uint32)((address)data);
+    command_table->prdt_entries[0].data_base_address_upper = (uint32)((address)data >> 32);
+    command_table->prdt_entries[0].byte_count = (sector_count << 9) - 1;
+    command_table->prdt_entries[0].interrupt_on_completion = 1;
+
+    fis_register_h2d* command_fis = (fis_register_h2d *)&command_table->command_fis;
+    command_fis->fis_type = fis_type::reg_h2d;
+    command_fis->cc = 1;
+    command_fis->command = sata_command::write_dma_ex;
+
+    command_fis->lba0 = (uint08)sector_low;
+    command_fis->lba1 = (uint08)sector_low >> 8;
+    command_fis->lba2 = (uint08)sector_low >> 16;
+    command_fis->lba3 = (uint08)sector_low >> 24;
+    command_fis->lba4 = (uint08)sector_high;
+    command_fis->lba5 = (uint08)sector_high >> 8;
+
+    command_fis->device = 1 << 6;
+
+    command_fis->count_low = sector_count & 0xFF;
+    command_fis->count_high = (sector_count >> 8) & 0xFF;
+
+    uint64 spinlock = 0;
+
+    while ((port->port->task_file_data & (tf_data_bits::busy | tf_data_bits::drq)) && spinlock < 1000000)
+        spinlock++;
+
+    if (spinlock >= 1000000)
+        return ahci_write_status::w_device_hung;
+
+    port->port->command_issue |= 1 << command_list_slot;
+
+    while (true)
+    {
+        if (!((port->port->command_issue >> command_list_slot) & 1))
+            break;
+
+        if (port->port->interrupt_status & hba_pxis::tfes)
+            return ahci_write_status::w_task_file_error;
+    }
+
+    return ahci_write_status::w_success;
 }

@@ -4,10 +4,10 @@ SECTIONS
 {
 	. = 2M;
 
-	__kernel_start = .;
 	
 	.stivalehdr : 
 	{
+		__kernel_start = .;
         KEEP(*(.stivalehdr))
     }
 
