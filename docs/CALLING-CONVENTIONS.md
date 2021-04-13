@@ -1,6 +1,6 @@
 # Calling Conventions
 
-microCORE follows the System V x86-64 calling conventions. You must adhere to the calling conventions, in order for microCORE to keep compatibillity with C++ code, and stay position-independent.
+microCORE follows the System V x86-64 calling conventions. You must adhere to the calling conventions, in order for microCORE to keep compatibillity with C++ code, and stay relocatable.
 
 ## Passing Parameters
 

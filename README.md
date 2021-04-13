@@ -10,9 +10,13 @@ microCORE is designed uniquely, as a kernel, to be as small, performant, secure,
 microCORE has been designed to be stable. We are adding more features for stability, but at the time, these include:
 
     - complete position-independence
+    - relocatability
+    - strong code quality standards
 
 ## Secure
-microCORE has security as a #3 priority, but at the moment we have no features to provide for this.
+microCORE has been designed to be secure. We are adding more features for security, but at the time, these include:
+
+    - KASLR, a Spectre-class mitigation
 
 ## Speedy
 microCORE is compiled, at release target, with maximum optimizations. More features are to come.
