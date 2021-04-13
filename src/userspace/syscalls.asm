@@ -1,48 +1,20 @@
-global setup_syscalls
-global syscall_handler
-extern syscall_handler_ex
-extern serial_msg
 extern tss_get
+
+extern sys_keyboard_event_subscribe
+extern sys_copy_framebuffer
+extern sys_tty_print
+extern sys_allocate_page
+extern sys_get_info
 
 default rel
 
-%macro pushaq 0
-    push rax
-    push rbx
-    push rcx
-    push rdx
-    push rbp
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-%endmacro
-
-%macro popaq 0
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdi
-    pop rsi
-    pop rbp
-    pop rdx
-    pop rcx
-    pop rbx
-    pop rax
-%endmacro
+tss_rsp0:
+    dq 0
 
 setup_syscalls:
+    push rbp
+    mov rbp, rsp
+
     lea rax, [rel syscall_handler]
     mov r8, rax
     shr r8, 0x20
@@ -66,32 +38,43 @@ setup_syscalls:
     mov edx, 0x00100008
     wrmsr
 
+    mov rdi, 0
+    lea r10, [rel tss_get]
+    call r10
+    lea r11, [rel tss_rsp0]
+    mov r10, [rax + 4]
+    mov [r11], r10
+
+    pop rbp
     ret
+global setup_syscalls:function ($ - setup_syscalls)
 
 syscall_handler:
     cli
 
-    pushaq
+    push rbp
+    mov rbp, rsp
+    
+    mov r11, rsp
+    lea r10, [rel tss_rsp0]
+    mov rsp, [r10]
+    push r11
 
-    mov r15, rax
-    mov rdi, 0
-    mov r13, rcx
-    lea r14, [rel tss_get]
-    call r14
-    mov rcx, r13
-    mov rdi, rsp
-    mov rsp, qword [rax + 0x04]
+    push rcx
 
-    push rdi
+    lea r10, [rel syscall_table]
+    lea rax, [r10 + rax * 8]
+    call [rax]
 
-    mov rdi, r15
-    mov rsi, rbx
-    mov rdx, r12
-    lea r14, [rel syscall_handler_ex]
-    call r14
-
-    .syscall_end:
+    pop rcx
     pop rsp
-    popaq 
-
+    pop rbp
     o64 sysret
+global syscall_handler:function ($ - syscall_handler)
+
+syscall_table:
+    dq sys_copy_framebuffer
+    dq sys_allocate_page
+    dq sys_tty_print
+    dq sys_keyboard_event_subscribe
+    dq sys_get_info

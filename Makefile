@@ -2,46 +2,89 @@ SRCDIR 	= src
 BINDIR  = bin
 OBJDIR  = bin/obj
 
-CXXSRC 	= $(call rwildcard,$(SRCDIR),*.cxx)
+CPPSRC 	= $(call rwildcard,$(SRCDIR),*.cpp)
 ASMSRC 	= $(call rwildcard,$(SRCDIR),*.asm)
-LDS		= microCORE.lds
+LDS		= mnk.lds
 
-OBJS 	= $(patsubst $(SRCDIR)/%.cxx, $(OBJDIR)/%.cxx.o, $(CXXSRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.asm, $(OBJDIR)/%.asm.o, $(ASMSRC))
+OBJS 	= $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.cc.o, $(CPPSRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.asm, $(OBJDIR)/%.as.o, $(ASMSRC))
+SYMS	= $(OBJDIR)/syms.o
+KERNEL	= $(BINDIR)/mnk.elf
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-CXXC 	= x86_64-elf-gcc
-ASMC 	= nasm
+CC 		= x86_64-elf-gcc
+AS 		= nasm
+GS		= ./gensyms.sh
 
 # Flags to enable all (reasonable) warnings possible
 # and treat them as errors to ensure code quality
-WFLAGS	=\
+WRFLAGS	=\
 -Werror \
 -Wall \
 -Wno-int-to-pointer-cast
 
-CFLAGS 	= -ffreestanding -I$(SRCDIR) -fno-pic -fpie -std=c++2a -gdwarf -O0 -mno-red-zone -msse3 -fno-threadsafe-statics $(WFLAGS)
-LFLAGS  = -ffreestanding -nostdlib -fno-pic -fpie -static-pie -pie -z max-page-size=0x1000 -lgcc -T $(LDS)
-AFLAGS	= -f elf64 -g -F dwarf 
+CCFLAGS 	= \
+-ffreestanding \
+-I$(SRCDIR) \
+-fno-pic \
+-fpie \
+-std=c++20 \
+-gdwarf \
+-O0 \
+-mno-red-zone \
+-msse3 \
+-fno-threadsafe-statics \
+-fno-omit-frame-pointer \
+$(WRFLAGS)
 
-.DEFAULT-GOAL = all
+LDFLAGS  = -ffreestanding \
+-nostdlib \
+-fno-pic \
+-fpie \
+-static-pie \
+-pie \
+-z max-page-size=0x1000 \
+-lgcc \
+-T $(LDS)
 
-$(OBJDIR)/%.cxx.o: $(SRCDIR)/%.cxx
-	@ echo "=>==>>===>>> COMPILING $^"
+ASFLAGS	= \
+-f elf64 \
+-g \
+-F dwarf 
+
+.DEFAULT-GOAL 	= all
+.PHONY			= all kernel
+
+$(OBJDIR)/%.cc.o: $(SRCDIR)/%.cpp
+	@ echo "[>			CC $^"
 	@ mkdir -p $(@D)
-	@ $(CXXC) $(CFLAGS) -c $^ -o $@
+	@ $(CC) $(CCFLAGS) -c $^ -o $@
 
-$(OBJDIR)/%.asm.o: $(SRCDIR)/%.asm
-	@ echo "=>==>>===>>> ASSEMBLING $^"
+$(OBJDIR)/%.as.o: $(SRCDIR)/%.asm
+	@ echo "[>]>			AS $^"
 	@ mkdir -p $(@D)
-	@ $(ASMC) $(AFLAGS) $^ -o $@
+	@ $(AS) $(ASFLAGS) $^ -o $@
 
-kernel: $(OBJS)
-	@ echo "=>==>>===>>> LINKING bin/microCORE.kernel"
-	@ $(CXXC) $(LFLAGS) $(OBJS) -o $(BINDIR)/microCORE.kernel
+$(KERNEL): $(OBJS)
+	@ echo "[>]>]> 			LD $@"
+	@ $(CC) $(LDFLAGS) $(OBJS) -o $@
 
-all: kernel
+
+	@ echo "[>]>]> 			GS $@"
+	@ $(GS) $@
+
+	@ echo "[>]>]> 			CC syms.gen"
+	@ $(CC) -fno-pic -fpie -xc -c syms.gen -o $(SYMS)
+
+	@ echo "[>]>]> 			RM syms.gen"
+	@ rm syms.gen
+
+	@ echo "[>]>]> 			LD $@"
+	@ $(CC) $(LDFLAGS) $(OBJS) $(SYMS) -o $@
+
+all: $(KERNEL)
+kernel: $(KERNEL)
 
 clean:
 	@ rm -rf bin

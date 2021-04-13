@@ -3,8 +3,6 @@ global load_tss
 
 default rel
 
-section .text
-
 load_gdt:
 	lgdt [rdi]        ; Load the new GDT pointer
 	mov ax, 0x10
@@ -20,4 +18,4 @@ load_gdt:
 
 load_tss:
     ltr di
-    ret        
+    ret
