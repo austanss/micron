@@ -1,9 +1,5 @@
-# Folders that are huge
-# AND will cause a mess
-build/
-i686-elf-cross/
-_build
 .idea/
+.vscode/
 bin/
-microNET.iso
-iso/
+img/
+compile_commands.json
