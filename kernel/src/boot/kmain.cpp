@@ -1,16 +1,12 @@
 #include "types.h"
 #include "drivers/kbd/kbd.h"
-#include "drivers/io.h"
 #include "boot/boot.h"
 #include "cpu/interrupts.h"
-#include "drivers/gfx/gop/gop.h"
-#include "drivers/acpi/power.h"
 #include "scheduling/timer.h"
 #include "drivers/audio/beeper/beeper.h"
 #include "boot/kconf.h"
-#include "drivers/uart/serial.h"
 #include "cpu/tss.h"
-#include "drivers/disk/ahci/ahci.h"
+#include "fs/vfs/vfs.h"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"

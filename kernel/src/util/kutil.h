@@ -8,9 +8,11 @@ namespace util
 	{
 		return (source >> bit) & 1;
 	}
-	uint strlen(const char* str);
-	bool strcomp(const char* lhs, const char *rhs);
-	char * strcpy(char * __restrict dst, const char * __restrict src);
-	char * strcat(char *dest, const char *src);
-	int isdigit(char c);
+	uint 	strlen(const char* str);
+	bool 	strcomp(const char* lhs, const char *rhs);
+	char* 	strcpy(char * __restrict dst, const char * __restrict src);
+	char* 	strcat(char *dest, const char *src);
+	int 	isdigit(char c);
+	char**	strsplit(char* source, char delimiter);
+	char*	strdup(char* source);
 }

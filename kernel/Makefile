@@ -54,7 +54,7 @@ ASFLAGS	= \
 -F dwarf 
 
 .DEFAULT-GOAL 	= all
-.PHONY			= all kernel clean
+.PHONY			= clean
 
 $(OBJDIR)/%.cc.o: $(SRCDIR)/%.cpp
 	@ echo "]	CC $^"
@@ -83,7 +83,7 @@ $(KERNEL): $(OBJS)
 	@ echo "]	LD $@"
 	@ $(CC) $(LDFLAGS) $(OBJS) $(SYMS) -o $@
 
-all: $(KERNEL)
+all: kernel
 kernel: $(KERNEL)
 
 clean:
