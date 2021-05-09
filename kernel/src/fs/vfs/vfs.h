@@ -36,6 +36,6 @@ namespace fs {
         };
 
         node*   add_default_node(node* parent, char* name);
-        node*   get_node(char* name);    
+        node*   get_node(char* name);
     }
 }

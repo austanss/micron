@@ -1,6 +1,5 @@
 #include "keyboard.h"
 
-__attribute__((section(".data.userspace")))
 const char kbdus[]
 {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -14,7 +13,6 @@ const char kbdus[]
     '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
-__attribute__((section(".data.userspace")))
 const char kbdus_c[]
 {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -28,7 +26,6 @@ const char kbdus_c[]
     '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
-__attribute__((section(".data.userspace")))
 const char kbdus_s[]
 {
     0, 0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
@@ -42,7 +39,6 @@ const char kbdus_s[]
     '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
-__attribute__((section(".data.userspace")))
 const char kbdus_sc[]
 {
     0, 0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
@@ -56,7 +52,6 @@ const char kbdus_sc[]
     '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
-__attribute__((section(".userspace")))
 char kcascii(unsigned char kc, bool shift, bool caps)
 {
     if (kc > keypad_period)

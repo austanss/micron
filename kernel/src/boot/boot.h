@@ -63,7 +63,7 @@ struct stivale_struct {
     stivale_framebuffer framebuffer;
     sys::acpi::rsdp2*     rsdp;
     uint64  module_count;
-    address modules;
+    stivale_module* modules;
     uint64  epoch;
     qword   flags; // bit 0: 1 if booted with BIOS, 0 if booted with UEFI
                     // bit 1: 1 if extended colour information passed, 0 if not

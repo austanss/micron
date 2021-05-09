@@ -46,14 +46,8 @@ void sys::config::configure_memory(stivale_framebuffer *framebuffer, stivale_mem
     memory::pmm::initialize(memory_map, memory_map->memory_map_entries * sizeof(stivale_mmap_entry), sizeof(stivale_mmap_entry));
 
     sys::config::setup_paging(framebuffer);
-    
-    for (int t = 0; t < 0x100; t++) { 
-        void* pos = (void*)0xffff800000000000;
-        memory::paging::map_memory(pos, memory::pmm::request_page(), false);
-        pos = (void*)((uint64)pos + 0x1000);
-    }
 
-    memory::heap::initialize_heap((void*)0xffff800000000000, 0x100000);
+    memory::heap::initialize_heap((void*)0xffff800000000000, 0x100);
 }
 
 void sys::config::configure_graphics(stivale_framebuffer *framebuffer)

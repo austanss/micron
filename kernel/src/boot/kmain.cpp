@@ -5,14 +5,16 @@
 #include "scheduling/timer.h"
 #include "drivers/audio/beeper/beeper.h"
 #include "boot/kconf.h"
+#include "drivers/tty/tty.h"
 #include "cpu/tss.h"
 #include "fs/vfs/vfs.h"
+#include "scheduling/elf.h"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
 #endif
 
-extern "C" void mnkmain(stivale_struct *bootloader_info, uint stack)
+extern "C" address mnkmain(stivale_struct *bootloader_info, uint stack)
 {	
 	// do some startup configurations
 	sys::config::calculate_kernel_size();
@@ -30,5 +32,5 @@ extern "C" void mnkmain(stivale_struct *bootloader_info, uint stack)
 
 	io::keyboard::init();
 
-	sys::config::configure_userspace();
+	return sys::prog::load_elf((sys::prog::elf_common_header *)bootloader_info->modules->begin);
 }

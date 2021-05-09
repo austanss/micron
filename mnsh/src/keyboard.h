@@ -1,6 +1,5 @@
 #pragma once
 
-__attribute__((section(".userspace")))
 char kcascii(unsigned char kc, bool shift, bool caps);
 
 struct keyboard_event_args {

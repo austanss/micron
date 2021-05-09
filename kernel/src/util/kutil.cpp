@@ -39,15 +39,17 @@ uint util::strlen(const char* str)
 
 char* util::strcat(char *dest, const char *src) {
 
-	char * end = dest;
-	while (*end != '\0') {
+	char* end = dest;
+
+	while (*end != '\0')
 		++end;
-	}
+
 	while (*src) {
 		*end = *src;
 		end++;
 		src++;
 	}
+	
 	*end = '\0';
 	return dest;
 }

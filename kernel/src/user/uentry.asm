@@ -2,11 +2,12 @@ extern request_page
 extern donate_to_userspace
 extern setup_syscalls
 extern userspace_debug_catch
-extern umain
 
 default rel
 
 enter_userspace:
+
+    mov r15, rdi
 
     push rbp
     mov rbp, rsp
@@ -32,8 +33,7 @@ enter_userspace:
     push rbx                    ; User space stack
     push 0x202                  ; rflags = interrupt enable + reserved bit
     push 0x23                   ; Selector 0x20 (User Code) + RPL 3
-    lea r14, [rel uentry]
-    push r14                    ; Entry point in user space
+    push r15                    ; Entry point in user space
 
     iretq
 global enter_userspace:function ($ - enter_userspace)
@@ -43,9 +43,6 @@ uentry:
     xor rbp, rbp
     push rbp
     mov rbp, rsp
-
-    lea r14, [rel umain]
-    call umain
     
     jmp $
 global uentry:function ($ - uentry)

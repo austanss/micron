@@ -1,5 +1,5 @@
 # Cross Compiler
-microCORE is built with no red zone, using an x86-64 GCC cross compiler. You cannot download a prebuilt package of this cross-compiler due to special compiler options when built.
+micron's kernel is built with no red zone, using an x86-64 GCC cross compiler. You cannot download a prebuilt package of this cross-compiler due to special compiler options when built.
 
 ## Instructions
 
@@ -92,4 +92,4 @@ Compilation can take anywhere from 30 minutes to 2 hours.
 
 When you are done, you should have a properly configured `x86_64-elf-gcc` cross-compiler.
 
-Now, you are ready to build microCORE.
+Now, you are ready to build micron's kernel.

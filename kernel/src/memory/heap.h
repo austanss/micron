@@ -16,5 +16,6 @@ namespace memory {
 		void* 		malloc(uint64 bytes);
 		void 		free(void* data);
 		void 		initialize_heap(void* heap_address, uint64 heap_length);
+		void		expand_heap(uint64 size);
 	}
 }

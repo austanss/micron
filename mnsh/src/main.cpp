@@ -16,13 +16,10 @@ enum info_field {
     free_ram
 };
 
-__attribute__((section(".rodata.userspace")))
 const char itoa_characters[] = "0123456789abcdef";
 
-__attribute__((section(".data.userspace")))
 char itoa_buf[64] = { 0 };
 
-__attribute__((section(".userspace")))
 char* itoa(long int val, int base)
 {
 	int i = 60;
@@ -34,7 +31,6 @@ char* itoa(long int val, int base)
 	return &itoa_buf[i+1];
 }
 
-__attribute__((section(".userspace")))
 bool $strcmp(const char* lhs, const char *rhs)
 {
     const char* slhs = lhs;
@@ -52,13 +48,11 @@ bool $strcmp(const char* lhs, const char *rhs)
 	return true;
 }
 
-__attribute__((section(".userspace")))
 void $print(const char * text)
 {
     asm volatile ("syscall" : : "a" (write_tty));
 }
 
-__attribute__((section(".userspace")))
 uint64_t $get_info(uint8_t field)
 {
     uint64_t rax;
@@ -66,24 +60,17 @@ uint64_t $get_info(uint8_t field)
     return rax;
 }
 
-__attribute__((section(".userspace")))
 void $subscribe_keyboard_event(void (*handler)(keyboard_event_args))
 {
     asm volatile ("syscall" : : "a" (subscribe_kbd_event));
 }
 
-__attribute__((section(".data.userspace")))
 int command_buffer_index = 0;
-__attribute__((section(".data.userspace")))
 char* $command_buffer;
-__attribute__((section(".data.userspace")))
 bool prompt_waiting = false;
-__attribute__((section(".data.userspace")))
 bool event_occured = false;
-__attribute__((section(".data.userspace")))
 bool unhandled_backspace = false;
 
-__attribute__((section(".userspace")))
 void* $allocate_page()
 {
     uint64_t rax = 0;
@@ -91,7 +78,6 @@ void* $allocate_page()
     return (void *)rax;
 }
 
-__attribute__((section(".userspace")))
 void* $memset(void* buffer, unsigned char value, unsigned long count)
 {
 	unsigned char* cbuffer = (unsigned char *)buffer;
@@ -100,7 +86,6 @@ void* $memset(void* buffer, unsigned char value, unsigned long count)
 	return buffer;
 }
 
-__attribute__((section(".userspace")))
 void keyboard_event(keyboard_event_args event_args)
 {
     if (!event_args.release_or_press)
@@ -141,7 +126,6 @@ void keyboard_event(keyboard_event_args event_args)
 
 void $perform_command(char* command);
 
-__attribute__((section(".userspace")))
 void $prompt()
 {
     $print("$RED!> $LIGHT_BLUE!imnus-cmd $RED!>> ");
@@ -170,8 +154,7 @@ void $prompt()
 }
 
 extern "C" 
-__attribute__((section(".userspace")))
-void umain()
+void main()
 {
     $print("\n\t$CYAN!imnus v1.0$WHITE!\n\n");
 
@@ -184,16 +167,10 @@ void umain()
         $prompt();
 }
 
-__attribute__((section(".rodata.userspace")))
 const char $meminfo[] = "meminfo";
-
-__attribute__((section(".rodata.userspace")))
 const char $cpuinfo[] = "cpuinfo";
-
-__attribute__((section(".rodata.userspace")))
 const char $help[] = "help";
 
-__attribute__((section(".userspace")))
 void $$meminfo()
 {
     uint64_t total_ram, free_ram, used_ram;
@@ -211,7 +188,6 @@ void $$meminfo()
     $print("M\n\n");
 }
 
-__attribute__((section(".userspace"))) 
 void $$cpu_info()
 {
     $print("\n\tsupports x64: $GREEN!yes\n");
@@ -234,7 +210,6 @@ void $$cpu_info()
     $print(cpuid_get_field(ECX, CPUID_FEAT_ECX_AVX) ? "$GREEN!yes\n\n" : "$RED!no\n\n");
 }
 
-__attribute__((section(".userspace"))) 
 void $$help()
 {
     $print("\n\tmeminfo:        $LIGHT_GREEN!get info about memory\n");
@@ -242,7 +217,6 @@ void $$help()
     $print("\thelp:             $LIGHT_GREEN!display this current menu\n\n");
 }
 
-__attribute__((section(".userspace"))) 
 void $perform_command(char* command)
 {
     if ($strcmp(command, $cpuinfo))

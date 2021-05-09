@@ -1,6 +1,6 @@
 # Calling Conventions
 
-microCORE follows the System V x86-64 calling conventions. You must adhere to the calling conventions, in order for microCORE to keep compatibillity with C++ code, and stay relocatable.
+micron's kernel follows the System V x86-64 calling conventions. You must adhere to the calling conventions, in order for micron's kernel to keep compatibillity with C++ code, and stay relocatable.
 
 ## Passing Parameters
 
@@ -23,7 +23,7 @@ See [this webpage](https://wiki.osdev.org/Calling_Conventions) for more info.
 
 ## Calling Functions/Accessing Data
 
-microCORE is **position-independent**, meaning that no matter what address the kernel is loaded to, it will always function properly.
+micron's kernel is **position-independent**, meaning that no matter what address the kernel is loaded to, it will always function properly.
 
 When calling functions, there is a specific method to keep the code position-independent.
 

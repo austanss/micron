@@ -2,7 +2,7 @@
 
 ## Cross Compiler
 
-microCORE builds using the `x86_64-elf-gcc` cross-compiler. You cannot install this cross compiler through prebuilt packages, as the compiler used specifically for microCORE is built with special options.
+micron's kernel builds using the `x86_64-elf-gcc` cross-compiler. You cannot install this cross compiler through prebuilt packages, as the compiler used specifically for micron's kernel is built with special options.
 
 See [this document](docs/CROSS-COMPILER.md) for more info.
 
@@ -14,7 +14,7 @@ See [the styleguide](docs/STYLEGUIDE.md) for more info.
 
 ## Calling Conventions
 
-microCORE uses very specific calling conventions. When writing C++ code, the following information is rather useless to you.
+micron's kernel uses very specific calling conventions. When writing C++ code, the following information is rather useless to you.
 
 However, when writing assembly, it is critical that you follow this guide.
 

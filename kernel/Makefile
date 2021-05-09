@@ -22,7 +22,8 @@ GS		= ./gensyms.sh
 WRFLAGS	=\
 -Werror \
 -Wall \
--Wno-int-to-pointer-cast
+-Wno-int-to-pointer-cast \
+-Wno-pointer-arith
 
 CCFLAGS 	= \
 -ffreestanding \
@@ -42,8 +43,8 @@ LDFLAGS  = -ffreestanding \
 -nostdlib \
 -fno-pic \
 -fpie \
--static-pie \
 -pie \
+-static-pie \
 -z max-page-size=0x1000 \
 -lgcc \
 -T $(LDS)
@@ -57,30 +58,29 @@ ASFLAGS	= \
 .PHONY			= clean
 
 $(OBJDIR)/%.cc.o: $(SRCDIR)/%.cpp
-	@ echo "]	CC $^"
+	@ echo "MNK  >]		CC $^"
 	@ mkdir -p $(@D)
 	@ $(CC) $(CCFLAGS) -c $^ -o $@
 
 $(OBJDIR)/%.as.o: $(SRCDIR)/%.asm
-	@ echo "]	AS $^"
+	@ echo "MNK  >]		AS $^"
 	@ mkdir -p $(@D)
 	@ $(AS) $(ASFLAGS) $^ -o $@
 
 $(KERNEL): $(OBJS)
-	@ echo "]	LD $@"
+	@ echo "MNK  >]		LD $@"
 	@ $(CC) $(LDFLAGS) $(OBJS) -o $@
 
-
-	@ echo "]	GS $@"
+	@ echo "MNK  >]		GS $@"
 	@ $(GS) $@
 
-	@ echo "]	CC syms.gen"
+	@ echo "MNK  >]		CC syms.gen"
 	@ $(CC) -fno-pic -fpie -xc -c syms.gen -o $(SYMS)
 
-	@ echo "]	RM syms.gen"
+	@ echo "MNK  >]		RM syms.gen"
 	@ rm syms.gen
 
-	@ echo "]	LD $@"
+	@ echo "MNK  >]		LD $@"
 	@ $(CC) $(LDFLAGS) $(OBJS) $(SYMS) -o $@
 
 all: kernel

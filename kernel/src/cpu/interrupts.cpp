@@ -176,11 +176,8 @@ void exception_handler(registers& regs)
 	printf("\t\t\t >> %s\n", $get_symbol_label(regs.rip - kaslr_slide));
 
 	uint64 rbp = regs.rbp;
-	while (true)
-	{
-		if (!rbp)
-			break;
-
+	while (true) {
+		if (!rbp) break;
 		printf("\t\t\t >> %s\n", $get_symbol_label((*((uint64 *)(rbp + 8))) - kaslr_slide));
 		rbp = *((uint64 *)rbp);
 	}

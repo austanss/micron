@@ -1,5 +1,5 @@
 # Styling
-microCORE requires a specific styling to keep the codebase clean and consistent.
+micron's kernel requires a specific styling to keep the codebase clean and consistent.
 
 ## Names
 All names must be in snake_case and must be descriptive.

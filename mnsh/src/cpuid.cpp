@@ -1,6 +1,5 @@
 #include "ecpuid.h"
 
-__attribute__((section(".userspace")))
 bool cpuid_get_field(CPUID_REGISTER reg, CPUID_FIELD field)
 {
     unsigned int eax, ebx, ecx, edx;
