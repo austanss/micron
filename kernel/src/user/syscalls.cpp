@@ -45,11 +45,6 @@ extern "C" uint64 sys_get_info(uint08 field)
     }
 }
 
-extern "C" void sys_tty_print(char* text)
-{
-    io::tty::write(text);
-}
-
 extern "C" void* sys_allocate_page()
 {
     void* page = memory::pmm::request_page();

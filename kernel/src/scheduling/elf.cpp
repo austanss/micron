@@ -1,28 +1,7 @@
 #include "elf.h"
-#include "drivers/tty/tty.h"
 #include "memory/pmm.h"
 #include "memory/paging.h"
 #include "memory/operations.h"
-
-char* $bitness_string(uint bitness)
-{
-    if (bitness == 1)
-        return (char *)"32-bit";
-    else if (bitness == 2)
-        return (char *)"64-bit";
-    else
-        return (char *)"bad bitness";
-}
-
-char* $endianness_string(uint endianness)
-{
-    if (endianness == 1)
-        return (char *)"little-endian";
-    else if (endianness == 2)
-        return (char *)"big-endian";
-    else
-        return (char *)"bad endianess";
-}
 
 void $load_program_segment(sys::prog::elf_common_header* elf, sys::prog::elf64_program_header segment) 
 {

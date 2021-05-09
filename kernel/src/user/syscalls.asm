@@ -75,6 +75,5 @@ global syscall_handler:function ($ - syscall_handler)
 syscall_table:
     dq sys_copy_framebuffer
     dq sys_allocate_page
-    dq sys_tty_print
     dq sys_keyboard_event_subscribe
     dq sys_get_info

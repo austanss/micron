@@ -6,7 +6,6 @@
 enum syscall {
     copy_framebuffer,
     allocate_page,
-    write_tty,
     subscribe_kbd_event,
     get_info
 };

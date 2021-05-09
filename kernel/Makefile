@@ -30,9 +30,9 @@ CCFLAGS 	= \
 -I$(SRCDIR) \
 -fno-pic \
 -fpie \
--std=c++20 \
 -gdwarf \
 -O0 \
+-std=c++20 \
 -mno-red-zone \
 -msse3 \
 -fno-threadsafe-statics \
