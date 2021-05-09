@@ -37,12 +37,3 @@ enter_userspace:
 
     iretq
 global enter_userspace:function ($ - enter_userspace)
-
-section .userspace
-uentry:
-    xor rbp, rbp
-    push rbp
-    mov rbp, rsp
-    
-    jmp $
-global uentry:function ($ - uentry)

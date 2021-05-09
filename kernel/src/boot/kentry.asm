@@ -35,7 +35,7 @@ mnkentry:
 	lea r14, [rel mnkmain]
 	call r14						;	call kernel to configure
 
-	mov rax, rdi
+	mov rdi, rax
 	lea r14, [rel enter_userspace]
 	call r14
 global mnkentry:function ($ - mnkentry)

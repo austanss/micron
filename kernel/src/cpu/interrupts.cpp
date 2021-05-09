@@ -168,8 +168,8 @@ void exception_handler(registers& regs)
 
 	uint64 kaslr_slide = ((uint64)&sys::config::__kernel_start) - 0x200000;
 
-	printf("\n\t\t >>> [de-KASLR'd] Instruction Pointer\n");
-	printf("\t\t\t >> %x \n", regs.rip - kaslr_slide);
+	printf("\n\t\t >>> Instruction Pointer\n");
+	printf("\t\t\t >> %x \n", regs.rip);
 
 	printf("\n\t\t >>> Stacktrace\n");
 	

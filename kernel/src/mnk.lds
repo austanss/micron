@@ -16,11 +16,6 @@ SECTIONS
 	.text :
 	{
 		*(.text)
-		. = ALIGN(4K);
-		uentry = .;
-		*(.userspace)
-		*(.data.userspace)
-		*(.rodata.userspace)
 	}
 
 	. = ALIGN(4k);

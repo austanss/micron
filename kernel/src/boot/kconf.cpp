@@ -72,9 +72,3 @@ void sys::config::calculate_kernel_size()
     __kernel_size = (address)&__kernel_end - (address)&__kernel_start;
     __kernel_pages = (uint64)__kernel_size / 4096 + 1;
 }
-
-extern "C" void uentry();
-void sys::config::configure_userspace()
-{
-    memory::paging::donate_to_userspace((void *)uentry);
-}

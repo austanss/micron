@@ -17,6 +17,5 @@ namespace sys {
         void configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map);
         void configure_graphics(stivale_framebuffer *framebuffer);
         void configure_pci(sys::acpi::rsdp2* rsdp);
-        void configure_userspace();
     }
 }
