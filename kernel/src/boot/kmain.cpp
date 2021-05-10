@@ -22,7 +22,7 @@ using namespace memory::pmm;
 extern "C" address mnkmain(stivale2_struct *bootloader_info, uint stack)
 {	
 	stivale2_struct_tag_framebuffer* framebuffer_info = (stivale2_struct_tag_framebuffer *)find_tag(bootloader_info->tags, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
-	stivale2_struct_tag_memmap* memory_map = (stivale2_struct_tag_memmap *)find_tag(bootloader_info->tags, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+	stivale2_struct_tag_memmap* memory_map = (stivale2_struct_tag_memmap *)find_tag(bootloader_info->tags, STIVALE2_STRUCT_TAG_MEMMAP_ID);
 	stivale2_struct_tag_rsdp* rsdp_info = (stivale2_struct_tag_rsdp *)find_tag(bootloader_info->tags, STIVALE2_STRUCT_TAG_RSDP_ID);
 	stivale2_struct_tag_modules* modules = (stivale2_struct_tag_modules *)find_tag(bootloader_info->tags, STIVALE2_STRUCT_TAG_MODULES_ID);
 
