@@ -46,11 +46,11 @@ void sys::config::setup_paging(stivale_framebuffer *framebuffer)
 void sys::config::configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map)
 {
 	memory::operations::memset((void *)framebuffer->framebuffer_addr, 0xFF, 0xFFFF);
+
+    // Also initializes heap as a dependency
     memory::pmm::initialize(memory_map, memory_map->memory_map_entries * sizeof(stivale_mmap_entry), sizeof(stivale_mmap_entry));
 
     sys::config::setup_paging(framebuffer);
-
-    memory::heap::initialize_heap((void*)0xffff800000000000, 0x100);
 }
 
 void sys::config::configure_pci(sys::acpi::rsdp2* rsdp)

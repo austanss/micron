@@ -3,7 +3,6 @@
 #include "util/kutil.h"
 #include "memory/heap.h"
 #include "memory/operations.h"
-#include "memory/paging.h"
 
 struct ramfs_file {
     char        identifier[fs::vfs::MAX_FILENAME_LENGTH];
@@ -54,10 +53,8 @@ int fs::ramfs::write(fs::vfs::node* target, void* data, uint position, uint byte
     {
         uint extra_bytes = position + bytes - walker->pages * 0x1000;
         uint extra_pages = extra_bytes / 0x1000 + 1;
-        void* extra_start = (void*)((address)walker->data + extra_pages * 0x1000);
-
-        for (uint i = 0; i < extra_pages; i++)
-            memory::paging::map_memory((void*)((address)extra_start + i * 0x1000), memory::pmm::request_page(), false);
+        
+        walker->data = memory::pmm::reallocate_pool(walker->data, walker->pages + extra_pages);
 
         walker->pages += extra_pages;
     }
@@ -84,7 +81,7 @@ int fs::ramfs::create_file(fs::vfs::node* target)
     walker->next = nullptr;
 
     util::strcpy(walker->identifier, target->identifier);
-    walker->data = memory::pmm::request_page();
+    walker->data = memory::pmm::request_pool(2);
     walker->pages = 1;
 
     target->filesystem = &vfs_driver;
@@ -103,7 +100,7 @@ int fs::ramfs::delete_file(fs::vfs::node* target)
     if (!walker->next)
         return 0;
 
-    memory::pmm::free_pages(walker->next->data, walker->next->pages);
+    memory::pmm::free_pool(walker->next->data);
 
     ramfs_file* ahead = walker->next->next;
 

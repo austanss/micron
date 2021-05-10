@@ -11,9 +11,13 @@
 #include "fs/gpt/gpt.h"
 #include "scheduling/elf.h"
 
+#include "memory/pmm.h"
+
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
 #endif
+
+using namespace memory::pmm;
 
 extern "C" address mnkmain(stivale_struct *bootloader_info, uint stack)
 {	

@@ -4,6 +4,8 @@
 #include "drivers/uart/serial.h"
 #include "boot/kconf.h"
 #include "paging.h"
+#include "heap.h"
+#include "operations.h"
 
 uint memory::pmm::free_memory_size;
 uint memory::pmm::used_memory_size;
@@ -11,6 +13,18 @@ uint memory::pmm::total_memory_size;
 uint memory::pmm::reserved_memory_size;
 util::bitmap page_bitmap_map;
 bool initialized = false;
+
+struct page_pool {
+    void*       address;
+    uint        page_count;
+    page_pool*  next;
+};
+
+page_pool pool_root {
+    nullptr,
+    0,
+    nullptr
+};
 
 const char *memory_types(uint16 type)
 {
@@ -111,6 +125,8 @@ void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, ui
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);
     reserve_pages((void *)&sys::config::__kernel_start, sys::config::__kernel_pages);
+
+    memory::heap::initialize_heap((void*)0xffff800000000000, 0x100);
 }
 
 void unreserve_page(void* paddress) {
@@ -155,11 +171,7 @@ extern "C" void* memory::pmm::request_page() {
 
         if (page_bitmap_map[index] == true) 
 			continue;
-/*
-        io::serial::serial_msg("requested page, located @paddr-0x");
-        io::serial::serial_msg(util::itoa(index * 4096, 16));
-        io::serial::serial_msg("\n");
-*/
+
         memory::pmm::lock_page((void*)(index * 4096));
 
         return (void*)(index * 4096);
@@ -168,23 +180,57 @@ extern "C" void* memory::pmm::request_page() {
     return nullptr;
 }
 
-extern "C" void* memory::pmm::request_pages(uint64 page_count)
+page_pool* $find_page_pool(void* address)
+{
+    page_pool* walker;
+    
+    for (walker = &pool_root; !!walker->next; walker = walker->next)
+        if (walker->next->address == address)
+            break;
+
+    if (!walker->next)
+        return nullptr;
+
+    return (page_pool *)walker->address;
+}
+
+extern "C" void* memory::pmm::request_pool(uint64 page_count)
 {
     if (page_count <= 1)
         return nullptr;
 
-    void* start_ptr = request_page();
-    page_count--;
+    for (uint index = 0; index < page_bitmap_map.size * 8; index++) {
 
-    paging::map_memory(start_ptr, start_ptr, false);
+        if (page_bitmap_map[index] == true) 
+			continue;
 
-    for (uint i = 1; i <= page_count; i++)
-    {
-        void* page_ptr = request_page();
-        paging::map_memory((void *)((uint64)start_ptr + (i * 0x1000)), page_ptr, false);
+        for (uint seeker = 1; seeker < page_bitmap_map.size * 8 - index; seeker++)
+        {
+            if (page_bitmap_map[index + seeker] == true)
+                break;
+
+            if (seeker >= page_count)
+            {
+                lock_pages((void *)(index * 0x1000), page_count);
+
+                page_pool* walker;
+
+                for (walker = &pool_root; !!walker->next; walker = walker->next);
+
+                walker->next = (page_pool *)memory::heap::malloc(sizeof(page_pool));
+
+                walker = walker->next;
+                
+                walker->page_count = page_count;
+                walker->address = (void *)(index * 0x1000);
+                walker->next = nullptr;
+
+                return walker->address;
+            }
+        }
     }
-
-    return start_ptr;
+    
+    return nullptr;
 }
 
 extern "C" void memory::pmm::free_page(void* paddress) {
@@ -196,10 +242,30 @@ extern "C" void memory::pmm::free_page(void* paddress) {
     used_memory_size -= 4096;
 }
 
-extern "C" void memory::pmm::free_pages(void* paddress, uint64 page_count) {
+extern "C" void memory::pmm::free_pool(void* paddress) {
  
-    for (uint64 t = 0; t < page_count; t++)
-        memory::pmm::free_page(memory::paging::get_physical_address((void*)((address)paddress + (t * 4096))));
+    page_pool* pool = $find_page_pool(paddress);
+
+    if (!pool)
+        return;
+
+    for (uint i = 0; i < pool->next->page_count; i++)
+        free_page((void*)((uint64)paddress + i * 0x1000));
+
+    page_pool* ahead = pool->next->next;
+
+    memory::heap::free(pool->next);
+
+    pool->next = ahead;
+}
+
+extern "C" void* memory::pmm::reallocate_pool(void* address, uint64 new_page_count)
+{
+    void* new_pool = request_pool(new_page_count);
+    page_pool* old_pool = $find_page_pool(address);
+    memory::operations::memcpy(new_pool, old_pool->address, old_pool->page_count * 0x1000);
+    free_pool(old_pool->address);
+    return new_pool;
 }
 
 extern "C" void memory::pmm::lock_page(void* paddress) {
@@ -213,5 +279,5 @@ extern "C" void memory::pmm::lock_page(void* paddress) {
 extern "C" void memory::pmm::lock_pages(void* paddress, uint64 page_count) {
 
     for (uint t = 0; t < page_count; t++)
-        memory::pmm::lock_page(memory::paging::get_physical_address((void*)((uint64)paddress + (t * 4096))));
+        memory::pmm::lock_page((void*)((uint64)paddress + (t * 4096)));
 }
