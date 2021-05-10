@@ -13,8 +13,8 @@ namespace sys {
         extern uint64 __kernel_size;
         extern uint64 __kernel_pages;
         void calculate_kernel_size();
-        void setup_paging(stivale_framebuffer *framebuffer);
-        void configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map);
+        void setup_paging(stivale2_struct_tag_framebuffer *framebuffer);
+        void configure_memory(stivale2_struct_tag_framebuffer *framebuffer, stivale2_struct_tag_memmap *memory_map);
         void configure_pci(sys::acpi::rsdp2* rsdp);
     }
 }

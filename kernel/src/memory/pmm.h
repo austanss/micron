@@ -8,8 +8,8 @@ namespace memory {
 		extern uint total_memory_size;
 		extern uint reserved_memory_size;
 
-		void 				initialize(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size);
-		uint 				get_total_memory_size(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size);
+		void 				initialize(stivale2_mmap_entry* memory_map, uint64 map_entries, uint64 desc_size);
+		uint 				get_total_memory_size(stivale2_mmap_entry* memory_map, uint64 map_entries, uint64 desc_size);
 
 		extern "C" void*	reallocate_pool(void* address, uint64 new_page_count);
 		extern "C" void 	free_page(void* address);

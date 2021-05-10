@@ -18,7 +18,7 @@ extern util::bitmap page_bitmap_map;
 
 extern "C" void configure_pat();
 
-void sys::config::setup_paging(stivale_framebuffer *framebuffer)
+void sys::config::setup_paging(stivale2_struct_tag_framebuffer *framebuffer)
 {
     configure_pat();
 
@@ -43,12 +43,12 @@ void sys::config::setup_paging(stivale_framebuffer *framebuffer)
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
 }
 
-void sys::config::configure_memory(stivale_framebuffer *framebuffer, stivale_memory_map *memory_map)
+void sys::config::configure_memory(stivale2_struct_tag_framebuffer *framebuffer, stivale2_struct_tag_memmap *memory_map)
 {
 	memory::operations::memset((void *)framebuffer->framebuffer_addr, 0xFF, 0xFFFF);
 
     // Also initializes heap as a dependency
-    memory::pmm::initialize(memory_map, memory_map->memory_map_entries * sizeof(stivale_mmap_entry), sizeof(stivale_mmap_entry));
+    memory::pmm::initialize(&memory_map->memmap[0], memory_map->entries, sizeof(stivale2_mmap_entry));
 
     sys::config::setup_paging(framebuffer);
 

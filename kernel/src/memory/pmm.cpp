@@ -30,13 +30,14 @@ const char *memory_types(uint16 type)
 {
     switch (type)
     {
-        case 1: return (const char *)"Conventional memory";
-        case 2: return (const char *)"Reserved memory";
-        case 3: return (const char *)"Reclaimable ACPI memory";
-        case 4: return (const char *)"ACPI NVS memory";
-        case 5: return (const char *)"Faulty memory";
-        case 10: return (const char *)"Kernel memory";
-        case 4096: return (const char *)"Reclaimable bootloader memory";
+        case 0x0001: return (const char *)"Conventional memory";
+        case 0x0002: return (const char *)"Reserved memory";
+        case 0x0003: return (const char *)"Reclaimable ACPI memory";
+        case 0x0004: return (const char *)"ACPI NVS memory";
+        case 0x0005: return (const char *)"Faulty memory";
+        case 0x1000: return (const char *)"Reclaimable bootloader memory";
+        case 0x1001: return (const char *)"Kernel memory";
+        case 0x1002: return (const char *)"Framebuffer memory";
         default: return (const char *)"Unidentified memory";
     }
     return nullptr;
@@ -50,17 +51,15 @@ void init_bitmap(uint64 bitmap_size, void* addr)
         *(byte *)(page_bitmap_map.buffer + i) = 0;
 } 
 
-uint memory::pmm::get_total_memory_size(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size) 
+uint memory::pmm::get_total_memory_size(stivale2_mmap_entry* memory_map, uint64 map_entries, uint64 desc_size) 
 {
     static uint64 memory_size_bytes = 0;
     if (memory_size_bytes > 0) return memory_size_bytes;
 
-    uint64 map_entries = map_size / desc_size;
-
     for (uint i = 0; i < map_entries; i++) {
-        stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
+        stivale2_mmap_entry* desc = (stivale2_mmap_entry *)((address)memory_map + (i * desc_size));
         
-        if (desc->type == 1)
+        if (desc->type == 0x1 || desc->type == 0x3 || desc->type == 0x1000 || desc->type == 0x1001 || desc->type == 0x4)
             memory_size_bytes = desc->base + desc->length;
     }
 
@@ -72,19 +71,17 @@ uint memory::pmm::get_total_memory_size(stivale_memory_map* memory_map, uint64 m
 
 extern "C" void reserve_pages(void* paddress, uint64 page_count);
 
-void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size)
+void memory::pmm::initialize(stivale2_mmap_entry* memory_map, uint64 map_entries, uint64 desc_size)
 {
     if (initialized) return;
 
     initialized = true;
 
-    uint map_entries = map_size / desc_size;
-
     void* largest_free_memory_segment = NULL;
     uint largest_free_memory_segment_size = 0;
 
     for (uint i = 0; i < map_entries; i++) {
-        stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
+        stivale2_mmap_entry* desc = (stivale2_mmap_entry *)((address)memory_map + (i * desc_size));
         if (desc->type == 1) { // usable memory
             if ((desc->length / 0x1000) * 4096 > largest_free_memory_segment_size)
             {
@@ -102,7 +99,7 @@ void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, ui
         io::serial::serial_msg(" pages\n");
     }
 
-    uint memory_size = get_total_memory_size(memory_map, map_size, desc_size);
+    uint memory_size = get_total_memory_size(memory_map, map_entries, desc_size);
     total_memory_size = memory_size;
     free_memory_size = memory_size;
     uint bitmap_size = memory_size / 4096 / 8 + 1;     
@@ -116,7 +113,7 @@ void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, ui
     init_bitmap(bitmap_size, largest_free_memory_segment);
 
     for (uint i = 0; i < map_entries; i++) {
-        stivale_mmap_entry* desc = (stivale_mmap_entry *)((address)memory_map->memory_map_addr + (i * desc_size));
+        stivale2_mmap_entry* desc = (stivale2_mmap_entry *)((address)memory_map + (i * desc_size));
         if (desc->type != 1 && desc->base < memory_size) // not conventional memory
             reserve_pages((void *)desc->base, (desc->length  / 0x1000));
     }

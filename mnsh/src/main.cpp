@@ -2,18 +2,21 @@
 #include "keyboard.h"
 #include "ecpuid.h"
 
-// TEMPORARY: These syscalls only exist for v0.6, and will be changed many times before v1.0
+// TEMPORARY: These syscalls will not be removed, but many may be added before v1.0.
 enum syscall {
-    copy_framebuffer,
-    allocate_page,
-    subscribe_kbd_event,
-    get_info
+    
+    open,
+    read,
+    write,
+    close,
+
+    pmap,
+    pexe,
+    punmap,
+
+    sysinfo
 };
 
-enum info_field {
-    total_ram,
-    free_ram
-};
 
 const char itoa_characters[] = "0123456789abcdef";
 
@@ -52,16 +55,33 @@ void $print(const char * text)
     
 }
 
-uint64_t $get_info(uint8_t field)
+struct system_info {
+
+    struct {
+        uint64_t fb_ad;
+        uint32_t fb_resx;
+        uint32_t fb_resy;
+        uint64_t fb_pitch;
+        uint64_t fb_bpp;
+    } display_info;
+
+    struct {
+        uint64_t total_ram;
+        uint64_t used_ram;
+        uint64_t free_ram;
+    } memory_info;
+};
+
+system_info* $get_info()
 {
-    uint64_t rax;
-    asm volatile ("syscall" : "=a" (rax) : "a" (get_info));
+    system_info* rax;
+    asm volatile ("syscall" : "=a" (rax) : "a" (sysinfo));
     return rax;
 }
 
 void $subscribe_keyboard_event(void (*handler)(keyboard_event_args))
 {
-    asm volatile ("syscall" : : "a" (subscribe_kbd_event));
+    
 }
 
 int command_buffer_index = 0;
@@ -70,10 +90,10 @@ bool prompt_waiting = false;
 bool event_occured = false;
 bool unhandled_backspace = false;
 
-void* $allocate_page()
+void* $map_page(uint64_t address)
 {
     uint64_t rax = 0;
-    asm volatile ("syscall" : "=a" (rax) : "a" (allocate_page));
+    asm volatile ("syscall" : "=a" (rax) : "a" (pmap));
     return (void *)rax;
 }
 
@@ -155,11 +175,12 @@ void $prompt()
 extern "C" 
 void main()
 {
+    while (true);
     $print("\n\t$CYAN!mnsh v1.1$WHITE!\n\n");
 
     $subscribe_keyboard_event(keyboard_event);
 
-    $command_buffer = (char *)$allocate_page();
+    $command_buffer = (char *)$map_page(0xcc9900000000);
     $memset((void *)$command_buffer, 0, 0x1000);
 
     while (true)
@@ -174,9 +195,11 @@ void $$meminfo()
 {
     uint64_t total_ram, free_ram, used_ram;
 
-    total_ram = $get_info(info_field::total_ram);
-    free_ram = $get_info(info_field::free_ram);
-    used_ram = total_ram - free_ram;
+    system_info* sysinfo = $get_info();
+
+    total_ram = sysinfo->memory_info.total_ram;
+    free_ram = sysinfo->memory_info.free_ram;
+    used_ram = sysinfo->memory_info.used_ram;
 
     $print("\n\t$LIGHT_GREY!total ram: ");
     $print(itoa(total_ram / 1024 / 1024, 10));

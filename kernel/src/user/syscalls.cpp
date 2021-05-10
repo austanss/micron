@@ -7,47 +7,63 @@
 #include "drivers/gfx/gop/gop.h"
 #include "drivers/tty/tty.h"
 
-extern "C" void sys_keyboard_event_subscribe(void (*handler)(io::keyboard::keyboard_packet))
+extern "C" void sys_open(const char* filename, uint08 flags)
 {
-    io::keyboard::keyboard_event_subscribe(handler);
+
 }
 
-extern "C" void sys_copy_framebuffer(uint32* buffer)
+extern "C" void sys_read()
 {
-    memory::operations::memcpy (
 
-        (void *)gfx::gop.framebuffer_addr, 
-
-        buffer,
-
-        gfx::gop.framebuffer_pitch 
-        * gfx::gop.framebuffer_width 
-        * gfx::gop.framebuffer_height 
-
-    );
 }
 
-enum sys_info_field {
-    total_ram,
-    free_ram
+extern "C" void sys_write()
+{
+
+}
+
+extern "C" void sys_close()
+{
+
+}
+
+extern "C" void sys_pmap()
+{
+
+}
+
+extern "C" void sys_pexe()
+{
+
+}
+
+extern "C" void sys_punmap()
+{
+
+}
+
+struct system_info {
+
+    struct {
+        uint64 fb_ad;
+        uint32 fb_resx;
+        uint32 fb_resy;
+        uint64 fb_pitch;
+        uint64 fb_bpp;
+    } display_info;
+
+    struct {
+        uint64 total_ram;
+        uint64 used_ram;
+        uint64 free_ram;
+    } memory_info;
 };
 
-extern "C" uint64 sys_get_info(uint08 field)
-{
-    switch (field)
-    {
-        case total_ram:
-            return memory::pmm::total_memory_size;
-        case free_ram:
-            return memory::pmm::free_memory_size;
-        default:
-            return 0;
-    }
-}
+system_info special_info {
 
-extern "C" void* sys_allocate_page()
+};
+
+extern "C" system_info* sys_sinfo()
 {
-    void* page = memory::pmm::request_page();
-    memory::paging::donate_to_userspace(page);
-    return page;
+    return &special_info;
 }

@@ -2,7 +2,7 @@
 #include "memory/operations.h"
 #include "gop.h"
 
-stivale_framebuffer 	gfx::gop;
+stivale2_struct_tag_framebuffer 	gfx::gop;
 
 gfx::shapes::positional_point gfx::shapes::pos(uint32 x, uint32 y) {
 

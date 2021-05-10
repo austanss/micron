@@ -21,7 +21,7 @@ cp res/limine.cfg iso/limine.cfg
 cp bin/kernel/mnk.elf iso/sys/core/mnk.elf
 
 # Copy MNSH
-cp bin/mnsh/mnsh.elf iso/sys/sprg/mnsh.elf
+cp bin/mnsh/mnsh.elf iso/sys/sprg/start.mnx
 
 # Generate the FAT image
 res/dir2fat32.sh img/micron.fat 260 iso

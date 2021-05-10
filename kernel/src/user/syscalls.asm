@@ -1,10 +1,13 @@
 extern tss_get
 
-extern sys_keyboard_event_subscribe
-extern sys_copy_framebuffer
-extern sys_tty_print
-extern sys_allocate_page
-extern sys_get_info
+extern sys_open
+extern sys_read
+extern sys_write
+extern sys_close
+extern sys_pmap
+extern sys_pexe
+extern sys_punmap
+extern sys_sinfo
 
 default rel
 
@@ -73,7 +76,11 @@ syscall_handler:
 global syscall_handler:function ($ - syscall_handler)
 
 syscall_table:
-    dq sys_copy_framebuffer
-    dq sys_allocate_page
-    dq sys_keyboard_event_subscribe
-    dq sys_get_info
+    dq sys_open
+    dq sys_read
+    dq sys_write
+    dq sys_close
+    dq sys_pmap
+    dq sys_pexe
+    dq sys_punmap
+    dq sys_sinfo

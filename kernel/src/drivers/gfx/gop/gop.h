@@ -7,7 +7,7 @@
 
 namespace gfx {
 
-	extern stivale_framebuffer			 		gop;
+	extern stivale2_struct_tag_framebuffer			 		gop;
 
 	namespace shapes {
 		typedef struct s_pos_point {
