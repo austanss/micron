@@ -2,6 +2,8 @@
 #include "memory/heap.h"
 #include "util/kutil.h"
 
+fs::vfs::driver* fs::vfs::default_driver;
+
 fs::vfs::node et_al {
     "&:",
     0xFF,
@@ -22,6 +24,8 @@ fs::vfs::node* fs::vfs::add_default_node(char* name)
     walker->permissions = (writable | cacheable | visible | movable);
     walker->filesystem = default_driver;
     walker->next = nullptr;
+
+    return walker->next;
 }
 
 fs::vfs::node* fs::vfs::get_node(char* name)

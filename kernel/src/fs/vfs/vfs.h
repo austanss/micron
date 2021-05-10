@@ -20,9 +20,9 @@ namespace fs {
 
         struct driver {
             char* name;
-            int (*read )        (node* target,  void* buffer);
-            int (*write)        (node* target,  void* data);
-            int (*create_file)  (node* out,     char* name);
+            int (*read )        (node* target, void* buffer, uint position, uint bytes);
+            int (*write)        (node* target, void* data, uint position, uint bytes);
+            int (*create_file)  (node* target);
             int (*delete_file)  (node* target);
         };
 
@@ -33,7 +33,7 @@ namespace fs {
             node*       next;
         };
 
-        static driver* default_driver;
+        extern driver* default_driver;
 
         node*   add_default_node(char* name);
         void    delete_node(char* name);

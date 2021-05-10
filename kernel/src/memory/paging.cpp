@@ -92,16 +92,18 @@ void* memory::paging::get_physical_address(void* virtual_address)
     page_directory_entry pde;
 
     uint16 address_offset = (uint16)(uint64)virtual_address & 0xFFF;
-    virtual_address = (void *)~(uint64)virtual_address;
 
-    pde = pml_4->entries[indexer.pdp_i];
+    page_table* pml_4_s;
+
+    asm volatile ("mov %%cr3, %0" : "=a" (pml_4_s));
+
+    pde = pml_4_s->entries[indexer.pdp_i];
     page_table* pdp;
 
     if (!pde.get_flag(pt_flag::present))
         return (void *)-1;
         
     pdp = (page_table*)((uint64)pde.get_address() << 12);
-    
     
     pde = pdp->entries[indexer.pd_i];
     page_table* pd;

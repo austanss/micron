@@ -56,7 +56,7 @@ uint memory::pmm::get_total_memory_size(stivale_memory_map* memory_map, uint64 m
     return memory_size_bytes;
 }
 
-extern "C" void reserve_pages(void* vaddress, uint64 page_count);
+extern "C" void reserve_pages(void* paddress, uint64 page_count);
 
 void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, uint64 desc_size)
 {
@@ -113,9 +113,9 @@ void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, ui
     reserve_pages((void *)&sys::config::__kernel_start, sys::config::__kernel_pages);
 }
 
-void unreserve_page(void* vaddress) {
+void unreserve_page(void* paddress) {
 
-    uint64 index = (uint64)vaddress / 4096;
+    uint64 index = (uint64)paddress / 4096;
 
     if (page_bitmap_map[index] == false) 
 		return;
@@ -125,15 +125,15 @@ void unreserve_page(void* vaddress) {
     memory::pmm::reserved_memory_size -= 4096;
 }
 
-void unreserve_pages(void* vaddress, uint64 pageCount) {
+void unreserve_pages(void* paddress, uint64 pageCount) {
 
     for (uint t = 0; t < pageCount; t++)
-        unreserve_page((void*)((uint64)vaddress + (t * 4096)));
+        unreserve_page((void*)((uint64)paddress + (t * 4096)));
 }
 
-extern "C" void reserve_page(void* vaddress) 
+extern "C" void reserve_page(void* paddress) 
 {
-    uint64 index = (uint64)vaddress / 4096;
+    uint64 index = (uint64)paddress / 4096;
 
     if (page_bitmap_map[index] == true) 
 		return;
@@ -143,10 +143,10 @@ extern "C" void reserve_page(void* vaddress)
     memory::pmm::reserved_memory_size += 4096;
 }
 
-extern "C" void reserve_pages(void* vaddress, uint64 pageCount) {
+extern "C" void reserve_pages(void* p_address, uint64 page_count) {
 
-    for (uint t = 0; t < pageCount; t++)
-        reserve_page((void*)((address)vaddress + (t * 4096)));
+    for (uint t = 0; t < page_count; t++)
+        reserve_page((void*)((address)p_address + (t * 4096)));
 }
 
 extern "C" void* memory::pmm::request_page() {
@@ -187,31 +187,31 @@ extern "C" void* memory::pmm::request_pages(uint64 page_count)
     return start_ptr;
 }
 
-extern "C" void memory::pmm::free_page(void* vaddress) {
+extern "C" void memory::pmm::free_page(void* paddress) {
 
-    uint index = (uint64)vaddress / 4096;
+    uint index = (uint64)paddress / 4096;
     if (page_bitmap_map[index] == false) return;
     page_bitmap_map.set(index, false);
     free_memory_size += 4096;
     used_memory_size -= 4096;
 }
 
-extern "C" void memory::pmm::free_pages(void* vaddress, uint64 page_count) {
+extern "C" void memory::pmm::free_pages(void* paddress, uint64 page_count) {
  
     for (uint64 t = 0; t < page_count; t++)
-        memory::pmm::free_page((void*)((address)vaddress + (t * 4096)));
+        memory::pmm::free_page(memory::paging::get_physical_address((void*)((address)paddress + (t * 4096))));
 }
 
-extern "C" void memory::pmm::lock_page(void* vaddress) {
-    uint index = (uint64)vaddress / 4096;
+extern "C" void memory::pmm::lock_page(void* paddress) {
+    uint index = (uint64)paddress / 4096;
     if (page_bitmap_map[index] == true) return;
     page_bitmap_map.set(index, true);
     free_memory_size -= 4096;
     used_memory_size += 4096;
 } 
 
-extern "C" void memory::pmm::lock_pages(void* vaddress, uint64 page_count) {
+extern "C" void memory::pmm::lock_pages(void* paddress, uint64 page_count) {
 
     for (uint t = 0; t < page_count; t++)
-        memory::pmm::lock_page((void*)((uint64)vaddress + (t * 4096)));
+        memory::pmm::lock_page(memory::paging::get_physical_address((void*)((uint64)paddress + (t * 4096))));
 }

@@ -8,7 +8,7 @@
 #include "boot/kconf.h"
 #include "drivers/tty/tty.h"
 #include "cpu/tss.h"
-#include "fs/vfs/vfs.h"
+#include "fs/gpt/gpt.h"
 #include "scheduling/elf.h"
 
 #ifndef ARCH
@@ -23,7 +23,6 @@ extern "C" address mnkmain(stivale_struct *bootloader_info, uint stack)
 	cpu::tss::tss_install(0, stack);
 	cpu::idt::load_idt();
 	asm volatile ("sti");
-	sys::config::configure_graphics(&(bootloader_info->framebuffer));
 	sys::config::configure_pci(bootloader_info->rsdp);
 
 	io::pit::set_c0_frequency(1000);
@@ -34,6 +33,8 @@ extern "C" address mnkmain(stivale_struct *bootloader_info, uint stack)
 	gfx::gop = bootloader_info->framebuffer;
 
 	io::keyboard::init();
+
+	fs::gpt::read_gpt_info(0);
 
 	return sys::prog::load_elf((sys::prog::elf_common_header *)bootloader_info->modules->begin);
 }
