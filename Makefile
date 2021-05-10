@@ -4,12 +4,14 @@ kernel:
 	@ mkdir -p bin
 	@ mkdir -p bin/kernel
 	@ make -C kernel all
+	@ rm -rf bin/kernel/*
 	@ mv --force kernel/bin/* bin/kernel/
 
 mnsh:
 	@ mkdir -p bin
 	@ mkdir -p bin/mnsh
 	@ make -C mnsh all
+	@ rm -rf bin/mnsh/*
 	@ mv --force mnsh/bin/* bin/mnsh/
 
 all: kernel mnsh

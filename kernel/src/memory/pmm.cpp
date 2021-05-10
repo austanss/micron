@@ -125,8 +125,6 @@ void memory::pmm::initialize(stivale_memory_map* memory_map, uint64 map_size, ui
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);
     reserve_pages((void *)&sys::config::__kernel_start, sys::config::__kernel_pages);
-
-    memory::heap::initialize_heap((void*)0xffff800000000000, 0x100);
 }
 
 void unreserve_page(void* paddress) {
@@ -263,7 +261,12 @@ extern "C" void* memory::pmm::reallocate_pool(void* address, uint64 new_page_cou
 {
     void* new_pool = request_pool(new_page_count);
     page_pool* old_pool = $find_page_pool(address);
-    memory::operations::memcpy(new_pool, old_pool->address, old_pool->page_count * 0x1000);
+
+    if (new_page_count > old_pool->page_count)
+        memory::operations::memcpy(new_pool, old_pool->address, old_pool->page_count * 0x1000);
+    else
+        memory::operations::memcpy(new_pool, old_pool->address, new_page_count * 0x1000);
+
     free_pool(old_pool->address);
     return new_pool;
 }
