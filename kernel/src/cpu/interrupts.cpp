@@ -147,7 +147,7 @@ char* $get_symbol_label(uint64 addr)
 
 void exception_handler(registers& regs)
 {
-	io::tty::clear();
+	printf("\n\n\n\n\n");
 
 	printf("\n\tFATAL ERROR: CPU Exception: %s\n\n", exception_messages[regs.interrupt_number]);
 	printf("\tERROR CODE: %x\n\n\n", regs.error_code);

@@ -30,12 +30,13 @@ namespace fs {
             char        identifier[MAX_FILENAME_LENGTH];
             uint08      permissions;
             driver*     filesystem;
-            node*       parent;
             node*       next;
-            node*       child;
         };
 
-        node*   add_default_node(node* parent, char* name);
+        static driver* default_driver;
+
+        node*   add_default_node(char* name);
+        void    delete_node(char* name);
         node*   get_node(char* name);
     }
 }

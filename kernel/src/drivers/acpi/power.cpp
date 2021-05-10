@@ -10,7 +10,7 @@
 extern "C"
 {
 void cpu::power::shutdown() {
-	io::tty::clear();
+	printf("\033c");
 	asm volatile ("cli; hlt");
 }
 

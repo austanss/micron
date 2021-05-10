@@ -7,12 +7,8 @@
 
 namespace gfx {
 
-	extern uint32*								buffer;
 	extern stivale_framebuffer			 		gop;
 
-	namespace fonts {
-		uint64						get_character_font(char c);
-	}
 	namespace shapes {
 		typedef struct s_pos_point {
 			uint32 x;

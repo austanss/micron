@@ -49,7 +49,7 @@ bool $strcmp(const char* lhs, const char *rhs)
 
 void $print(const char * text)
 {
-    asm volatile ("syscall" : : "a" (write_tty));
+    
 }
 
 uint64_t $get_info(uint8_t field)
@@ -127,7 +127,7 @@ void $perform_command(char* command);
 
 void $prompt()
 {
-    $print("$RED!> $LIGHT_BLUE!imnus-cmd $RED!>> ");
+    $print("$RED!> $LIGHT_BLUE!i-mnsh $RED!>> ");
     prompt_waiting = true;
     while (prompt_waiting)
     { 
@@ -155,7 +155,7 @@ void $prompt()
 extern "C" 
 void main()
 {
-    $print("\n\t$CYAN!imnus v1.0$WHITE!\n\n");
+    $print("\n\t$CYAN!mnsh v1.1$WHITE!\n\n");
 
     $subscribe_keyboard_event(keyboard_event);
 

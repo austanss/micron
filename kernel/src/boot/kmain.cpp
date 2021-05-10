@@ -4,6 +4,7 @@
 #include "cpu/interrupts.h"
 #include "scheduling/timer.h"
 #include "drivers/audio/beeper/beeper.h"
+#include "drivers/gfx/gop/gop.h"
 #include "boot/kconf.h"
 #include "drivers/tty/tty.h"
 #include "cpu/tss.h"
@@ -29,6 +30,8 @@ extern "C" address mnkmain(stivale_struct *bootloader_info, uint stack)
 	io::pit::pit_init();
 
 	sys::audio::pcspk::init();
+
+	gfx::gop = bootloader_info->framebuffer;
 
 	io::keyboard::init();
 

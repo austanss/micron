@@ -35,7 +35,10 @@ void sys::config::setup_paging(stivale_framebuffer *framebuffer)
     uint64 fb_size = (((uint64)framebuffer->framebuffer_width * framebuffer->framebuffer_height * (framebuffer->framebuffer_bpp / 8) + 1024));
 
     for (uint64 t = fb_base; t < fb_base + fb_size; t+=0x1000)
-        { memory::paging::map_memory((void*)t, (void*)t, true); }
+    {
+        memory::paging::map_memory((void*)t, (void*)t, true);
+        memory::paging::donate_to_userspace((void*)t);
+    }
 
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
 }
@@ -48,15 +51,6 @@ void sys::config::configure_memory(stivale_framebuffer *framebuffer, stivale_mem
     sys::config::setup_paging(framebuffer);
 
     memory::heap::initialize_heap((void*)0xffff800000000000, 0x100);
-}
-
-void sys::config::configure_graphics(stivale_framebuffer *framebuffer)
-{
-    gfx::gop = *(framebuffer);
-
-	gfx::buffer = (uint32 *)memory::pmm::request_pages(gfx::gop.framebuffer_width * gfx::gop.framebuffer_height * (gfx::gop.framebuffer_bpp / 8) / 0x1000 + 1);
-
-	io::tty::initialize();
 }
 
 void sys::config::configure_pci(sys::acpi::rsdp2* rsdp)

@@ -6,6 +6,7 @@
 #include "memory/operations.h"
 #include "memory/heap.h"
 #include "tty.h"
+#include "../uart/serial.h"
 
 
 char* __int_str(intmax_t i, char b[], int base, bool plusSignIfNeeded, bool spaceSignIfNeeded,
@@ -73,7 +74,7 @@ char* __int_str(intmax_t i, char b[], int base, bool plusSignIfNeeded, bool spac
 }
  
 void displayCharacter(char c, int* a) {
-    io::tty::put_char(c, 15);
+    io::serial::serial_byte(c);
     *a += 1;
 }
  
