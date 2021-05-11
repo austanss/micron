@@ -28,9 +28,11 @@ extern "C" void sys_close()
 
 }
 
-extern "C" void sys_pmap(void* vaddress)
+extern "C" void* sys_pmap(void* vaddress)
 {
     memory::paging::map_memory(vaddress, memory::pmm::request_page(), false);
+    memory::paging::donate_to_userspace(vaddress);
+    return vaddress;
 }
 
 extern "C" void sys_pexe(void* vaddress)

@@ -18,10 +18,10 @@ cp res/limine.efi iso/EFI/BOOT/BOOTX64.EFI
 cp res/limine.cfg iso/limine.cfg
 
 # Copy the kernel
-cp bin/kernel/mnk.elf iso/sys/core/mnk.elf
+cp bin/kernel/mnk.elf iso/sys/core/syskrn.msk
 
 # Copy MNSH
-cp bin/mnsh/mnsh.elf iso/sys/sprg/start.mnx
+cp bin/mnsh/mnsh.elf iso/sys/sprg/start.mse
 
 # Generate the FAT image
 res/dir2fat32.sh img/micron.fat 260 iso

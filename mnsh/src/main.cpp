@@ -194,7 +194,6 @@ void $prompt()
 extern "C" 
 void main()
 {
-    while (true);
     $print("\n\t$CYAN!mnsh v1.1$WHITE!\n\n");
 
     $levrd(&evrd);
