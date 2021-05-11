@@ -2,6 +2,7 @@
 #include "memory/heap.h"
 #include "memory/operations.h"
 #include "memory/pmm.h"
+#include "memory/paging.h"
 
 bool evsys_ready = false;
 
@@ -23,6 +24,8 @@ void sys::evsys::fire_event(uint16 evid, void* payload, uint32 nbytes)
         return;
 
     descriptor_list_node* walker;
+    void* packet_page = memory::pmm::request_page();
+    memory::paging::donate_to_userspace(packet_page);
 
     for (walker = evsys_list_root.next; !!walker; walker = walker->next)
     {
@@ -52,7 +55,7 @@ void sys::evsys::fire_event(uint16 evid, void* payload, uint32 nbytes)
             continue;
         }
 
-        evsys_packet* packet = (evsys_packet *)memory::heap::malloc(sizeof(evsys_packet) + nbytes);
+        evsys_packet* packet = (evsys_packet *)packet_page;
 
         packet->signature = 0x50535645;
         packet->event_id = evid;
@@ -60,16 +63,16 @@ void sys::evsys::fire_event(uint16 evid, void* payload, uint32 nbytes)
         packet->packet_size = sizeof(evsys_packet) + nbytes;
         memory::operations::memcpy((void *)((address)packet + sizeof(packet)), payload, nbytes);
 
-        void* handler_stack = memory::pmm::request_pool(4);
+        void* handler_stack = memory::pmm::request_page();
 
-        ring3_call(walker->descriptor->handler, packet, handler_stack);
+        memory::paging::donate_to_userspace(handler_stack);
 
-        memory::heap::free(packet);
-        memory::pmm::free_pool(handler_stack);
+        ring3_call(walker->descriptor->handler, packet, handler_stack + 0x1000);
+
+        memory::pmm::free_page(handler_stack);
     }
 
-    if (!walker)
-        return;
+    memory::pmm::free_page(packet_page);
 } 
 
 void sys::evsys::register_recipient(evsys_recipient_descriptor* recipient_descriptor)

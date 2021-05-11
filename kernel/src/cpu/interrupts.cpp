@@ -63,6 +63,7 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
+extern void sgi128();
 extern void lidt(address);
 
 typedef struct s_registers
@@ -298,6 +299,7 @@ void cpu::idt::load_idt()
 	idt_set(45, (address)irq13, 0x08, 0x8E);
 	idt_set(46, (address)irq14, 0x08, 0x8E);
 	idt_set(47, (address)irq15, 0x08, 0x8E);
+	idt_set(0x80, (address)sgi128, 0x08, 0xEE);
 
 	lidt((address)&idtPointer);
 }

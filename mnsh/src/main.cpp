@@ -194,11 +194,11 @@ void $prompt()
 extern "C" 
 void main()
 {
-    $print("\n\t$CYAN!mnsh v1.1$WHITE!\n\n");
+    $print("\n\t$CYAN!mnsh v2.0$WHITE!\n\n");
 
     $levrd(&evrd);
 
-    $command_buffer = (char *)$map_page(0xcc9900000000);
+    $command_buffer = (char *)$map_page(0xcc99000000);
     $memset((void *)$command_buffer, 0, 0x1000);
 
     while (true)

@@ -10,14 +10,16 @@
 #include "cpu/tss.h"
 #include "fs/gpt/gpt.h"
 #include "scheduling/elf.h"
-
 #include "memory/pmm.h"
+#include "memory/paging.h"
 
 #ifndef ARCH
     #define ARCH "$RED!UNKNOWN"
 #endif
 
 using namespace memory::pmm;
+
+extern "C" void ring3_call();
 
 extern "C" address mnkmain(stivale2_struct *bootloader_info, uint stack)
 {	
@@ -44,6 +46,8 @@ extern "C" address mnkmain(stivale2_struct *bootloader_info, uint stack)
 	io::keyboard::init();
 
 	fs::gpt::read_gpt_info(0);
+
+	memory::paging::donate_to_userspace((void *)ring3_call);
 
 	return sys::prog::load_elf((sys::prog::elf_common_header *)modules->modules[0].begin);
 }

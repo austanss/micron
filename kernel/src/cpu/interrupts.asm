@@ -70,7 +70,9 @@ global irq12
 global irq13
 global irq14
 global irq15
+; then SGIs
 
+global sgi128
 global isr_common_stub
 global irq_common_stub
 
@@ -451,14 +453,14 @@ sgi128:
     cmp rax, rbx
     jne .iret
 
-    mov rax, 0x18
+    mov rax, 0x10
     mov ds, ax
     mov es, ax
 
     push rax
     push qword [tss_rsp0]
     push 0x202
-    push 0x20
+    push 0x08
     push ring0_return
 
     .iret:
