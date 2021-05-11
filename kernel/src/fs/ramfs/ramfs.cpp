@@ -93,7 +93,7 @@ int fs::ramfs::delete_file(fs::vfs::node* target)
 {
     ramfs_file* walker;
 
-    for (walker = &ramfs_rootdir; !!walker->next->next; walker = walker->next)
+    for (walker = &ramfs_rootdir; !!walker->next; walker = walker->next)
         if (util::strcomp(walker->next->identifier, target->identifier))
             break;
 

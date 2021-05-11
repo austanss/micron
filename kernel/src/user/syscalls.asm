@@ -8,8 +8,12 @@ extern sys_pmap
 extern sys_pexe
 extern sys_punmap
 extern sys_sinfo
+extern sys_levrd
+extern sys_devrd
 
 default rel
+
+global tss_rsp0
 
 tss_rsp0:
     dq 0
@@ -84,3 +88,5 @@ syscall_table:
     dq sys_pexe
     dq sys_punmap
     dq sys_sinfo
+    dq sys_levrd
+    dq sys_devrd

@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "keyboard.h"
 #include "ecpuid.h"
+#include "tty.h"
+#include "evsys.h"
 
 // TEMPORARY: These syscalls will not be removed, but many may be added before v1.0.
 enum syscall {
@@ -14,9 +16,29 @@ enum syscall {
     pexe,
     punmap,
 
-    sysinfo
+    sysinfo,
+    
+    levrd,
+    devrd
 };
 
+uint16_t id_list[] {
+    0x5286
+};
+
+void keyboard_event(evsys_packet* packet);
+
+evsys_recipient_descriptor evrd {
+    .handler = keyboard_event,
+    .id_list_entries = 1,
+    .reserved = 0,
+    .id_list = &id_list[0]
+};
+
+void $levrd(evsys_recipient_descriptor* tblevrd)
+{
+    asm volatile ("syscall" : : "a" (levrd));
+}
 
 const char itoa_characters[] = "0123456789abcdef";
 
@@ -59,10 +81,10 @@ struct system_info {
 
     struct {
         uint64_t fb_ad;
-        uint32_t fb_resx;
-        uint32_t fb_resy;
-        uint64_t fb_pitch;
-        uint64_t fb_bpp;
+        uint16_t fb_resx;
+        uint16_t fb_resy;
+        uint16_t fb_pitch;
+        uint16_t fb_bpp;
     } display_info;
 
     struct {
@@ -77,11 +99,6 @@ system_info* $get_info()
     system_info* rax;
     asm volatile ("syscall" : "=a" (rax) : "a" (sysinfo));
     return rax;
-}
-
-void $subscribe_keyboard_event(void (*handler)(keyboard_event_args))
-{
-    
 }
 
 int command_buffer_index = 0;
@@ -105,12 +122,14 @@ void* $memset(void* buffer, unsigned char value, unsigned long count)
 	return buffer;
 }
 
-void keyboard_event(keyboard_event_args event_args)
+void keyboard_event(evsys_packet* packet)
 {
-    if (!event_args.release_or_press)
+    keyboard_event_args* event_args = (keyboard_event_args *)((uint64_t)packet + sizeof(evsys_packet));
+
+    if (!event_args->release_or_press)
         return;
     
-    char character = kcascii(event_args.key_code, event_args.shifted, event_args.caps_lock);
+    char character = kcascii(event_args->key_code, event_args->shifted, event_args->caps_lock);
     
     if (character == '\t')
     {
@@ -178,7 +197,7 @@ void main()
     while (true);
     $print("\n\t$CYAN!mnsh v1.1$WHITE!\n\n");
 
-    $subscribe_keyboard_event(keyboard_event);
+    $levrd(&evrd);
 
     $command_buffer = (char *)$map_page(0xcc9900000000);
     $memset((void *)$command_buffer, 0, 0x1000);

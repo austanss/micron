@@ -442,6 +442,27 @@ irq15:
 	lea r14, [rel irq_common_stub]
 	jmp r14
     
+extern ring0_return
+extern tss_rsp0
+
+;; Used by EVSYS to return to kernel mode
+sgi128:
+    mov rbx, 0xfffccfffdeadbeef
+    cmp rax, rbx
+    jne .iret
+
+    mov rax, 0x18
+    mov ds, ax
+    mov es, ax
+
+    push rax
+    push qword [tss_rsp0]
+    push 0x202
+    push 0x20
+    push ring0_return
+
+    .iret:
+    iretq
     
 %macro pusha 0
     push rax
