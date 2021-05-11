@@ -28,8 +28,6 @@ WRFLAGS	=\
 CCFLAGS 	= \
 -ffreestanding \
 -I$(SRCDIR) \
--fno-pic \
--fpie \
 -gdwarf \
 -O0 \
 -std=c++20 \
@@ -37,14 +35,11 @@ CCFLAGS 	= \
 -msse3 \
 -fno-threadsafe-statics \
 -fno-omit-frame-pointer \
+-mcmodel=kernel \
 $(WRFLAGS)
 
 LDFLAGS  = -ffreestanding \
 -nostdlib \
--fno-pic \
--fpie \
--pie \
--static-pie \
 -z max-page-size=0x1000 \
 -lgcc \
 -T $(LDS)

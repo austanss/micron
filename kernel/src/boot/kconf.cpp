@@ -40,6 +40,9 @@ void sys::config::setup_paging(stivale2_struct_tag_framebuffer *framebuffer)
         memory::paging::donate_to_userspace((void*)t);
     }
 
+    for (address t = 0x0; t < 0x80000000; t+=0x1000)
+	    { memory::paging::map_memory((void *)t + 0xffffffff80000000, (void *)t, false); }
+
 	asm volatile ("mov %0, %%cr3" : : "r" (memory::paging::pml_4));	
 }
 

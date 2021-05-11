@@ -2,7 +2,7 @@ ENTRY(mnkentry)
 
 SECTIONS
 {
-	. = 2M;
+	. = 0xffffffff80000000 + 2M;
 	
 	__kernel_start = .;
 

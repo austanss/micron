@@ -121,7 +121,7 @@ void memory::pmm::initialize(stivale2_mmap_entry* memory_map, uint64 map_entries
     lock_pages(page_bitmap_map.buffer, page_bitmap_map.size / 4096 + 1);
     
     reserve_pages((void *)0x0, 0x100000 / 0x1000);
-    reserve_pages((void *)&sys::config::__kernel_start, sys::config::__kernel_pages);
+    reserve_pages((void *)&sys::config::__kernel_start - 0xffffffff80000000, sys::config::__kernel_pages);
 }
 
 void unreserve_page(void* paddress) {
