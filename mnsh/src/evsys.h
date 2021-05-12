@@ -1,16 +1,24 @@
 #pragma once
-#include <stdint.h>
 
 struct evsys_packet {
-    uint32_t    signature; // 0x50535645 "EVSP"
-    uint16_t    event_id;
-    uint16_t    reserved;
-    uint64_t    packet_size; // 16 + packet payload data size
+    unsigned int    signature; // 0x50535645 "EVSP"
+    unsigned short    event_id;
+    unsigned short    reserved;
+    unsigned long    packet_size; // 16 + packet payload data size
 };
 
 struct evsys_recipient_descriptor {
     void        (*handler)(evsys_packet *);
-    uint32_t    id_list_entries;
-    uint16_t    reserved;
-    uint16_t*   id_list;
+    unsigned int    id_list_entries;
+    unsigned short    reserved;
+    unsigned short*   id_list;
 };
+
+extern evsys_recipient_descriptor evrd;
+
+void _levrd(evsys_recipient_descriptor* tblevrd);
+
+inline void enable_evsys_handling()
+{
+    _levrd(&evrd);
+}

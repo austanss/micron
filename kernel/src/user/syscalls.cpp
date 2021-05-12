@@ -53,6 +53,7 @@ struct system_info {
         uint16 fb_resy;
         uint16 fb_pitch;
         uint16 fb_bpp;
+        uint64 fb_size;
     } display_info;
 
     struct {
@@ -62,17 +63,21 @@ struct system_info {
     } memory_info;
 };
 
-system_info special_info;
+system_info* special_info = nullptr;
 
 extern "C" system_info* sys_sinfo()
 {
-    special_info = {
+    if (special_info == nullptr)
+        special_info = (system_info *)memory::pmm::request_page();
+
+    *special_info = {
         .display_info {
             .fb_ad      = gfx::gop.framebuffer_addr,
             .fb_resx    = gfx::gop.framebuffer_width,
             .fb_resy    = gfx::gop.framebuffer_height,
             .fb_pitch   = gfx::gop.framebuffer_pitch,
-            .fb_bpp     = gfx::gop.framebuffer_bpp
+            .fb_bpp     = gfx::gop.framebuffer_bpp,
+            .fb_size    = (gfx::gop.framebuffer_bpp / (uint64)8) * gfx::gop.framebuffer_width * gfx::gop.framebuffer_height
         },
 
         .memory_info {
@@ -81,7 +86,10 @@ extern "C" system_info* sys_sinfo()
             .free_ram   = memory::pmm::total_memory_size - memory::pmm::used_memory_size
         }
     };
-    return &special_info;
+
+    memory::paging::donate_to_userspace(special_info);
+
+    return special_info;
 }
 
 extern "C" void sys_levrd(sys::evsys::evsys_recipient_descriptor* descriptor)
