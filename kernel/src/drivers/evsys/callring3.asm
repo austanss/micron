@@ -20,7 +20,7 @@ ring3_call:
 
     push rax
     push rdx
-    push 0x202
+    push 0x00
     push 0x23
     push .ring3
 

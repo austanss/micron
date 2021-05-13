@@ -11,7 +11,7 @@ unsigned int*   fastfbb;
 unsigned short  fastfbw;
 unsigned short  fastfbh;
 
-extern const unsigned long kernel_font[];
+extern const unsigned long tty_font[];
 
 unsigned int bpp4_to_bpp32(unsigned char bpp4_color)
 {
@@ -101,7 +101,7 @@ void ptty_render_entry(unsigned short x, unsigned short y)
 	fg_color = bpp4_to_bpp32(bpp4_color_fg);
 	bg_color = bpp4_to_bpp32(bpp4_color_bg);
 
-    unsigned long font_selector = kernel_font[c];
+    unsigned long font_selector = tty_font[c];
 
     unsigned char bits[64];
 
@@ -250,7 +250,7 @@ void tty_shift(unsigned char lines)
 	ptty_rerender();
 }
 
-const unsigned long kernel_font[] =
+const unsigned long tty_font[] =
 {
 	0x0000000000000000,
 	0x0000000000000000,

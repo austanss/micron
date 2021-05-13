@@ -445,7 +445,6 @@ irq15:
 	jmp r14
     
 extern ring0_return
-extern tss_rsp0
 
 ;; Used by EVSYS to return to kernel mode
 sgi128:
@@ -458,7 +457,7 @@ sgi128:
     mov es, ax
 
     push rax
-    push qword [tss_rsp0]
+    push 0x00
     push 0x202
     push 0x08
     push ring0_return

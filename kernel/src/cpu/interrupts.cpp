@@ -13,7 +13,7 @@ extern "C"
 {
 
 cpu::idt::idt_descriptor  	 idt_s[256];
-cpu::idt::idt_ptr			 idtPointer;
+cpu::idt::idt_ptr			 idt_pointer;
 
 extern void isr0();
 extern void isr1();
@@ -231,7 +231,6 @@ void idt_set(uint08 number, address base, word selector, byte flags) {
 	idt_s[number].selector = selector;
 	idt_s[number].flags = flags;
 
-
 	/* Set IST */
 	if (number < 32)
 		idt_s[number].reservedIst = 1;
@@ -246,8 +245,8 @@ void idt_set(uint08 number, address base, word selector, byte flags) {
 
 void cpu::idt::load_idt()
 {
-	idtPointer.limit = sizeof(cpu::idt::idt_descriptor) * 256 - 1;
-	idtPointer.base  = (address)&idt_s;
+	idt_pointer.limit = sizeof(cpu::idt::idt_descriptor) * 256 - 1;
+	idt_pointer.base  = (address)&idt_s;
 
 	memory::operations::memset((byte *)&idt_s, 0, sizeof(cpu::idt::idt_descriptor) * 256);
 
@@ -301,7 +300,7 @@ void cpu::idt::load_idt()
 	idt_set(47, (address)irq15, 0x08, 0x8E);
 	idt_set(0x80, (address)sgi128, 0x08, 0xEE);
 
-	lidt((address)&idtPointer);
+	lidt((address)&idt_pointer);
 }
 
 }

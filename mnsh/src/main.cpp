@@ -43,15 +43,16 @@ void main()
 
     tty_initialize();
 
-    print("\n\t$cyan!mnsh v2.0$white!\n\n");
+    print("\n\t$cyan!mnsh v2.1$white!\n\n");
 
-    enable_evsys_handling();
+//    enable_evsys_handling();
 
     $command_buffer = (char *)pmap(0xcc99000000);
     memset((void *)$command_buffer, 0, 0x1000);
 
-    while (true)
-        prompt();
+    print("$green!> $light_blue!i-mnsh $green!>> $red! Input disabled.");
+    while (true);
+//        prompt();
 }
 
 const char* cmd_freemem_str = "freemem";
