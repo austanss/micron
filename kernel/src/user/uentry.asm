@@ -24,8 +24,8 @@ enter_userspace:
     lea r14, [rel setup_syscalls]
     call r14
 
-    lea r14, [rel evsys_initialize]
-    call r14
+;    lea r14, [rel evsys_initialize]
+;    call r14
 
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
