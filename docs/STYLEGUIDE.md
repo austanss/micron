@@ -25,9 +25,7 @@ void sys::quux::foo_pointer(baz& bar);
 ```
 
 ## Formatting
-Put brackets on the same line.
 Do not use brackets on one-statement conditionals.
-    Break lines and tab on one-statement conditionals.
 Prefer to align names when defining structures.
 Space between brackets and parenthesis.
 ```c++

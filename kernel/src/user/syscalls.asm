@@ -14,6 +14,8 @@ extern sys_devrd
 default rel
 
 global tss_rsp0
+global setup_syscalls
+global syscall_handler
 
 tss_rsp0:
     dq 0
@@ -54,7 +56,6 @@ setup_syscalls:
 
     pop rbp
     ret
-global setup_syscalls:function ($ - setup_syscalls)
 
 syscall_handler:
     cli
@@ -77,7 +78,6 @@ syscall_handler:
     pop rsp
     pop rbp
     o64 sysret
-global syscall_handler:function ($ - syscall_handler)
 
 syscall_table:
     dq sys_open

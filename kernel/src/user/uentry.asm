@@ -4,6 +4,8 @@ extern setup_syscalls
 extern userspace_debug_catch
 extern evsys_initialize
 
+global enter_userspace
+
 default rel
 
 enter_userspace:
@@ -13,19 +15,15 @@ enter_userspace:
     push rbp
     mov rbp, rsp
 
-    lea r14, [rel request_page]
-    call r14
+    call request_page
     mov rbx, rax
     add rbx, 0x1000
     mov rdi, rax
-    lea r14, [rel donate_to_userspace]
-    call r14
+    call donate_to_userspace
 
-    lea r14, [rel setup_syscalls]
-    call r14
+    call setup_syscalls
 
-;    lea r14, [rel evsys_initialize]
-;    call r14
+;   call evsys_initialize
 
     mov rax, 0x1B               ; Selector 0x18 (User Data) + RPL 3
     mov ds, ax
@@ -40,4 +38,3 @@ enter_userspace:
     push r15                    ; Entry point in user space
 
     iretq
-global enter_userspace:function ($ - enter_userspace)

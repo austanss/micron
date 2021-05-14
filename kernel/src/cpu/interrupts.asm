@@ -80,253 +80,217 @@ global irq_common_stub
 isr0:
     push 0
     push 0
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
-
-; Seems this interrupt is raised without reason.
-; e.g. is raised on a nop in $print.
-; Ignored, however this is not a long term solution.
 ; 1: Debug Exception
 isr1:
-;    push 0
-;    push 0
-;    lea r14, [rel isr_common_stub]
-;    jmp r14
+    push 0
+    push 3
+    jmp isr_common_stub
     iretq   
 
-; 2: Non Maskable Interrupt Exception
+; 2: Non Maskable Interrupt
 isr2:
     push 0
     push 2
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 3: Breakpoint Exception
 isr3:
     push 0
     push 3
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 4: INTO Exception
 isr4:
     push 0
     push 4
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 5: Out of Bounds Exception
 isr5:
     push 0
     push 5
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 6: Invalid Opcode Exception
 isr6:
     push 0
     push 6
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 7: Coprocessor Not Available Exception
 isr7:
     push 0
     push 7
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 8: Double Fault Exception (With Error Code!)
 isr8:
     push 8
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 9: Coprocessor Segment Overrun Exception
 isr9:
     push 0
     push 9
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 10: Bad TSS Exception (With Error Code!)
 isr10:
     push 10
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 11: Segment Not Present Exception (With Error Code!)
 isr11:
     push 11
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 12: Stack Fault Exception (With Error Code!)
 isr12:
     push 12
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 13: General Protection Fault Exception (With Error Code!)
 isr13:
     push 13
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 14: Page Fault Exception (With Error Code!)
 isr14:
     push 14
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 15: Reserved Exception
 isr15:
     push 0
     push 15
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 16: Floating Point Exception
 isr16:
     push 0
     push 16
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 17: Alignment Check Exception
 isr17:
     push 0
     push 17
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 18: Machine Check Exception
 isr18:
     push 0
     push 18
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 19: Reserved
 isr19:
     push 0
     push 19
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 20: Reserved
 isr20:
     push 0
     push 20
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 21: Reserved
 isr21:
     push 0
     push 21
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 22: Reserved
 isr22:
     push 0
     push 22
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 23: Reserved
 isr23:
     push 0
     push 23
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 24: Reserved
 isr24:
     push 0
     push 24
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 25: Reserved
 isr25:
     push 0
     push 25
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 26: Reserved
 isr26:
     push 0
     push 26
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 27: Reserved
 isr27:
     push 0
     push 27
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 28: Reserved
 isr28:
     push 0
     push 28
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 29: Reserved
 isr29:
     push 0
     push 29
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 30: Reserved
 isr30:
     push 0
     push 30
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; 31: Reserved
 isr31:
     push 0
     push 31
-    lea r14, [rel isr_common_stub]
-    jmp r14
+    jmp isr_common_stub
     
 
 ; IRQ handlers
@@ -336,113 +300,97 @@ isr31:
 irq0:	 
 	push 0
 	push 32
-    lea r14, [rel irq_common_stub]
-	jmp r14
+    jmp irq_common_stub
     
 
 irq1:
     push 1
 	push 33
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq2:
     push 2
 	push 34
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq3:
     push 3
 	push 35
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq4:
     push 4
 	push 36
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq5:
     push 5
 	push 37
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq6:
     push 6
 	push 38
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq7:
     push 7
 	push 39
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq8:
     push 8
 	push 40
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq9:
     push 9
 	push 41
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq10:
     push 10
 	push 42
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq11:
     push 11
 	push 43
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq12:
     push 12
 	push 44
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq13:
 	push 13
 	push 45
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq14:
 	push 14
 	push 46
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 
 irq15:
 	push 15
 	push 47
-	lea r14, [rel irq_common_stub]
-	jmp r14
+	jmp irq_common_stub
     
 extern ring0_return
 
@@ -563,8 +511,7 @@ irq_common_stub:
 
   ; 2. Call C handler
     cld
-    lea r14, [rel irq_handler]
-    call r14
+    call irq_handler
 
   ; 3. Restore state
     pop rdx

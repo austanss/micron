@@ -6,6 +6,7 @@ uint32 io::pit::frequency_hz = 0;
 uint16 io::pit::c2_divisor = 0;
 uint32 io::pit::c2_frequency_hz = 0;
 
+
 void io::pit::pit_init()
 {
     io::pic::irq_unmask(0);
