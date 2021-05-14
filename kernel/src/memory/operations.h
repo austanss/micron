@@ -6,3 +6,5 @@ namespace memory {
 		void* 	memset(void* dst, byte value, uint64 size);
 	}
 }
+
+using namespace memory::operations;

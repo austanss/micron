@@ -3,3 +3,4 @@
 bin/
 img/
 compile_commands.json
+.gitconfig

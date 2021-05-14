@@ -19,3 +19,5 @@ namespace memory {
 		void		expand_heap(uint64 size);
 	}
 }
+
+using namespace memory::heap;
