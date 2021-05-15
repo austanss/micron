@@ -30,10 +30,8 @@ CCFLAGS 	= \
 -I$(SRCDIR) \
 -gdwarf \
 -O0 \
--std=c++20 \
 -mno-red-zone \
 -msse3 \
--fno-threadsafe-statics \
 -fno-omit-frame-pointer \
 -mcmodel=kernel \
 $(WRFLAGS)
