@@ -7,13 +7,13 @@ micron is designed uniquely, as an operating system, to be as small, performant,
 ## Stable
 micron has been designed to be stable. We are adding more features for stability, but at the time, these include:
 
-    - relocatable kernel
     - strong code quality standards
+    - higher half mapping, safe for programs
 
 ## Secure
 micron has been designed to be secure. We are adding more features for security, but at the time, these include:
 
-    - KASLR, a Spectre-class mitigation, for the kernel
+    - higher half mapping, mitigating older designs for kernel reading
 
 ## Speedy
 micron is compiled, at release target, with maximum optimizations. More features are to come.
